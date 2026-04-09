@@ -114,7 +114,8 @@
         <div id="box-firma" style="display:none;">
             <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center;">ESTATUTOS Y PRIVACIDAD</h3>
             <div class="texto-legal">
-                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL...</strong> (Contenido omitido por brevedad, mantén el tuyo)</p>
+                <p>1. RESPONSABILIDAD ABSOLUTA...</p>
+                <p>2. EXONERACIÓN...</p>
             </div>
             <canvas id="canvasFirma" width="320" height="100"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
@@ -145,7 +146,7 @@
         function autocompletarSocio() {
             const dniInput = document.getElementById('dni').value.trim().toUpperCase();
             if (dniInput === "") return;
-            const socio = db.find(x => x.dni.toUpperCase() === dniInput);
+            const socio = db.find(x => x.dni === dniInput);
             if (socio) {
                 document.getElementById('nom').value = socio.nombre || "";
                 document.getElementById('mail').value = socio.email || "";
@@ -175,7 +176,7 @@
         }
 
         async function refrescarDatos() {
-            const { data, error } = await _supabase.from('socios').select('*').order('created_at', { ascending: false });
+            const { data, error } = await _supabase.from('socios').select('*').order('created_at', { ascending: true });
             if(!error && data) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
         }
         
@@ -189,42 +190,35 @@
         async function registrar() {
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
             const nomVal = document.getElementById('nom').value.trim();
-            const mailVal = document.getElementById('mail').value.trim();
-            const fechaVal = document.getElementById('cumple').value;
             const rgpd = document.getElementById('checkRGPD').checked;
 
-            if(!nomVal) { alert("INTRODUCE NOMBRE"); return; }
-            if(!rgpd) { alert("DEBE FIRMAR LOS ESTATUTOS PRIMERO"); gestionarEstatutos(); return; }
+            if(!nomVal || !dniVal) { alert("RELLENA NOMBRE Y DNI"); return; }
+            if(!rgpd) { alert("DEBE FIRMAR LOS ESTATUTOS"); gestionarEstatutos(); return; }
 
-            const existe = db.find(x => x.dni.toUpperCase() === dniVal);
+            const existe = db.find(x => x.dni === dniVal);
+            const horaH = new Date().toLocaleTimeString();
             
             if(existe) {
                 if(existe.dentro) { alert("YA ESTÁ DENTRO"); } 
                 else { 
-                    await _supabase.from('socios').update({ dentro: true, hora: new Date().toLocaleTimeString() }).eq('dni', dniVal);
+                    await _supabase.from('socios').update({ dentro: true, hora: horaH }).eq('dni', dniVal);
                     await refrescarDatos();
                     abrirTarjeta(db.find(x => x.dni === dniVal)); 
                 }
             } else {
-                // He quitado el campo 'id' de aquí para que Supabase lo asigne automáticamente y no dé error
-                const nuevoSocio = { 
-                    dni: dniVal, 
-                    nombre: nomVal, 
-                    email: mailVal, 
-                    cumple: fechaVal, 
+                const nuevo = { 
+                    dni: dniVal, nombre: nomVal, 
+                    email: document.getElementById('mail').value, 
+                    cumple: document.getElementById('cumple').value, 
                     cat: document.getElementById('cat').value, 
-                    pagado: false, 
-                    vetado: false, 
-                    motivo: "", 
-                    dentro: true, 
-                    hora: new Date().toLocaleTimeString(), 
-                    rgpd_fecha: new Date().toLocaleString() 
+                    pagado: false, vetado: false, dentro: true, hora: horaH 
                 };
-                const { error } = await _supabase.from('socios').insert([nuevoSocio]);
-                if (error) { alert("Error: " + error.message); }
+                const { error } = await _supabase.from('socios').insert([nuevo]);
+                if (error) { alert("ERROR AL GUARDAR"); }
                 else {
                     await refrescarDatos();
-                    abrirTarjeta(db.find(x => x.dni === dniVal));
+                    const sEncontrado = db.find(x => x.dni === dniVal);
+                    if(sEncontrado) abrirTarjeta(sEncontrado);
                 }
             }
             document.getElementById('dni').value=""; document.getElementById('nom').value=""; document.getElementById('mail').value=""; document.getElementById('cumple').value="";
@@ -237,9 +231,9 @@
             document.getElementById('st-total').innerText = db.length; 
             document.getElementById('st-aforo').innerText = aforo;
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            document.getElementById('lista').innerHTML = f.map(s => `
+            document.getElementById('lista').innerHTML = f.map((s, index) => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id || (index + 1)}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
@@ -252,17 +246,16 @@
 
         async function toggleEntrada(dni) {
             const s = db.find(x => x.dni === dni);
-            const nuevoEstado = !s.dentro;
-            const h = nuevoEstado ? new Date().toLocaleTimeString() : s.hora;
-            await _supabase.from('socios').update({ dentro: nuevoEstado, hora: h }).eq('dni', dni);
+            const nE = !s.dentro;
+            await _supabase.from('socios').update({ dentro: nE, hora: nE ? new Date().toLocaleTimeString() : s.hora }).eq('dni', dni);
             await refrescarDatos();
         }
 
         async function tVeto(dni) {
             const s = db.find(x => x.dni === dni);
-            let mot = s.motivo;
-            if(!s.vetado) { mot = prompt("MOTIVO:"); if(!mot) return; }
-            await _supabase.from('socios').update({ vetado: !s.vetado, motivo: !s.vetado ? mot : "" }).eq('dni', dni);
+            let m = s.motivo;
+            if(!s.vetado) { m = prompt("MOTIVO:"); if(!m) return; }
+            await _supabase.from('socios').update({ vetado: !s.vetado, motivo: !s.vetado ? m : "" }).eq('dni', dni);
             await refrescarDatos();
         }
 
@@ -274,7 +267,7 @@
             if(s.cat === "VIP Plata") c.style.background = "linear-gradient(145deg, #717171, #2e2e2e)";
             if(s.cat === "VIP Gold") c.style.background = "linear-gradient(145deg, #bf953f, #4d3a14)";
             if(s.cat === "Elite") { c.style.background = "white"; c.style.color = "black"; }
-            document.getElementById('card-id').innerText = s.id;
+            document.getElementById('card-id').innerText = s.id || "S-6";
             document.getElementById('card-nom').innerText = s.nombre;
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none';
@@ -299,19 +292,19 @@
 
         async function guardarFirmaSocio() { 
             const d = socioActual ? socioActual.dni : document.getElementById('dni').value.toUpperCase();
-            if(!d) { alert("Introduce DNI"); return; }
+            if(!d) { alert("INTRODUCE DNI"); return; }
             await _supabase.from('socios').update({ firma: canvas.toDataURL() }).eq('dni', d);
             document.getElementById('checkRGPD').checked = true;
             alert("FIRMA GUARDADA"); 
             document.getElementById('box-firma').style.display = 'none'; 
         }
 
-        function descargarTarjeta() { html2canvas(document.getElementById('cardMain')).then(can => { let l = document.createElement('a'); l.download='TARJETA_EL6.png'; l.href=can.toDataURL(); l.click(); }); }
+        function descargarTarjeta() { html2canvas(document.getElementById('cardMain')).then(can => { let l = document.createElement('a'); l.download='TARJETA.png'; l.href=can.toDataURL(); l.click(); }); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
-        async function borrar(dni) { if(confirm("¿Borrar?")) { await _supabase.from('socios').delete().eq('dni', dni); await refrescarDatos(); } }
-        async function resetJornada() { if(confirm("¿Cerrar noche?")){ await _supabase.from('socios').update({ dentro: false }); await refrescarDatos(); } }
-        function exportarExcel() { let csv = "ID,NOMBRE,DNI,HORA\n" + db.map(s => `${s.id},${s.nombre},${s.dni},${s.hora}`).join("\n"); let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'EL6.csv'; l.click(); }
+        async function borrar(dni) { if(confirm("¿BORRAR?")) { await _supabase.from('socios').delete().eq('dni', dni); await refrescarDatos(); } }
+        async function resetJornada() { if(confirm("¿RESET?")){ await _supabase.from('socios').update({ dentro: false }); await refrescarDatos(); } }
+
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         function start(e) { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
         function move(e) { if (!dibujando) return; e.preventDefault(); const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
