@@ -39,7 +39,6 @@
         .btn-rules { background: #3b82f6; color: white; }
         #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
         
-        /* FIX TEXTO LEGAL */
         .texto-legal { 
             font-size: 10px; 
             text-align: justify; 
@@ -63,7 +62,7 @@
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
-        <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
+        <button onclick="validarEntrada()">ACCEDER</button>
     </div>
 
     <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
@@ -131,7 +130,7 @@
                 <p>1. RESPONSABILIDAD ABSOLUTA DE ACCESO: El código de acceso facilitado es personal, secreto e intransferible. El socio es el único responsable legal de su custodia. El registro electrónico generado por el sistema en nuestra base de datos se considera prueba irrefutable de la presencia del socio en el recinto. La cesión, préstamo o filtración del código a terceros supondrá la expulsión fulminante del club sin derecho a devolución de cuotas y la reserva de acciones legales por daños y perjuicios contra la seguridad del centro.</p>
                 <p>2. EXONERACIÓN DE RESPONSABILIDAD CIVIL Y PENAL: El socio manifiesta bajo su exclusiva responsabilidad que posee las condiciones físicas y psíquicas óptimas para el uso de las instalaciones. EL 6 y su dirección quedan exentos de toda responsabilidad por lesiones, accidentes, fallecimiento, daños físicos o secuelas derivadas del uso de las instalaciones, equipos o estancia en el recinto. El socio renuncia de forma irrevocable a emprender cualquier tipo de acción legal, civil o penal, contra la dirección del club por estos motivos, asumiendo él mismo cualquier riesgo derivado de su actividad.</p>
                 <p>3. PROTECCIÓN DE DATOS Y SEGURIDAD (LOPDGDD 3/2018): Sus datos personales (Nombre, DNI, teléfono y registros de acceso) son tratados bajo la estricta responsabilidad de la dirección para la gestión de su membresía y control de seguridad. Los datos se almacenan en sistemas cifrados de alta seguridad y no serán cedidos a terceros, salvo obligación legal o requerimiento expreso de las fuerzas y cuerpos de seguridad del Estado.</p>
-                <p>4. DERECHO AL OLVIDO Undefined PROTOCOLO DE BORRADO: En cumplimiento del RGPD, el socio puede solicitar la supresión de sus datos. Para ejercer este derecho, deberá enviar una solicitud formal por escrito a la dirección de correo electrónico: El6club1@gmail.com. Una vez recibida y confirmada la baja, el club procederá a la eliminación técnica de sus registros en un plazo máximo de 72 horas, quedando extinguida cualquier relación contractual con el club de forma inmediata.</p>
+                <p>4. DERECHO AL OLVIDO Y PROTOCOLO DE BORRADO: En cumplimiento del RGPD, el socio puede solicitar la supresión de sus datos. Para ejercer este derecho, deberá enviar una solicitud formal por escrito a la dirección de correo electrónico: El6club1@gmail.com. Una vez recibida y confirmada la baja, el club procederá a la eliminación técnica de sus registros en un plazo máximo de 72 horas, quedando extinguida cualquier relación contractual con el club de forma inmediata.</p>
                 <p>5. VIGILANCIA ACTIVA Y DERECHOS DE IMAGEN: Por razones de seguridad pública y protección de bienes, el recinto cuenta con sistemas de videovigilancia las 24 horas. El socio consiente expresamente la grabación de su imagen. Asimismo, autoriza que fotografías o vídeos grupales donde aparezca puedan ser utilizados en los canales de comunicación internos y redes sociales del club, salvo que comunique su oposición fehaciente por escrito.</p>
                 <p>6. OBJETOS PERSONALES, ROBOS Y HURTOS: El club no se hace responsable, bajo ninguna circunstancia, de la pérdida, robo, hurto o desperfecto de pertenencias personales, dinero, vehículos o dispositivos electrónicos dentro o en las inmediaciones de las instalaciones. Cada socio es el único custodio de sus bienes.</p>
                 <p>7. RÉGIMEN DISCIPLINARIO Y EXPULSIÓN: La dirección se reserva el derecho de admisión de forma discrecional. El impago de la cuota en el plazo estipulado provocará el bloqueo inmediato del código. Cualquier falta de respeto, comportamiento inapropiado, falta de higiene o incumplimiento de las normas internas será motivo de baja definitiva del sistema sin previo aviso y sin derecho a reembolso de los importes ya abonados.</p>
@@ -150,7 +149,7 @@
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
             <button class="btn-card btn-rules" onclick="gestionarEstatutos()">FIRMAR ESTATUTOS</button>
         </div>
-        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
+        <button onclick="cerrar()">CERRAR</button>
     </div>
 
     <script>
@@ -159,22 +158,14 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
         const NOMBRE_TABLA = 'socios';
 
-        let db = [];
-        let aforo = 0;
-        let socioActual = null;
-        let nivel = "personal";
-
+        let db = []; let aforo = 0; let socioActual = null; let nivel = "personal";
         const canvas = document.getElementById('canvasFirma');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
 
         async function refrescarDatos() {
             const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
-            if(!error) {
-                db = data;
-                aforo = db.filter(x => x.dentro).length;
-                render();
-            }
+            if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
         }
 
         function autocompletarSocio() {
@@ -203,152 +194,61 @@
         }
 
         async function entrar() { 
-            document.getElementById('pantallaLogin').style.display='none'; 
-            document.getElementById('principal').style.display='block'; 
-            document.getElementById('btnLogout').style.display='block'; 
-            await refrescarDatos(); 
+            document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; 
+            document.getElementById('btnLogout').style.display='block'; await refrescarDatos(); 
         }
         
-        function cerrarSesion() { 
-            location.reload();
-        }
+        function cerrarSesion() { location.reload(); }
 
         async function registrar() {
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
             const nomVal = document.getElementById('nom').value.trim();
-            const mailVal = document.getElementById('mail').value.trim();
-            const fechaVal = document.getElementById('cumple').value || null;
             const rgpd = document.getElementById('checkRGPD').checked;
-
             if(!dniVal || !nomVal) { alert("RELLENA DNI Y NOMBRE"); return; }
             if(!rgpd) { alert("DEBE FIRMAR LOS ESTATUTOS PRIMERO"); gestionarEstatutos(); return; }
-
             const existe = db.find(x => x.dni === dniVal);
             const horaH = new Date().toLocaleTimeString();
-
             if(existe) {
-                if(existe.dentro) { 
-                    alert("EL SOCIO YA CONSTA COMO 'DENTRO'"); 
-                } else { 
-                    await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
-                    await refrescarDatos();
-                    abrirTarjeta(db.find(x => x.dni === dniVal));
-                }
+                if(existe.dentro) { alert("EL SOCIO YA CONSTA COMO 'DENTRO'"); } 
+                else { await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === dniVal)); }
             } else {
-                const { error } = await _supabase.from(NOMBRE_TABLA).insert([{ 
-                    dni: dniVal, nombre: nomVal, email: mailVal, cumple: fechaVal, 
-                    cat: document.getElementById('cat').value, pagado: false, 
-                    vetado: false, dentro: true, hora: horaH 
-                }]);
-                
-                if(error) { alert("Error al guardar en Supabase"); console.log(error); }
-                else {
-                    await refrescarDatos();
-                    abrirTarjeta(db.find(x => x.dni === dniVal));
-                }
+                await _supabase.from(NOMBRE_TABLA).insert([{ dni: dniVal, nombre: nomVal, email: document.getElementById('mail').value.trim(), cumple: document.getElementById('cumple').value || null, cat: document.getElementById('cat').value, pagado: false, vetado: false, dentro: true, hora: horaH }]);
+                await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === dniVal));
             }
             limpiarCampos();
         }
 
-        function limpiarCampos() {
-            document.getElementById('dni').value=""; document.getElementById('nom').value=""; 
-            document.getElementById('mail').value=""; document.getElementById('cumple').value="";
-            document.getElementById('checkRGPD').checked = false;
-        }
+        function limpiarCampos() { document.getElementById('dni').value=""; document.getElementById('nom').value=""; document.getElementById('mail').value=""; document.getElementById('cumple').value=""; document.getElementById('checkRGPD').checked = false; }
 
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             const f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            
-            document.getElementById('st-total').innerText = db.length; 
-            document.getElementById('st-aforo').innerText = aforo;
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            
-            document.getElementById('lista').innerHTML = f.map((s, idx) => `
+            document.getElementById('st-total').innerText = db.length; document.getElementById('st-aforo').innerText = aforo; document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+            document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td>
-                        <button onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button onclick="tVeto('${s.dni}')">VETAR</button>
-                        <button onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        ${nivel==='jefe' ? `<button onclick="borrar('${s.dni}')">🗑️</button>` : ''}
-                    </td>
+                    <td><button onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button><button onclick="tVeto('${s.dni}')">VETAR</button><button onclick="reAbrir('${s.dni}')">TARJETA</button>${nivel==='jefe' ? `<button onclick="borrar('${s.dni}')">🗑️</button>` : ''}</td>
                 </tr>`).join('');
         }
 
-        async function toggleEntrada(dni) {
-            const s = db.find(x => x.dni === dni);
-            const nuevoEstado = !s.dentro;
-            await _supabase.from(NOMBRE_TABLA).update({ 
-                dentro: nuevoEstado, 
-                hora: nuevoEstado ? new Date().toLocaleTimeString() : s.hora 
-            }).eq('dni', dni);
-            await refrescarDatos();
-        }
-
-        async function tVeto(dni) {
-            const s = db.find(x => x.dni === dni);
-            let mot = "";
-            if(!s.vetado) { mot = prompt("MOTIVO DEL VETO:"); if(!mot) return; }
-            await _supabase.from(NOMBRE_TABLA).update({ vetado: !s.vetado, motivo: mot }).eq('dni', dni);
-            await refrescarDatos();
-        }
-
-        function abrirTarjeta(s) {
-            socioActual = s;
-            const c = document.getElementById('cardMain');
-            c.style.background = "black"; c.style.color = "white";
-            if(s.cat === "VIP Plata") c.style.background = "linear-gradient(145deg, #717171, #2e2e2e)";
-            if(s.cat === "VIP Gold") c.style.background = "linear-gradient(145deg, #bf953f, #4d3a14)";
-            if(s.cat === "Elite") { c.style.background = "white"; c.style.color = "black"; }
-            
-            document.getElementById('card-id').innerText = "Nº " + s.id;
-            document.getElementById('card-nom').innerText = s.nombre;
-            document.getElementById('card-dni').innerText = s.dni;
-            document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none';
-            document.getElementById('qr-space').innerHTML = "";
-            let q = document.createElement('canvas');
-            new QRious({element: q, value: s.dni, size: 140});
-            document.getElementById('qr-space').appendChild(q);
-            document.getElementById('modalTarjeta').style.display = 'flex';
-        }
-
-        async function marcarPago() { 
-            await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni);
-            await refrescarDatos();
-            abrirTarjeta(db.find(x => x.dni === socioActual.dni));
-        }
-
-        function gestionarEstatutos() { 
-            document.getElementById('modalTarjeta').style.display = 'flex';
-            document.getElementById('box-firma').style.display = 'block'; 
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-        }
-
-        async function guardarFirmaSocio() { 
-            const imgFirma = canvas.toDataURL();
-            if(socioActual) {
-                await _supabase.from(NOMBRE_TABLA).update({ firma: imgFirma }).eq('dni', socioActual.dni);
-            }
-            document.getElementById('checkRGPD').checked = true;
-            alert("ESTATUTOS FIRMADOS");
-            document.getElementById('box-firma').style.display = 'none'; 
-        }
-
+        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); const nuevoEstado = !s.dentro; await _supabase.from(NOMBRE_TABLA).update({ dentro: nuevoEstado, hora: nuevoEstado ? new Date().toLocaleTimeString() : s.hora }).eq('dni', dni); await refrescarDatos(); }
+        async function tVeto(dni) { const s = db.find(x => x.dni === dni); let mot = ""; if(!s.vetado) { mot = prompt("MOTIVO DEL VETO:"); if(!mot) return; } await _supabase.from(NOMBRE_TABLA).update({ vetado: !s.vetado, motivo: mot }).eq('dni', dni); await refrescarDatos(); }
+        function abrirTarjeta(s) { socioActual = s; const c = document.getElementById('cardMain'); c.style.background = "black"; c.style.color = "white"; if(s.cat === "VIP Plata") c.style.background = "linear-gradient(145deg, #717171, #2e2e2e)"; if(s.cat === "VIP Gold") c.style.background = "linear-gradient(145deg, #bf953f, #4d3a14)"; if(s.cat === "Elite") { c.style.background = "white"; c.style.color = "black"; } document.getElementById('card-id').innerText = "Nº " + s.id; document.getElementById('card-nom').innerText = s.nombre; document.getElementById('card-dni').innerText = s.dni; document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; document.getElementById('qr-space').innerHTML = ""; let q = document.createElement('canvas'); new QRious({element: q, value: s.dni, size: 140}); document.getElementById('qr-space').appendChild(q); document.getElementById('modalTarjeta').style.display = 'flex'; }
+        async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
+        function gestionarEstatutos() { document.getElementById('modalTarjeta').style.display = 'flex'; document.getElementById('box-firma').style.display = 'block'; ctx.clearRect(0,0,canvas.width,canvas.height); }
+        async function guardarFirmaSocio() { const imgFirma = canvas.toDataURL(); if(socioActual) { await _supabase.from(NOMBRE_TABLA).update({ firma: imgFirma }).eq('dni', socioActual.dni); } document.getElementById('checkRGPD').checked = true; alert("ESTATUTOS FIRMADOS"); document.getElementById('box-firma').style.display = 'none'; }
         function descargarTarjeta() { html2canvas(document.getElementById('cardMain')).then(can => { let l = document.createElement('a'); l.download='TARJETA_EL6.png'; l.href=can.toDataURL(); l.click(); }); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
-        
         async function borrar(dni) { if(confirm("¿BORRAR SOCIO PERMANENTEMENTE?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); await refrescarDatos(); } }
         async function resetJornada() { if(confirm("¿CERRAR NOCHE? TODOS SALDRÁN.")){ await _supabase.from(NOMBRE_TABLA).update({ dentro: false }); await refrescarDatos(); } }
-        
-        function exportarExcel() { 
-            let csv = "ID,NOMBRE,DNI,HORA,ESTADO\n" + db.map(s => `${s.id},${s.nombre},${s.dni},${s.hora},${s.dentro?'DENTRO':'FUERA'}`).join("\n"); 
-            let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'SOCIOS_EL6.csv'; l.click(); 
-        }
+        function exportarExcel() { let csv = "ID,NOMBRE,DNI,HORA,ESTADO\n" + db.map(s => `${s.id},${s.nombre},${s.dni},${s.hora},${s.dentro?'DENTRO':'FUERA'}`).join("\n"); let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'SOCIOS_EL6.csv'; l.click(); }
 
-        // --- FIRMA CANVAS ---
+        // --- FUNCIONES ADICIONALES ADMIN ---
+        async function exportarBaseDatos() { let { data } = await _supabase.from(NOMBRE_TABLA).select('*'); let blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'COPIA_SEGURIDAD_EL6.json'; a.click(); }
+        async function importarBaseDatos(e) { let file = e.target.files[0]; if (!file) return; let reader = new FileReader(); reader.onload = async (h) => { let json = JSON.parse(h.target.result); for (let s of json) { delete s.id; await _supabase.from(NOMBRE_TABLA).upsert(s); } alert("RESTAURACIÓN COMPLETADA"); refrescarDatos(); }; reader.readAsText(file); }
+
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         function start(e) { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
         function move(e) { if (!dibujando) return; e.preventDefault(); const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
