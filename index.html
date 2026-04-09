@@ -38,7 +38,20 @@
         .btn-send { background: var(--gold); color: black; }
         .btn-rules { background: #3b82f6; color: white; }
         #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
-        .texto-legal { font-size: 9px; text-align: justify; height: 180px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #f9f9f9; line-height: 1.2; }
+        
+        /* FIX TEXTO LEGAL */
+        .texto-legal { 
+            font-size: 10px; 
+            text-align: justify; 
+            height: 180px; 
+            overflow-y: scroll; 
+            border: 1px solid #ccc; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            background: #ffffff !important; 
+            color: #000000 !important;
+            line-height: 1.4; 
+        }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
         .rgpd-box { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: 12px; margin-top: 10px; }
         .rgpd-box input { width: auto; }
@@ -112,10 +125,15 @@
         </div>
 
         <div id="box-firma" style="display:none;">
-            <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center;">ESTATUTOS Y PRIVACIDAD</h3>
+            <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center; color: black;">ESTATUTOS Y PRIVACIDAD</h3>
             <div class="texto-legal">
-                <p>1. RESPONSABILIDAD ABSOLUTA...</p>
-                <p>2. EXONERACIÓN...</p>
+                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL, NORMATIVA SANCIONADORA Y POLÍTICA DE PRIVACIDAD (RGPD-ESPAÑA)</strong></p>
+                <p>1. RESPONSABILIDAD ABSOLUTA DE ACCESO: El código de acceso facilitado es personal, secreto e intransferible. El socio es el único responsable legal de su custodia. El registro electrónico generado por el sistema en nuestra base de datos se considera prueba irrefutable de la presencia del socio en el recinto.</p>
+                <p>2. EXONERACIÓN DE RESPONSABILIDAD: EL 6 y su dirección quedan exentos de toda responsabilidad por lesiones, accidentes o daños físicos derivados del uso de las instalaciones. El socio renuncia de forma irrevocable a emprender acciones legales contra la dirección.</p>
+                <p>3. PROTECCIÓN DE DATOS (LOPDGDD 3/2018): Sus datos personales son tratados para la gestión de su membresía y seguridad. No serán cedidos a terceros salvo obligación legal.</p>
+                <p>4. DERECHO AL OLVIDO: Puede solicitar la supresión de sus datos enviando un mail a El6club1@gmail.com.</p>
+                <p>5. VIGILANCIA: El recinto cuenta con sistemas de videovigilancia las 24 horas para protección de bienes y personas.</p>
+                <p>6. REGLAS: El club se reserva el derecho de admisión. El comportamiento inapropiado será motivo de expulsión inmediata.</p>
             </div>
             <canvas id="canvasFirma" width="320" height="100"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
@@ -133,6 +151,7 @@
         const supabaseUrl = 'https://rmskjegarvntuqpfzfbm.supabase.co';
         const supabaseKey = 'sb_publishable_hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const NOMBRE_TABLA = 'socios';
 
         let db = [];
         let aforo = 0;
@@ -142,6 +161,15 @@
         const canvas = document.getElementById('canvasFirma');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
+
+        async function refrescarDatos() {
+            const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
+            if(!error) {
+                db = data;
+                aforo = db.filter(x => x.dentro).length;
+                render();
+            }
+        }
 
         function autocompletarSocio() {
             const dniInput = document.getElementById('dni').value.trim().toUpperCase();
@@ -165,75 +193,74 @@
             } else if(p === "0000") { 
                 nivel="personal"; document.getElementById('panelAdmin').style.display='none'; document.getElementById('adminExtra').style.display='none';
                 entrar(); 
-            } else alert("ERROR");
+            } else alert("CÓDIGO INCORRECTO");
         }
 
         async function entrar() { 
             document.getElementById('pantallaLogin').style.display='none'; 
             document.getElementById('principal').style.display='block'; 
             document.getElementById('btnLogout').style.display='block'; 
-            await refrescarDatos();
-        }
-
-        async function refrescarDatos() {
-            const { data, error } = await _supabase.from('socios').select('*').order('created_at', { ascending: true });
-            if(!error && data) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
+            await refrescarDatos(); 
         }
         
         function cerrarSesion() { 
-            document.getElementById('passApp').value = "";
-            document.getElementById('principal').style.display='none';
-            document.getElementById('btnLogout').style.display='none';
-            document.getElementById('pantallaLogin').style.display='flex';
+            location.reload();
         }
 
         async function registrar() {
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
             const nomVal = document.getElementById('nom').value.trim();
+            const mailVal = document.getElementById('mail').value.trim();
+            const fechaVal = document.getElementById('cumple').value || null;
             const rgpd = document.getElementById('checkRGPD').checked;
 
-            if(!nomVal || !dniVal) { alert("RELLENA NOMBRE Y DNI"); return; }
-            if(!rgpd) { alert("DEBE FIRMAR LOS ESTATUTOS"); gestionarEstatutos(); return; }
+            if(!dniVal || !nomVal) { alert("RELLENA DNI Y NOMBRE"); return; }
+            if(!rgpd) { alert("DEBE FIRMAR LOS ESTATUTOS PRIMERO"); gestionarEstatutos(); return; }
 
             const existe = db.find(x => x.dni === dniVal);
             const horaH = new Date().toLocaleTimeString();
-            
+
             if(existe) {
-                if(existe.dentro) { alert("YA ESTÁ DENTRO"); } 
-                else { 
-                    await _supabase.from('socios').update({ dentro: true, hora: horaH }).eq('dni', dniVal);
+                if(existe.dentro) { 
+                    alert("EL SOCIO YA CONSTA COMO 'DENTRO'"); 
+                } else { 
+                    await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
                     await refrescarDatos();
-                    abrirTarjeta(db.find(x => x.dni === dniVal)); 
+                    abrirTarjeta(db.find(x => x.dni === dniVal));
                 }
             } else {
-                const nuevo = { 
-                    dni: dniVal, nombre: nomVal, 
-                    email: document.getElementById('mail').value, 
-                    cumple: document.getElementById('cumple').value, 
-                    cat: document.getElementById('cat').value, 
-                    pagado: false, vetado: false, dentro: true, hora: horaH 
-                };
-                const { error } = await _supabase.from('socios').insert([nuevo]);
-                if (error) { alert("ERROR AL GUARDAR"); }
+                const { error } = await _supabase.from(NOMBRE_TABLA).insert([{ 
+                    dni: dniVal, nombre: nomVal, email: mailVal, cumple: fechaVal, 
+                    cat: document.getElementById('cat').value, pagado: false, 
+                    vetado: false, dentro: true, hora: horaH 
+                }]);
+                
+                if(error) { alert("Error al guardar en Supabase"); console.log(error); }
                 else {
                     await refrescarDatos();
-                    const sEncontrado = db.find(x => x.dni === dniVal);
-                    if(sEncontrado) abrirTarjeta(sEncontrado);
+                    abrirTarjeta(db.find(x => x.dni === dniVal));
                 }
             }
-            document.getElementById('dni').value=""; document.getElementById('nom').value=""; document.getElementById('mail').value=""; document.getElementById('cumple').value="";
+            limpiarCampos();
+        }
+
+        function limpiarCampos() {
+            document.getElementById('dni').value=""; document.getElementById('nom').value=""; 
+            document.getElementById('mail').value=""; document.getElementById('cumple').value="";
             document.getElementById('checkRGPD').checked = false;
         }
 
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             const f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+            
             document.getElementById('st-total').innerText = db.length; 
             document.getElementById('st-aforo').innerText = aforo;
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            document.getElementById('lista').innerHTML = f.map((s, index) => `
+            
+            document.getElementById('lista').innerHTML = f.map((s, idx) => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id || (index + 1)}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
@@ -246,28 +273,31 @@
 
         async function toggleEntrada(dni) {
             const s = db.find(x => x.dni === dni);
-            const nE = !s.dentro;
-            await _supabase.from('socios').update({ dentro: nE, hora: nE ? new Date().toLocaleTimeString() : s.hora }).eq('dni', dni);
+            const nuevoEstado = !s.dentro;
+            await _supabase.from(NOMBRE_TABLA).update({ 
+                dentro: nuevoEstado, 
+                hora: nuevoEstado ? new Date().toLocaleTimeString() : s.hora 
+            }).eq('dni', dni);
             await refrescarDatos();
         }
 
         async function tVeto(dni) {
             const s = db.find(x => x.dni === dni);
-            let m = s.motivo;
-            if(!s.vetado) { m = prompt("MOTIVO:"); if(!m) return; }
-            await _supabase.from('socios').update({ vetado: !s.vetado, motivo: !s.vetado ? m : "" }).eq('dni', dni);
+            let mot = "";
+            if(!s.vetado) { mot = prompt("MOTIVO DEL VETO:"); if(!mot) return; }
+            await _supabase.from(NOMBRE_TABLA).update({ vetado: !s.vetado, motivo: mot }).eq('dni', dni);
             await refrescarDatos();
         }
 
         function abrirTarjeta(s) {
-            if(!s) return;
             socioActual = s;
             const c = document.getElementById('cardMain');
             c.style.background = "black"; c.style.color = "white";
             if(s.cat === "VIP Plata") c.style.background = "linear-gradient(145deg, #717171, #2e2e2e)";
             if(s.cat === "VIP Gold") c.style.background = "linear-gradient(145deg, #bf953f, #4d3a14)";
             if(s.cat === "Elite") { c.style.background = "white"; c.style.color = "black"; }
-            document.getElementById('card-id').innerText = s.id || "S-6";
+            
+            document.getElementById('card-id').innerText = "Nº " + s.id;
             document.getElementById('card-nom').innerText = s.nombre;
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none';
@@ -279,7 +309,7 @@
         }
 
         async function marcarPago() { 
-            await _supabase.from('socios').update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni);
+            await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni);
             await refrescarDatos();
             abrirTarjeta(db.find(x => x.dni === socioActual.dni));
         }
@@ -291,20 +321,28 @@
         }
 
         async function guardarFirmaSocio() { 
-            const d = socioActual ? socioActual.dni : document.getElementById('dni').value.toUpperCase();
-            if(!d) { alert("INTRODUCE DNI"); return; }
-            await _supabase.from('socios').update({ firma: canvas.toDataURL() }).eq('dni', d);
+            const imgFirma = canvas.toDataURL();
+            if(socioActual) {
+                await _supabase.from(NOMBRE_TABLA).update({ firma: imgFirma }).eq('dni', socioActual.dni);
+            }
             document.getElementById('checkRGPD').checked = true;
-            alert("FIRMA GUARDADA"); 
+            alert("ESTATUTOS FIRMADOS");
             document.getElementById('box-firma').style.display = 'none'; 
         }
 
-        function descargarTarjeta() { html2canvas(document.getElementById('cardMain')).then(can => { let l = document.createElement('a'); l.download='TARJETA.png'; l.href=can.toDataURL(); l.click(); }); }
+        function descargarTarjeta() { html2canvas(document.getElementById('cardMain')).then(can => { let l = document.createElement('a'); l.download='TARJETA_EL6.png'; l.href=can.toDataURL(); l.click(); }); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
-        async function borrar(dni) { if(confirm("¿BORRAR?")) { await _supabase.from('socios').delete().eq('dni', dni); await refrescarDatos(); } }
-        async function resetJornada() { if(confirm("¿RESET?")){ await _supabase.from('socios').update({ dentro: false }); await refrescarDatos(); } }
+        
+        async function borrar(dni) { if(confirm("¿BORRAR SOCIO PERMANENTEMENTE?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); await refrescarDatos(); } }
+        async function resetJornada() { if(confirm("¿CERRAR NOCHE? TODOS SALDRÁN.")){ await _supabase.from(NOMBRE_TABLA).update({ dentro: false }); await refrescarDatos(); } }
+        
+        function exportarExcel() { 
+            let csv = "ID,NOMBRE,DNI,HORA,ESTADO\n" + db.map(s => `${s.id},${s.nombre},${s.dni},${s.hora},${s.dentro?'DENTRO':'FUERA'}`).join("\n"); 
+            let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'SOCIOS_EL6.csv'; l.click(); 
+        }
 
+        // --- FIRMA CANVAS ---
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         function start(e) { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
         function move(e) { if (!dibujando) return; e.preventDefault(); const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
