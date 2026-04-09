@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -39,18 +40,7 @@
         .btn-rules { background: #3b82f6; color: white; }
         #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
         
-        .texto-legal { 
-            font-size: 10px; 
-            text-align: justify; 
-            height: 180px; 
-            overflow-y: scroll; 
-            border: 1px solid #ccc; 
-            padding: 15px; 
-            margin-bottom: 10px; 
-            background: #ffffff !important; 
-            color: #000000 !important;
-            line-height: 1.4; 
-        }
+        .texto-legal { font-size: 10px; text-align: justify; height: 180px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.4; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
         .rgpd-box { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: 12px; margin-top: 10px; }
         .rgpd-box input { width: auto; }
@@ -184,21 +174,30 @@
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
             if(p === "1234") { 
-                nivel="jefe"; document.getElementById('btnExport').style.display='block'; document.getElementById('btnReset').style.display='block'; 
-                document.getElementById('panelAdmin').style.display='grid'; document.getElementById('adminExtra').style.display='flex';
+                nivel="jefe"; 
+                document.getElementById('btnExport').style.display='block'; 
+                document.getElementById('btnReset').style.display='block'; 
+                document.getElementById('panelAdmin').style.display='grid'; 
+                document.getElementById('adminExtra').style.display='flex';
                 entrar(); 
             } else if(p === "0000") { 
-                nivel="personal"; document.getElementById('panelAdmin').style.display='none'; document.getElementById('adminExtra').style.display='none';
+                nivel="personal"; 
+                document.getElementById('btnExport').style.display='none'; 
+                document.getElementById('btnReset').style.display='none';
+                document.getElementById('panelAdmin').style.display='none'; 
+                document.getElementById('adminExtra').style.display='none';
                 entrar(); 
             } else alert("CÓDIGO INCORRECTO");
         }
 
         async function entrar() { 
-            document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; 
-            document.getElementById('btnLogout').style.display='block'; await refrescarDatos(); 
+            document.getElementById('pantallaLogin').style.display='none'; 
+            document.getElementById('principal').style.display='block'; 
+            document.getElementById('btnLogout').style.display='block'; 
+            await refrescarDatos(); 
         }
-        
-        function cerrarSesion() { location.reload(); }
+
+        function cerrarSesion() { location.href = location.href; }
 
         async function registrar() {
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
@@ -209,12 +208,12 @@
             const existe = db.find(x => x.dni === dniVal);
             const horaH = new Date().toLocaleTimeString();
             if(existe) {
-                if(existe.dentro) { alert("EL SOCIO YA CONSTA COMO 'DENTRO'"); } 
-                else { await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === dniVal)); }
+                await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
             } else {
                 await _supabase.from(NOMBRE_TABLA).insert([{ dni: dniVal, nombre: nomVal, email: document.getElementById('mail').value.trim(), cumple: document.getElementById('cumple').value || null, cat: document.getElementById('cat').value, pagado: false, vetado: false, dentro: true, hora: horaH }]);
-                await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === dniVal));
             }
+            await refrescarDatos();
+            abrirTarjeta(db.find(x => x.dni === dniVal));
             limpiarCampos();
         }
 
@@ -222,8 +221,14 @@
 
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
-            const f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            document.getElementById('st-total').innerText = db.length; document.getElementById('st-aforo').innerText = aforo; document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+            
+            // SI ES PERSONAL (0000), LA LISTA SOLO MUESTRA SI HAY BUSQUEDA ACTIVA
+            if(nivel === "personal" && b === "") { f = []; }
+
+            document.getElementById('st-total').innerText = db.length; 
+            document.getElementById('st-aforo').innerText = aforo; 
+            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
@@ -242,9 +247,8 @@
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
         async function borrar(dni) { if(confirm("¿BORRAR SOCIO PERMANENTEMENTE?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); await refrescarDatos(); } }
-        async function resetJornada() { if(confirm("¿CERRAR NOCHE? TODOS SALDRÁN.")){ await _supabase.from(NOMBRE_TABLA).update({ dentro: false }); await refrescarDatos(); } }
+        async function resetJornada() { if(confirm("¿REINICIAR NOCHE? TODOS SALDRÁN.")){ const { error } = await _supabase.from(NOMBRE_TABLA).update({ dentro: false }).not('id', 'is', null); if(!error) await refrescarDatos(); else alert("Error al reiniciar"); } }
         function exportarExcel() { let csv = "ID,NOMBRE,DNI,HORA,ESTADO\n" + db.map(s => `${s.id},${s.nombre},${s.dni},${s.hora},${s.dentro?'DENTRO':'FUERA'}`).join("\n"); let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'SOCIOS_EL6.csv'; l.click(); }
-
         async function exportarBaseDatos() { let { data } = await _supabase.from(NOMBRE_TABLA).select('*'); let blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'COPIA_SEGURIDAD_EL6.json'; a.click(); }
         async function importarBaseDatos(e) { let file = e.target.files[0]; if (!file) return; let reader = new FileReader(); reader.onload = async (h) => { let json = JSON.parse(h.target.result); for (let s of json) { delete s.id; await _supabase.from(NOMBRE_TABLA).upsert(s); } alert("RESTAURACIÓN COMPLETADA"); refrescarDatos(); }; reader.readAsText(file); }
 
