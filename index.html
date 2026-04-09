@@ -62,7 +62,7 @@
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
-        <button onclick="validarEntrada()">ACCEDER</button>
+        <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
 
     <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
@@ -149,7 +149,7 @@
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
             <button class="btn-card btn-rules" onclick="gestionarEstatutos()">FIRMAR ESTATUTOS</button>
         </div>
-        <button onclick="cerrar()">CERRAR</button>
+        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
     </div>
 
     <script>
@@ -245,7 +245,6 @@
         async function resetJornada() { if(confirm("¿CERRAR NOCHE? TODOS SALDRÁN.")){ await _supabase.from(NOMBRE_TABLA).update({ dentro: false }); await refrescarDatos(); } }
         function exportarExcel() { let csv = "ID,NOMBRE,DNI,HORA,ESTADO\n" + db.map(s => `${s.id},${s.nombre},${s.dni},${s.hora},${s.dentro?'DENTRO':'FUERA'}`).join("\n"); let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'SOCIOS_EL6.csv'; l.click(); }
 
-        // --- FUNCIONES ADICIONALES ADMIN ---
         async function exportarBaseDatos() { let { data } = await _supabase.from(NOMBRE_TABLA).select('*'); let blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'COPIA_SEGURIDAD_EL6.json'; a.click(); }
         async function importarBaseDatos(e) { let file = e.target.files[0]; if (!file) return; let reader = new FileReader(); reader.onload = async (h) => { let json = JSON.parse(h.target.result); for (let s of json) { delete s.id; await _supabase.from(NOMBRE_TABLA).upsert(s); } alert("RESTAURACIÓN COMPLETADA"); refrescarDatos(); }; reader.readAsText(file); }
 
