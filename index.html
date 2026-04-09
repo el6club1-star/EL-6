@@ -179,7 +179,14 @@
             } else alert("ERROR");
         }
 
-        function entrar() { document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; document.getElementById('btnLogout').style.display='block'; render(); }
+        async function entrar() { 
+            document.getElementById('pantallaLogin').style.display='none'; 
+            document.getElementById('principal').style.display='block'; 
+            document.getElementById('btnLogout').style.display='block'; 
+            const { data, error } = await _supabase.from('socios').select('*');
+            if(!error && data) { db = data; }
+            render(); 
+        }
         
         function cerrarSesion() { 
             document.getElementById('passApp').value = "";
@@ -201,11 +208,15 @@
             const existe = db.find(x => x.dni.toUpperCase() === dniVal);
             if(existe) {
                 if(existe.dentro) { alert("YA ESTÁ DENTRO"); } 
-                else { existe.dentro = true; existe.hora = new Date().toLocaleTimeString(); aforo++; abrirTarjeta(existe); }
+                else { 
+                    existe.dentro = true; existe.hora = new Date().toLocaleTimeString(); aforo++; 
+                    await _supabase.from('socios').update({ dentro: true, hora: existe.hora }).eq('dni', dniVal);
+                    abrirTarjeta(existe); 
+                }
             } else {
                 const s = { id:"Nº "+(db.length+1), dni:dniVal, nombre:nomVal, email:mailVal, cumple:fechaVal, cat:document.getElementById('cat').value, pagado:false, vetado:false, motivo:"", dentro:true, hora:new Date().toLocaleTimeString(), firma: null, rgpd_fecha: new Date().toLocaleString() };
                 db.unshift(s); aforo++; 
-                save();
+                await _supabase.from('socios').insert([s]);
                 abrirTarjeta(s);
             }
             document.getElementById('dni').value=""; document.getElementById('nom').value=""; document.getElementById('mail').value=""; document.getElementById('cumple').value="";
