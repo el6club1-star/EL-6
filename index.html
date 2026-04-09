@@ -60,6 +60,8 @@
             <button class="btn-reset-noche" id="btnReset" onclick="resetJornada()">🔄 REINICIAR NOCHE</button>
             <div class="admin-btns" id="adminExtra" style="display:none;">
                 <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
+                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
+                <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
             </div>
             <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
             <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
@@ -91,7 +93,7 @@
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
 
         <table>
-            <thead><tr><th>Nº SOCIO</th><th>ID/DNI</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
+            <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
             <tbody id="lista"></tbody>
         </table>
     </div>
@@ -113,7 +115,7 @@
             <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center;">ESTATUTOS Y PRIVACIDAD</h3>
             <div class="texto-legal">
                 <p><strong>CONTRATO DE ADHESIÓN INTEGRAL EL 6</strong></p>
-                <p>[...Contenido del contrato...]</p>
+                <p>1. ACCESO PERSONAL... [RESERVADO]</p>
             </div>
             <canvas id="canvasFirma" width="320" height="100"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
@@ -143,7 +145,7 @@
 
         async function cargarDesdeSupabase() {
             const { data, error } = await _supabase.from('socios').select('*');
-            if(!error && data.length > 0) { db = data; render(); }
+            if(!error && data) { db = data; render(); }
         }
 
         function autocompletarSocio() {
@@ -151,10 +153,10 @@
             if (dniInput === "") return;
             const socio = db.find(x => x.dni.toUpperCase() === dniInput);
             if (socio) {
-                document.getElementById('nom').value = socio.nombre || "";
-                document.getElementById('mail').value = socio.email || "";
-                document.getElementById('cat').value = socio.cat || "Estándar";
-                document.getElementById('cumple').value = socio.cumple || "";
+                document.getElementById('nom').value = socio.nombre;
+                document.getElementById('mail').value = socio.email;
+                document.getElementById('cat').value = socio.cat;
+                document.getElementById('cumple').value = socio.cumple;
                 document.getElementById('checkRGPD').checked = true;
             }
         }
@@ -172,23 +174,20 @@
         }
 
         function entrar() { document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; document.getElementById('btnLogout').style.display='block'; cargarDesdeSupabase(); }
-        
         function cerrarSesion() { location.reload(); }
 
         async function registrar() {
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
             const nomVal = document.getElementById('nom').value.trim();
-            const rgpd = document.getElementById('checkRGPD').checked;
-
             if(!nomVal) return alert("INTRODUCE NOMBRE");
-            if(!rgpd) return alert("DEBE FIRMAR ESTATUTOS");
+            if(!document.getElementById('checkRGPD').checked) return alert("FIRME ESTATUTOS");
 
             const existe = db.find(x => x.dni.toUpperCase() === dniVal);
             if(existe) {
                 if(existe.dentro) alert("YA ESTÁ DENTRO");
                 else { existe.dentro = true; aforo++; abrirTarjeta(existe); }
             } else {
-                const s = { id:"Nº "+(db.length+1), dni:dniVal, nombre:nomVal, email:document.getElementById('mail').value, cumple:document.getElementById('cumple').value, cat:document.getElementById('cat').value, dentro:true, hora:new Date().toLocaleTimeString(), firma: socioActual ? socioActual.firma : null };
+                const s = { id:"Nº "+(db.length+1), dni:dniVal, nombre:nomVal, email:document.getElementById('mail').value, cumple:document.getElementById('cumple').value, cat:document.getElementById('cat').value, pagado:false, vetado:false, motivo:"", dentro:true, hora:new Date().toLocaleTimeString(), firma: socioActual ? socioActual.firma : null };
                 db.unshift(s); aforo++;
                 await _supabase.from('socios').insert([s]);
                 abrirTarjeta(s);
@@ -204,45 +203,30 @@
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td>
-                    <td>${nivel === 'jefe' ? s.dni : '***HIDDEN***'}</td>
-                    <td>${s.nombre}</td>
-                    <td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td>
-                    <td>${s.motivo || '-'}</td>
-                    <td>${s.hora || '-'}</td>
+                    <td>${nivel === 'jefe' ? s.dni : '***OCULTO***'}</td>
+                    <td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button onclick="toggleEntrada('${s.dni}')">🚪</button>
+                        <button onclick="tVeto('${s.id}')">🚫</button>
                         <button onclick="reAbrir('${s.id}')">🪪</button>
                         ${nivel==='jefe' ? `<button onclick="borrar('${s.id}')">🗑️</button>` : ''}
                     </td>
                 </tr>`).join('');
         }
 
-        function toggleEntrada(dni) {
-            const s = db.find(x => x.dni === dni);
-            s.dentro = !s.dentro;
-            aforo = db.filter(x => x.dentro).length;
-            save(); render();
-        }
-
-        function abrirTarjeta(s) {
-            socioActual = s;
-            document.getElementById('card-id').innerText = s.id;
-            document.getElementById('card-nom').innerText = s.nombre;
-            document.getElementById('card-dni').innerText = nivel === 'jefe' ? s.dni : '***HIDDEN***';
-            document.getElementById('qr-space').innerHTML = "";
-            let q = document.createElement('canvas');
-            new QRious({element: q, value: s.dni, size: 140});
-            document.getElementById('qr-space').appendChild(q);
-            document.getElementById('modalTarjeta').style.display = 'flex';
-        }
-
+        function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); s.dentro = !s.dentro; aforo = db.filter(x => x.dentro).length; save(); render(); }
+        function tVeto(id) { const s = db.find(x => x.id === id); if(!s.vetado) { const m = prompt("MOTIVO:"); if(m){s.vetado=true; s.motivo=m;} } else { s.vetado=false; s.motivo=""; } save(); render(); }
+        function abrirTarjeta(s) { socioActual = s; document.getElementById('card-id').innerText = s.id; document.getElementById('card-nom').innerText = s.nombre; document.getElementById('card-dni').innerText = (nivel==='jefe'?s.dni:'***'); document.getElementById('qr-space').innerHTML = ""; let q = document.createElement('canvas'); new QRious({element: q, value: s.dni, size: 140}); document.getElementById('qr-space').appendChild(q); document.getElementById('modalTarjeta').style.display = 'flex'; }
         function gestionarEstatutos() { document.getElementById('modalTarjeta').style.display = 'flex'; document.getElementById('box-firma').style.display = 'block'; ctx.clearRect(0,0,canvas.width,canvas.height); }
         function guardarFirmaSocio() { if(socioActual) socioActual.firma = canvas.toDataURL(); document.getElementById('checkRGPD').checked = true; document.getElementById('box-firma').style.display = 'none'; }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; }
         function save() { localStorage.setItem('db_el6_v3', JSON.stringify(db)); localStorage.setItem('aforo_el6_v3', aforo); }
+        function borrar(id) { if(confirm("¿Borrar?")) { db = db.filter(x => x.id !== id); save(); render(); } }
+        function resetJornada() { if(confirm("¿Cerrar?")){ db.forEach(s => s.dentro = false); aforo = 0; save(); render(); } }
         function descargarTarjeta() { html2canvas(document.getElementById('cardMain')).then(can => { let l = document.createElement('a'); l.download='TARJETA.png'; l.href=can.toDataURL(); l.click(); }); }
         function reAbrir(id) { abrirTarjeta(db.find(x=>x.id===id)); }
+        function exportarExcel() { let csv = "ID,NOMBRE,DNI\n" + db.map(s => `${s.id},${s.nombre},${s.dni}`).join("\n"); let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'EL6.csv'; l.click(); }
         
         // Firma
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
