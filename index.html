@@ -114,19 +114,7 @@
         <div id="box-firma" style="display:none;">
             <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center;">ESTATUTOS Y PRIVACIDAD</h3>
             <div class="texto-legal">
-                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL, NORMATIVA SANCIONADORA Y POLÍTICA DE PRIVACIDAD (RGPD-ESPAÑA)</strong></p>
-                <p>1. RESPONSABILIDAD ABSOLUTA DE ACCESO: El código de acceso facilitado es personal, secreto e intransferible...</p>
-                <p>2. EXONERACIÓN DE RESPONSABILIDAD CIVIL Y PENAL...</p>
-                <p>3. PROTECCIÓN DE DATOS Y SEGURIDAD...</p>
-                <p>4. DERECHO AL OLVIDO Y PROTOCOLO DE BORRADO...</p>
-                <p>5. VIGILANCIA ACTIVA Y DERECHOS DE IMAGEN...</p>
-                <p>6. OBJETOS PERSONALES, ROBOS Y HURTOS...</p>
-                <p>7. RÉGIMEN DISCIPLINARIO Y EXPULSIÓN...</p>
-                <p>8. DAÑOS PATRIMONIALES...</p>
-                <p>9. DISPOSITIVOS DE ACCESO FÍSICO...</p>
-                <p>10. MODIFICACIÓN UNILATERAL DE NORMAS...</p>
-                <p>11. CLÁUSULA DE FUERZA MAYOR...</p>
-                <p>12. JURISDICCIÓN Y LEY APLICABLE...</p>
+                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL...</strong> (Contenido omitido por brevedad, mantén el tuyo)</p>
             </div>
             <canvas id="canvasFirma" width="320" height="100"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
@@ -188,11 +176,7 @@
 
         async function refrescarDatos() {
             const { data, error } = await _supabase.from('socios').select('*').order('created_at', { ascending: false });
-            if(!error && data) { 
-                db = data; 
-                aforo = db.filter(x => x.dentro).length;
-                render();
-            }
+            if(!error && data) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
         }
         
         function cerrarSesion() { 
@@ -215,17 +199,15 @@
             const existe = db.find(x => x.dni.toUpperCase() === dniVal);
             
             if(existe) {
-                if(existe.dentro) { 
-                    alert("YA ESTÁ DENTRO"); 
-                } else { 
-                    const h = new Date().toLocaleTimeString();
-                    await _supabase.from('socios').update({ dentro: true, hora: h }).eq('dni', dniVal);
+                if(existe.dentro) { alert("YA ESTÁ DENTRO"); } 
+                else { 
+                    await _supabase.from('socios').update({ dentro: true, hora: new Date().toLocaleTimeString() }).eq('dni', dniVal);
                     await refrescarDatos();
                     abrirTarjeta(db.find(x => x.dni === dniVal)); 
                 }
             } else {
+                // He quitado el campo 'id' de aquí para que Supabase lo asigne automáticamente y no dé error
                 const nuevoSocio = { 
-                    id: "Nº " + (db.length + 1), 
                     dni: dniVal, 
                     nombre: nomVal, 
                     email: mailVal, 
@@ -239,7 +221,7 @@
                     rgpd_fecha: new Date().toLocaleString() 
                 };
                 const { error } = await _supabase.from('socios').insert([nuevoSocio]);
-                if (error) { alert("Error al registrar"); console.log(error); }
+                if (error) { alert("Error: " + error.message); }
                 else {
                     await refrescarDatos();
                     abrirTarjeta(db.find(x => x.dni === dniVal));
@@ -271,16 +253,16 @@
         async function toggleEntrada(dni) {
             const s = db.find(x => x.dni === dni);
             const nuevoEstado = !s.dentro;
-            const horaActual = nuevoEstado ? new Date().toLocaleTimeString() : s.hora;
-            await _supabase.from('socios').update({ dentro: nuevoEstado, hora: horaActual }).eq('dni', dni);
+            const h = nuevoEstado ? new Date().toLocaleTimeString() : s.hora;
+            await _supabase.from('socios').update({ dentro: nuevoEstado, hora: h }).eq('dni', dni);
             await refrescarDatos();
         }
 
         async function tVeto(dni) {
             const s = db.find(x => x.dni === dni);
-            let mot = "";
+            let mot = s.motivo;
             if(!s.vetado) { mot = prompt("MOTIVO:"); if(!mot) return; }
-            await _supabase.from('socios').update({ vetado: !s.vetado, motivo: mot }).eq('dni', dni);
+            await _supabase.from('socios').update({ vetado: !s.vetado, motivo: !s.vetado ? mot : "" }).eq('dni', dni);
             await refrescarDatos();
         }
 
@@ -316,14 +298,12 @@
         }
 
         async function guardarFirmaSocio() { 
-            if(socioActual || document.getElementById('dni').value) { 
-                const d = socioActual ? socioActual.dni : document.getElementById('dni').value.toUpperCase();
-                const f = canvas.toDataURL();
-                await _supabase.from('socios').update({ firma: f }).eq('dni', d);
-                document.getElementById('checkRGPD').checked = true;
-                alert("FIRMA GUARDADA"); 
-                document.getElementById('box-firma').style.display = 'none'; 
-            } else { alert("Introduce DNI primero"); }
+            const d = socioActual ? socioActual.dni : document.getElementById('dni').value.toUpperCase();
+            if(!d) { alert("Introduce DNI"); return; }
+            await _supabase.from('socios').update({ firma: canvas.toDataURL() }).eq('dni', d);
+            document.getElementById('checkRGPD').checked = true;
+            alert("FIRMA GUARDADA"); 
+            document.getElementById('box-firma').style.display = 'none'; 
         }
 
         function descargarTarjeta() { html2canvas(document.getElementById('cardMain')).then(can => { let l = document.createElement('a'); l.download='TARJETA_EL6.png'; l.href=can.toDataURL(); l.click(); }); }
@@ -331,7 +311,7 @@
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
         async function borrar(dni) { if(confirm("¿Borrar?")) { await _supabase.from('socios').delete().eq('dni', dni); await refrescarDatos(); } }
         async function resetJornada() { if(confirm("¿Cerrar noche?")){ await _supabase.from('socios').update({ dentro: false }); await refrescarDatos(); } }
-        
+        function exportarExcel() { let csv = "ID,NOMBRE,DNI,HORA\n" + db.map(s => `${s.id},${s.nombre},${s.dni},${s.hora}`).join("\n"); let l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); l.download = 'EL6.csv'; l.click(); }
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         function start(e) { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
         function move(e) { if (!dibujando) return; e.preventDefault(); const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
