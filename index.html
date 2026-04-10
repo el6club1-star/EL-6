@@ -201,15 +201,27 @@
         async function registrar() {
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
             const nomVal = document.getElementById('nom').value.trim();
+            const cumpleVal = document.getElementById('cumple').value;
             const rgpd = document.getElementById('checkRGPD').checked;
             if(!dniVal || !nomVal) { alert("RELLENA DNI Y NOMBRE"); return; }
             if(!rgpd) { alert("DEBE FIRMAR LOS ESTATUTOS PRIMERO"); gestionarEstatutos(); return; }
+            
+            // BLOQUE EDAD
+            if(cumpleVal) {
+                const hoy = new Date();
+                const cumpleDate = new Date(cumpleVal);
+                let edad = hoy.getFullYear() - cumpleDate.getFullYear();
+                const m = hoy.getMonth() - cumpleDate.getMonth();
+                if (m < 0 || (m === 0 && hoy.getDate() < cumpleDate.getDate())) { edad--; }
+                if(edad < 18) { alert("ENTRADA DENEGADA: MENOR DE EDAD (" + edad + " años)"); return; }
+            }
+
             const existe = db.find(x => x.dni === dniVal);
             const horaH = new Date().toLocaleTimeString();
             if(existe) {
                 await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
             } else {
-                await _supabase.from(NOMBRE_TABLA).insert([{ dni: dniVal, nombre: nomVal, email: document.getElementById('mail').value.trim(), cumple: document.getElementById('cumple').value || null, cat: document.getElementById('cat').value, pagado: false, vetado: false, dentro: true, hora: horaH }]);
+                await _supabase.from(NOMBRE_TABLA).insert([{ dni: dniVal, nombre: nomVal, email: document.getElementById('mail').value.trim(), cumple: cumpleVal || null, cat: document.getElementById('cat').value, pagado: false, vetado: false, dentro: true, hora: horaH }]);
             }
             await refrescarDatos();
             abrirTarjeta(db.find(x => x.dni === dniVal));
@@ -222,7 +234,6 @@
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
             
-            // SI ES PERSONAL, SOLO MUESTRA SI BUSCA
             if(nivel === "personal" && b === "") { f = []; }
 
             document.getElementById('st-total').innerText = db.length; 
@@ -230,7 +241,6 @@
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             
             document.getElementById('lista').innerHTML = f.map(s => {
-                // OFUSCAR DNI SI ES PERSONAL (Ej: 12***678A)
                 let dniMostrar = s.dni;
                 if(nivel === "personal" && s.dni.length > 4) {
                     dniMostrar = s.dni.substring(0,2) + "****" + s.dni.substring(s.dni.length - 3);
