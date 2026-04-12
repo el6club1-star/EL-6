@@ -126,7 +126,18 @@
             <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center; color: black;">ESTATUTOS Y PRIVACIDAD</h3>
             <div class="texto-legal">
                 <p><strong>CONTRATO DE ADHESIÓN INTEGRAL, NORMATIVA SANCIONADORA Y POLÍTICA DE PRIVACIDAD (RGPD-ESPAÑA)</strong></p>
-                <p>... (Texto de estatutos omitido por brevedad, igual al original) ...</p>
+                <p>1. RESPONSABILIDAD ABSOLUTA DE ACCESO: El código de acceso facilitado es personal e intransferible. El socio es el único responsable legal de su custodia.</p>
+                <p>2. EXONERACIÓN DE RESPONSABILIDAD: EL 6 y su dirección quedan exentos de toda responsabilidad por lesiones, accidentes o fallecimiento derivado del uso de las instalaciones.</p>
+                <p>3. PROTECCIÓN DE DATOS (RGPD): Sus datos personales son tratados bajo la estricta responsabilidad de la dirección para la gestión de su membresía y control de seguridad.</p>
+                <p>4. DERECHO AL OLVIDO: El socio puede solicitar la supresión de sus datos enviando un email a El6club1@gmail.com.</p>
+                <p>5. VIGILANCIA ACTIVA: El recinto cuenta con sistemas de videovigilancia las 24 horas por razones de seguridad.</p>
+                <p>6. OBJETOS PERSONALES: El club no se hace responsable de la pérdida, robo o hurto de pertenencias personales dentro del recinto.</p>
+                <p>7. RÉGIMEN DISCIPLINARIO: La dirección se reserva el derecho de admisión. Cualquier comportamiento inapropiado será motivo de baja definitiva.</p>
+                <p>8. DAÑOS PATRIMONIALES: Cualquier daño causado por mal uso en el material del club será responsabilidad directa del socio.</p>
+                <p>9. DISPOSITIVOS DE ACCESO FÍSICO: Las llaves o mandos entregados son propiedad del club y deben devolverse al finalizar la membresía.</p>
+                <p>10. MODIFICACIÓN DE NORMAS: La dirección se reserva el derecho a modificar el reglamento interno comunicándolo con antelación.</p>
+                <p>11. FUERZA MAYOR: El club no indemnizará por cierres debidos a catástrofes naturales, pandemias o decisiones de las autoridades.</p>
+                <p>12. JURISDICCIÓN: Este contrato se rige por la legislación española, sometiéndose a los Juzgados y Tribunales de MADRID.</p>
             </div>
             <canvas id="canvasFirma" width="320" height="100"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
@@ -159,7 +170,6 @@
 
         async function modificarConsumos(valor) {
             if(!socioActual) return;
-            // SI FALLA LA COLUMNA CONSUMICIONES, ESTA FUNCIÓN NO BLOQUEARÁ EL RESTO
             try {
                 const nuevos = (socioActual.consumiciones || 0) + valor;
                 if(nuevos < 0) return;
@@ -221,7 +231,7 @@
             
             let res;
             if(existe) {
-                res = await _supabase.from(NOMBRE_TABFA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
+                res = await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
             } else {
                 res = await _supabase.from(NOMBRE_TABLA).insert([{ 
                     dni: dniVal, nombre: nomVal, email: document.getElementById('mail').value.trim(), 
