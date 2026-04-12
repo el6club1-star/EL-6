@@ -95,13 +95,11 @@
             <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
             <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;">Nº 000</div>
             <div id="qr-space"></div>
-            
             <div class="box-consumiciones">
                 <button class="btn-cant" onclick="modificarConsumos(-1)">-</button>
                 <div style="font-size:11px;">CONSUMOS: <span id="card-consumos" style="font-weight:bold; font-size:16px;">0</span></div>
                 <button class="btn-cant" onclick="modificarConsumos(1)">+</button>
             </div>
-
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
                 <p>SOCIO: <span id="card-nom" style="float:right; font-weight:bold;">---</span></p>
                 <p>DNI: <span id="card-dni" style="float:right; font-weight:bold;">---</span></p>
@@ -111,26 +109,26 @@
         <div id="box-firma">
             <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center;">ESTATUTOS Y PRIVACIDAD</h3>
             <div class="texto-legal">
-                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL, NORMATIVA SANCIONADORA Y POLÍTICA DE PRIVACIDAD (RGPD-ESPAÑA)</strong></p>
-                <p>1. RESPONSABILIDAD ABSOLUTA DE ACCESO: El código de acceso facilitado es personal, secreto e intransferible. El socio es el único responsable legal de su custodia. El registro electrónico generado por el sistema se considera prueba irrefutable de la presencia del socio.</p>
-                <p>2. EXONERACIÓN DE RESPONSABILIDAD CIVIL Y PENAL: El socio manifiesta poseer las condiciones físicas óptimas. EL 6 y su dirección quedan exentos de toda responsabilidad por lesiones, accidentes o fallecimiento derivado del uso de las instalaciones.</p>
-                <p>3. PROTECCIÓN DE DATOS Y SEGURIDAD (LOPDGDD 3/2018): Sus datos personales son tratados bajo la estricta responsabilidad de la dirección para la gestión de su membresía y control de seguridad.</p>
-                <p>4. DERECHO AL OLVIDO Y PROTOCOLO DE BORRADO: El socio puede solicitar la supresión de sus datos enviando un email a El6club1@gmail.com. El club procederá a la eliminación en un máximo de 72 horas.</p>
-                <p>5. VIGILANCIA ACTIVA Y DERECHOS DE IMAGEN: El recinto cuenta con sistemas de videovigilancia las 24 horas. El socio consiente expresamente la grabación de su imagen por razones de seguridad.</p>
-                <p>6. OBJETOS PERSONALES, ROBOS Y HURTOS: El club no se hace responsable de la pérdida, robo o hurto de pertenencias personales dentro o en las inmediaciones de las instalaciones.</p>
-                <p>7. RÉGIMEN DISCIPLINARIO Y EXPULSIÓN: La dirección se reserva el derecho de admisión. Cualquier falta de respeto o comportamiento inapropiado será motivo de baja definitiva sin derecho a reembolso.</p>
-                <p>8. DAÑOS PATRIMONIALES: Cualquier daño causado por mal uso o negligencia en el material del club será responsabilidad directa del socio, quien deberá abonar el coste íntegro de reparación.</p>
-                <p>9. DISPOSITIVOS DE ACCESO FÍSICO: Si se entregan llaves o mandos, son propiedad del club. En caso de pérdida, el socio deberá abonar los gastos de reposición y cambio de cerraduras si fuera necesario.</p>
-                <p>10. MODIFICACIÓN UNILATERAL DE NORMAS: La dirección se reserva el derecho a modificar el reglamento interno, horarios y cuotas comunicándolo con una antelación mínima de 15 días.</p>
-                <p>11. CLÁUSULA DE FUERZA MAYOR: El club no indemnizará por cierres temporales o definitivos debidos a catástrofes naturales, huelgas, pandemias o decisiones de las autoridades competentes.</p>
-                <p>12. JURISDICCIÓN Y LEY APLICABLE: Este contrato se rige por la legislación española. Ambas partes se someten voluntariamente a los Juzgados y Tribunales de la ciudad de MADRID.</p>
+                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL EL 6</strong></p>
+                <p>1. RESPONSABILIDAD ABSOLUTA DE ACCESO: El código facilitado es personal e intransferible.</p>
+                <p>2. EXONERACIÓN DE RESPONSABILIDAD: El club queda exento de toda responsabilidad por lesiones o accidentes.</p>
+                <p>3. PROTECCIÓN DE DATOS: Datos tratados bajo LOPDGDD 3/2018.</p>
+                <p>4. DERECHO AL OLVIDO: Solicitud de borrado vía El6club1@gmail.com.</p>
+                <p>5. VIGILANCIA: Recinto bajo videovigilancia 24h.</p>
+                <p>6. OBJETOS PERSONALES: El club no se hace responsable de robos o pérdidas.</p>
+                <p>7. RÉGIMEN DISCIPLINARIO: La dirección se reserva el derecho de admisión y expulsión.</p>
+                <p>8. DAÑOS PATRIMONIALES: El socio abonará cualquier daño causado por mal uso.</p>
+                <p>9. DISPOSITIVOS DE ACCESO: Llaves y mandos son propiedad del club.</p>
+                <p>10. MODIFICACIÓN DE NORMAS: El club puede variar el reglamento interno.</p>
+                <p>11. FUERZA MAYOR: No hay indemnización por cierres de autoridades.</p>
+                <p>12. JURISDICCIÓN: Sometimiento a los Tribunales de MADRID.</p>
             </div>
             <canvas id="canvasFirma" width="320" height="100"></canvas>
-            <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
+            <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold;">ACEPTAR Y FIRMAR</button>
         </div>
 
         <div class="card-actions">
-            <button class="btn-card btn-pay" onclick="marcarPago()">PAGAR</button>
+            <button class="btn-card" style="background:var(--success); color:white;" onclick="marcarPago()">PAGAR</button>
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
             <button class="btn-card" style="background:white;" onclick="cerrar()">CERRAR</button>
         </div>
@@ -157,7 +155,7 @@
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
             if(p === "1234" || p === "0000") {
-                nivel = p === "1234" ? "jefe" : "personal";
+                nivel = (p === "1234") ? "jefe" : "personal";
                 document.getElementById('pantallaLogin').style.display='none';
                 document.getElementById('principal').style.display='block';
                 document.getElementById('btnLogout').style.display='block';
@@ -189,7 +187,6 @@
             const f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
             document.getElementById('st-total').innerText = db.length;
             document.getElementById('st-aforo').innerText = db.filter(x => x.dentro).length;
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             document.getElementById('lista').innerHTML = f.map(s => `<tr><td>${s.id||'-'}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td><td>${s.dentro?'🟢':'⚪'}</td><td><button onclick="reAbrir('${s.dni}')">TARJETA</button></td></tr>`).join('');
         }
 
@@ -220,32 +217,28 @@
         function guardarFirmaSocio() {
             document.getElementById('checkRGPD').checked = true;
             cerrar();
-            alert("FIRMA REGISTRADA TEMPORALMENTE");
         }
 
         async function modificarConsumos(v) {
             if(!socioActual) return;
-            try {
-                const n = (socioActual.consumiciones || 0) + v;
-                if(n < 0) return;
-                await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni);
-                document.getElementById('card-consumos').innerText = n;
-                socioActual.consumiciones = n;
-                refrescarDatos();
-            } catch(e) {}
+            const n = (socioActual.consumiciones || 0) + v;
+            if(n < 0) return;
+            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni);
+            socioActual.consumiciones = n;
+            document.getElementById('card-consumos').innerText = n;
+            refrescarDatos();
         }
 
         async function marcarPago() {
             const nuevo = !socioActual.pagado;
             await _supabase.from(NOMBRE_TABLA).update({ pagado: nuevo }).eq('dni', socioActual.dni);
-            document.getElementById('selloPagado').style.display = nuevo ? 'block' : 'none';
             socioActual.pagado = nuevo;
+            document.getElementById('selloPagado').style.display = nuevo ? 'block' : 'none';
             refrescarDatos();
         }
 
         function descargarTarjeta() {
-            const node = document.getElementById('cardMain');
-            html2canvas(node, { scale: 2, backgroundColor: "#000000", useCORS: true }).then(can => {
+            html2canvas(document.getElementById('cardMain'), { scale: 2, backgroundColor: "#000000", useCORS: true }).then(can => {
                 const link = document.createElement('a');
                 link.download = `TARJETA_${socioActual.dni}.png`;
                 link.href = can.toDataURL();
@@ -256,12 +249,14 @@
         function reAbrir(dni) { abrirTarjeta(db.find(x => x.dni === dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; }
         function cerrarSesion() { location.href = location.href; }
+
+        // Lógica de Firma
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
-        function start(e) { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
-        function move(e) { if (!dibujando) return; e.preventDefault(); const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
-        function stop() { dibujando = false; }
-        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', stop);
-        canvas.addEventListener('touchstart', start); canvas.addEventListener('touchmove', move); canvas.addEventListener('touchend', stop);
+        canvas.addEventListener('mousedown', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('mousemove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
+        window.addEventListener('mouseup', () => dibujando = false);
+        canvas.addEventListener('touchstart', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); });
+        canvas.addEventListener('touchmove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } e.preventDefault(); });
     </script>
 </body>
 </html>
