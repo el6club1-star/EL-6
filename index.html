@@ -27,19 +27,25 @@
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 15px; color: var(--gold); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
         td { padding: 18px 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        .fila-vetada { background-color: #fee2e2 !important; color: #b91c1c !important; }
         #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; flex-direction: column; overflow-y: auto; padding: 20px 0; }
         .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; }
         #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
+        
         .box-consumiciones { background: rgba(255,255,255,0.1); border: 1px solid var(--gold); border-radius: 10px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
         .btn-cant { background: var(--gold); color: black; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        
         .card-actions { display: flex; gap: 10px; margin-top: 15px; width: 320px; }
         .btn-card { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
+        .btn-pay { background: var(--success); color: white; }
         .btn-send { background: var(--gold); color: black; }
-        #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; display: none; }
+        #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
         .texto-legal { font-size: 10px; text-align: justify; height: 180px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.4; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
         .rgpd-box { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: 12px; margin-top: 10px; }
+        .rgpd-box input { width: auto; }
+        .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
     </style>
 </head>
 <body>
@@ -55,6 +61,9 @@
     <div class="container" id="principal">
         <header>
             <button class="btn-reset-noche" id="btnReset" onclick="resetJornada()">🔄 REINICIAR NOCHE</button>
+            <div class="admin-btns" id="adminExtra" style="display:none;">
+                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA</button>
+            </div>
             <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 EXCEL</button>
             <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
         </header>
@@ -76,8 +85,8 @@
             </div>
             <button class="btn-add" onclick="registrar()">REGISTRAR</button>
             <div class="rgpd-box">
-                <input type="checkbox" id="checkRGPD">
-                <label for="checkRGPD">Acepto la <a href="javascript:void(0)" onclick="abrirFirma()">Política de Privacidad y Estatutos</a>.</label>
+                <input type="checkbox" id="checkRGPD" checked>
+                <label for="checkRGPD">Acepto estatutos y privacidad.</label>
             </div>
         </div>
 
@@ -95,40 +104,21 @@
             <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
             <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;">Nº 000</div>
             <div id="qr-space"></div>
+            
             <div class="box-consumiciones">
                 <button class="btn-cant" onclick="modificarConsumos(-1)">-</button>
                 <div style="font-size:11px;">CONSUMOS: <span id="card-consumos" style="font-weight:bold; font-size:16px;">0</span></div>
                 <button class="btn-cant" onclick="modificarConsumos(1)">+</button>
             </div>
+
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
                 <p>SOCIO: <span id="card-nom" style="float:right; font-weight:bold;">---</span></p>
                 <p>DNI: <span id="card-dni" style="float:right; font-weight:bold;">---</span></p>
             </div>
         </div>
 
-        <div id="box-firma">
-            <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center;">ESTATUTOS Y PRIVACIDAD</h3>
-            <div class="texto-legal">
-                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL EL 6</strong></p>
-                <p>1. RESPONSABILIDAD ABSOLUTA DE ACCESO: El código facilitado es personal e intransferible.</p>
-                <p>2. EXONERACIÓN DE RESPONSABILIDAD: El club queda exento de toda responsabilidad por lesiones o accidentes.</p>
-                <p>3. PROTECCIÓN DE DATOS: Datos tratados bajo LOPDGDD 3/2018.</p>
-                <p>4. DERECHO AL OLVIDO: Solicitud de borrado vía El6club1@gmail.com.</p>
-                <p>5. VIGILANCIA: Recinto bajo videovigilancia 24h.</p>
-                <p>6. OBJETOS PERSONALES: El club no se hace responsable de robos o pérdidas.</p>
-                <p>7. RÉGIMEN DISCIPLINARIO: La dirección se reserva el derecho de admisión y expulsión.</p>
-                <p>8. DAÑOS PATRIMONIALES: El socio abonará cualquier daño causado por mal uso.</p>
-                <p>9. DISPOSITIVOS DE ACCESO: Llaves y mandos son propiedad del club.</p>
-                <p>10. MODIFICACIÓN DE NORMAS: El club puede variar el reglamento interno.</p>
-                <p>11. FUERZA MAYOR: No hay indemnización por cierres de autoridades.</p>
-                <p>12. JURISDICCIÓN: Sometimiento a los Tribunales de MADRID.</p>
-            </div>
-            <canvas id="canvasFirma" width="320" height="100"></canvas>
-            <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold;">ACEPTAR Y FIRMAR</button>
-        </div>
-
         <div class="card-actions">
-            <button class="btn-card" style="background:var(--success); color:white;" onclick="marcarPago()">PAGAR</button>
+            <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
             <button class="btn-card" style="background:white;" onclick="cerrar()">CERRAR</button>
         </div>
@@ -141,21 +131,18 @@
         const NOMBRE_TABLA = 'socios';
 
         let db = []; let socioActual = null; let nivel = "personal";
-        const canvas = document.getElementById('canvasFirma');
-        const ctx = canvas.getContext('2d');
-        let dibujando = false;
 
         async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
                 if(!error) { db = data; render(); }
-            } catch (e) {}
+            } catch (e) { console.error("Error de conexión"); }
         }
 
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
             if(p === "1234" || p === "0000") {
-                nivel = (p === "1234") ? "jefe" : "personal";
+                nivel = p === "1234" ? "jefe" : "personal";
                 document.getElementById('pantallaLogin').style.display='none';
                 document.getElementById('principal').style.display='block';
                 document.getElementById('btnLogout').style.display='block';
@@ -172,61 +159,65 @@
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
             const nomVal = document.getElementById('nom').value.trim();
             if(!dniVal || !nomVal) return alert("RELLENA DNI Y NOMBRE");
-            if(!document.getElementById('checkRGPD').checked) return alert("DEBE FIRMAR LOS ESTATUTOS");
 
             await _supabase.from(NOMBRE_TABLA).upsert([{ 
                 dni: dniVal, nombre: nomVal, cat: document.getElementById('cat').value, dentro: true 
             }]);
             
             await refrescarDatos();
-            abrirTarjeta(db.find(x => x.dni === dniVal));
+            const s = db.find(x => x.dni === dniVal);
+            abrirTarjeta(s);
         }
 
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             const f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+            
             document.getElementById('st-total').innerText = db.length;
             document.getElementById('st-aforo').innerText = db.filter(x => x.dentro).length;
-            document.getElementById('lista').innerHTML = f.map(s => `<tr><td>${s.id||'-'}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td><td>${s.dentro?'🟢':'⚪'}</td><td><button onclick="reAbrir('${s.dni}')">TARJETA</button></td></tr>`).join('');
+            
+            document.getElementById('lista').innerHTML = f.map(s => `
+                <tr class="${s.vetado ? 'fila-vetada' : ''}">
+                    <td>${s.id || '-'}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.dentro ? '🟢' : '⚪'}</td>
+                    <td><button onclick="reAbrir('${s.dni}')">TARJETA</button></td>
+                </tr>`).join('');
         }
 
         function abrirTarjeta(s) {
             if(!s) return;
             socioActual = s;
-            document.getElementById('cardMain').style.display = 'block';
-            document.getElementById('box-firma').style.display = 'none';
+            const c = document.getElementById('cardMain');
+            c.style.background = "black"; c.style.color = "white";
+            if(s.cat === "VIP Gold") c.style.background = "linear-gradient(145deg, #bf953f, #4d3a14)";
+            if(s.cat === "Elite") { c.style.background = "white"; c.style.color = "black"; }
+
             document.getElementById('card-id').innerText = "Nº " + (s.id || "0");
             document.getElementById('card-nom').innerText = s.nombre;
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
             document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none';
+            
             document.getElementById('qr-space').innerHTML = "";
             const qr = new QRious({ value: s.dni, size: 200 });
-            const img = document.createElement('img'); img.src = qr.toDataURL(); img.style.width = "140px";
+            const img = document.createElement('img');
+            img.src = qr.toDataURL();
+            img.style.width = "140px";
             document.getElementById('qr-space').appendChild(img);
+            
             document.getElementById('modalTarjeta').style.display = 'flex';
-        }
-
-        function abrirFirma() {
-            document.getElementById('modalTarjeta').style.display = 'flex';
-            document.getElementById('cardMain').style.display = 'none';
-            document.getElementById('box-firma').style.display = 'block';
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-        }
-
-        function guardarFirmaSocio() {
-            document.getElementById('checkRGPD').checked = true;
-            cerrar();
         }
 
         async function modificarConsumos(v) {
             if(!socioActual) return;
-            const n = (socioActual.consumiciones || 0) + v;
-            if(n < 0) return;
-            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni);
-            socioActual.consumiciones = n;
-            document.getElementById('card-consumos').innerText = n;
-            refrescarDatos();
+            try {
+                const n = (socioActual.consumiciones || 0) + v;
+                if(n < 0) return;
+                await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni);
+                socioActual.consumiciones = n;
+                document.getElementById('card-consumos').innerText = n;
+                refrescarDatos();
+            } catch(e) {}
         }
 
         async function marcarPago() {
@@ -238,7 +229,8 @@
         }
 
         function descargarTarjeta() {
-            html2canvas(document.getElementById('cardMain'), { scale: 2, backgroundColor: "#000000", useCORS: true }).then(can => {
+            const node = document.getElementById('cardMain');
+            html2canvas(node, { scale: 2, backgroundColor: "#000000", useCORS: true }).then(can => {
                 const link = document.createElement('a');
                 link.download = `TARJETA_${socioActual.dni}.png`;
                 link.href = can.toDataURL();
@@ -249,14 +241,6 @@
         function reAbrir(dni) { abrirTarjeta(db.find(x => x.dni === dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; }
         function cerrarSesion() { location.href = location.href; }
-
-        // Lógica de Firma
-        function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
-        canvas.addEventListener('mousedown', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-        canvas.addEventListener('mousemove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
-        window.addEventListener('mouseup', () => dibujando = false);
-        canvas.addEventListener('touchstart', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); });
-        canvas.addEventListener('touchmove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } e.preventDefault(); });
     </script>
 </body>
 </html>
