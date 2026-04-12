@@ -28,8 +28,10 @@
         th { text-align: left; padding: 15px; color: var(--gold); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
         td { padding: 18px 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
         .fila-vetada { background-color: #fee2e2 !important; color: #b91c1c !important; }
+        
         #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; flex-direction: column; overflow-y: auto; padding: 20px 0; }
-        .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; }
+        
+        .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; }
         #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
         
@@ -41,6 +43,7 @@
         .btn-pay { background: var(--success); color: white; }
         .btn-send { background: var(--gold); color: black; }
         .btn-rules { background: #3b82f6; color: white; }
+
         #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
         .texto-legal { font-size: 10px; text-align: justify; height: 180px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.4; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
@@ -116,8 +119,8 @@
             </div>
 
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
-                <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
-                <p>DNI: <span id="card-dni" style="float:right;">---</span></p>
+                <p>SOCIO: <span id="card-nom" style="float:right; font-weight:bold;">---</span></p>
+                <p>DNI: <span id="card-dni" style="float:right; font-weight:bold;">---</span></p>
                 <p style="font-size:8px; margin-top:5px; opacity:0.7;">Acepta estatutos y RGPD mediante firma digital vinculada.</p>
             </div>
         </div>
@@ -125,8 +128,19 @@
         <div id="box-firma" style="display:none;">
             <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center; color: black;">ESTATUTOS Y PRIVACIDAD</h3>
             <div class="texto-legal">
-                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL, NORMATIVA SANCIONADORA Y POLÍTICA DE PRIVACIDAD (RGPD-ESPAÑA)</strong></p>
-                <p>... (Texto de estatutos omitido por brevedad, igual al original) ...</p>
+                <p><strong>CONTRATO DE ADHESIÓN INTEGRAL Y NORMATIVA INTERNA</strong></p>
+                <p>1. ACCESO: El código de acceso es personal e intransferible. El socio es responsable de su custodia.</p>
+                <p>2. EXONERACIÓN: El club no se hace responsable de lesiones o accidentes fortuitos en las instalaciones.</p>
+                <p>3. PRIVACIDAD: Los datos se tratan según RGPD únicamente para gestión del club y seguridad.</p>
+                <p>4. SUPRESIÓN: Puede solicitar la baja de sus datos escribiendo a El6club1@gmail.com.</p>
+                <p>5. SEGURIDAD: El recinto dispone de cámaras de vigilancia para protección de los socios.</p>
+                <p>6. PERTENENCIAS: El club no responde por pérdida o robo de objetos personales.</p>
+                <p>7. ADMISIÓN: La dirección se reserva el derecho de admisión por comportamiento indebido.</p>
+                <p>8. DAÑOS: El socio responderá por daños causados intencionadamente al mobiliario.</p>
+                <p>9. MATERIAL: Llaves o mandos son propiedad del club y deben ser devueltos al causar baja.</p>
+                <p>10. CAMBIOS: La normativa puede actualizarse previa comunicación a los socios activos.</p>
+                <p>11. CIERRES: El club no indemnizará por cierres debidos a causas de fuerza mayor o autoridad.</p>
+                <p>12. LEY: Este acuerdo se rige por la ley española y los juzgados de Madrid.</p>
             </div>
             <canvas id="canvasFirma" width="320" height="100"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
@@ -137,7 +151,7 @@
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
             <button class="btn-card btn-rules" onclick="gestionarEstatutos()">FIRMAR ESTATUTOS</button>
         </div>
-        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
+        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc;" onclick="cerrar()">CERRAR</button>
     </div>
 
     <script>
@@ -159,7 +173,6 @@
 
         async function modificarConsumos(valor) {
             if(!socioActual) return;
-            // SI FALLA LA COLUMNA CONSUMICIONES, ESTA FUNCIÓN NO BLOQUEARÁ EL RESTO
             try {
                 const nuevos = (socioActual.consumiciones || 0) + valor;
                 if(nuevos < 0) return;
@@ -169,7 +182,7 @@
                     document.getElementById('card-consumos').innerText = nuevos;
                     refrescarDatos();
                 }
-            } catch(e) { console.log("Consumiciones no disponibles"); }
+            } catch(e) {}
         }
 
         function autocompletarSocio() {
@@ -210,29 +223,22 @@
         async function registrar() {
             const dniVal = document.getElementById('dni').value.trim().toUpperCase();
             const nomVal = document.getElementById('nom').value.trim();
-            const cumpleVal = document.getElementById('cumple').value;
             const rgpd = document.getElementById('checkRGPD').checked;
-            
             if(!dniVal || !nomVal) { alert("RELLENA DNI Y NOMBRE"); return; }
-            if(!rgpd) { alert("DEBE FIRMAR LOS ESTATUTOS PRIMERO"); gestionarEstatutos(); return; }
-            
+            if(!rgpd) { alert("DEBE FIRMAR ESTATUTOS"); gestionarEstatutos(); return; }
             const horaH = new Date().toLocaleTimeString();
             const existe = db.find(x => x.dni === dniVal);
-            
-            let res;
             if(existe) {
-                res = await _supabase.from(NOMBRE_TABFA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
+                await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: horaH }).eq('dni', dniVal);
             } else {
-                res = await _supabase.from(NOMBRE_TABLA).insert([{ 
+                await _supabase.from(NOMBRE_TABLA).insert([{ 
                     dni: dniVal, nombre: nomVal, email: document.getElementById('mail').value.trim(), 
-                    cumple: cumpleVal || null, cat: document.getElementById('cat').value, 
+                    cumple: document.getElementById('cumple').value || null, cat: document.getElementById('cat').value, 
                     pagado: false, vetado: false, dentro: true, hora: horaH
                 }]);
             }
-            
-            const nuevosDatos = await refrescarDatos();
-            const s = nuevosDatos.find(x => x.dni === dniVal);
-            abrirTarjeta(s);
+            const nuevos = await refrescarDatos();
+            abrirTarjeta(nuevos.find(x => x.dni === dniVal));
             limpiarCampos();
         }
 
@@ -241,75 +247,53 @@
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if(nivel === "personal" && b === "") { f = []; }
+            if(nivel === "personal" && b === "") f = [];
             document.getElementById('st-total').innerText = db.length; 
             document.getElementById('st-aforo').innerText = aforo; 
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td><button onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button><button onclick="tVeto('${s.dni}')">VETAR</button><button onclick="reAbrir('${s.dni}')">TARJETA</button></td>
+                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td><button onclick="toggleEntrada('${s.dni}')">E/S</button><button onclick="reAbrir('${s.dni}')">VER</button></td>
                 </tr>`).join('');
         }
 
-        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); const nuevoEstado = !s.dentro; await _supabase.from(NOMBRE_TABLA).update({ dentro: nuevoEstado, hora: nuevoEstado ? new Date().toLocaleTimeString() : s.hora }).eq('dni', dni); await refrescarDatos(); }
-        async function tVeto(dni) { const s = db.find(x => x.dni === dni); let mot = ""; if(!s.vetado) { mot = prompt("MOTIVO DEL VETO:"); if(!mot) return; } await _supabase.from(NOMBRE_TABLA).update({ vetado: !s.vetado, motivo: mot }).eq('dni', dni); await refrescarDatos(); }
+        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); await refrescarDatos(); }
         
         function abrirTarjeta(s) { 
             if(!s) return;
             socioActual = s; 
             const c = document.getElementById('cardMain'); 
             c.style.background = "black"; c.style.color = "white"; 
-            if(s.cat === "VIP Plata") c.style.background = "linear-gradient(145deg, #717171, #2e2e2e)"; 
             if(s.cat === "VIP Gold") c.style.background = "linear-gradient(145deg, #bf953f, #4d3a14)"; 
             if(s.cat === "Elite") { c.style.background = "white"; c.style.color = "black"; } 
-            
             document.getElementById('card-id').innerText = "Nº " + (s.id || "1"); 
-            document.getElementById('card-nom').innerText = s.nombre || "Socio"; 
-            document.getElementById('card-dni').innerText = s.dni || "ID"; 
+            document.getElementById('card-nom').innerText = s.nombre; 
+            document.getElementById('card-dni').innerText = s.dni; 
             document.getElementById('card-consumos').innerText = s.consumiciones || 0; 
             document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; 
-            
             document.getElementById('qr-space').innerHTML = ""; 
-            const qrTemp = new QRious({value: s.dni || "000", size: 250}); 
-            const img = new Image();
-            img.src = qrTemp.toDataURL();
-            img.style.width = "140px";
+            const qr = new QRious({value: s.dni, size: 200}); 
+            const img = new Image(); img.src = qr.toDataURL(); img.style.width = "140px";
             document.getElementById('qr-space').appendChild(img); 
-            
             document.getElementById('modalTarjeta').style.display = 'flex'; 
         }
 
         async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
-        
-        function gestionarEstatutos() { 
-            document.getElementById('modalTarjeta').style.display = 'flex'; 
-            document.getElementById('box-firma').style.display = 'block'; 
-        }
-        
+        function gestionarEstatutos() { document.getElementById('modalTarjeta').style.display = 'flex'; document.getElementById('box-firma').style.display = 'block'; }
         async function guardarFirmaSocio() { 
-            const imgFirma = canvas.toDataURL(); 
-            if(socioActual) { await _supabase.from(NOMBRE_TABLA).update({ firma: imgFirma }).eq('dni', socioActual.dni); } 
-            document.getElementById('checkRGPD').checked = true; 
-            alert("ESTATUTOS FIRMADOS"); 
-            document.getElementById('box-firma').style.display = 'none';
+            if(socioActual) await _supabase.from(NOMBRE_TABLA).update({ firma: canvas.toDataURL() }).eq('dni', socioActual.dni); 
+            document.getElementById('checkRGPD').checked = true; document.getElementById('box-firma').style.display = 'none';
         }
-        
         async function descargarTarjeta() { 
             const node = document.getElementById('cardMain');
-            try {
-                const can = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: "#000000" });
-                const link = document.createElement('a');
-                link.download = `TARJETA_${socioActual.dni}.png`;
-                link.href = can.toDataURL('image/png');
-                link.click();
-            } catch (err) { alert("Error al generar imagen"); }
+            const can = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: "#000000" });
+            const link = document.createElement('a'); link.download = `TARJETA_${socioActual.dni}.png`; link.href = can.toDataURL(); link.click();
         }
-        
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
-        function exportarExcel() { /* Lógica de exportación */ }
+        
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         function start(e) { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
         function move(e) { if (!dibujando) return; e.preventDefault(); const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
