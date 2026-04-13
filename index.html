@@ -231,12 +231,37 @@
         async function registrar() {
             const d = document.getElementById('dni').value.toUpperCase();
             const n = document.getElementById('nom').value;
+            const c = document.getElementById('cumple').value;
+            const m = document.getElementById('mail').value;
+            const cat = document.getElementById('cat').value;
+            
             if(!d || !n) return;
+            
             const h = new Date().toLocaleTimeString();
             const existe = db.find(x => x.dni === d);
-            if(existe) { await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: h }).eq('dni', d); } 
-            else { await _supabase.from(NOMBRE_TABLA).insert([{ dni: d, nombre: n, cat: document.getElementById('cat').value, dentro: true, hora: h }]); }
-            refrescarDatos();
+            let socioParaTarjeta;
+
+            if(existe) { 
+                const { data, error } = await _supabase.from(NOMBRE_TABLA)
+                    .update({ dentro: true, hora: h, nombre: n, cumple: c, email: m, cat: cat })
+                    .eq('dni', d)
+                    .select();
+                if(!error) socioParaTarjeta = data[0];
+            } else { 
+                const { data, error } = await _supabase.from(NOMBRE_TABLA)
+                    .insert([{ dni: d, nombre: n, cumple: c, email: m, cat: cat, dentro: true, hora: h }])
+                    .select();
+                if(!error) socioParaTarjeta = data[0];
+            }
+
+            document.getElementById('dni').value = "";
+            document.getElementById('nom').value = "";
+            document.getElementById('cumple').value = "";
+            document.getElementById('mail').value = "";
+            document.getElementById('checkRGPD').checked = false;
+
+            await refrescarDatos();
+            if(socioParaTarjeta) abrirTarjeta(socioParaTarjeta);
         }
 
         async function resetJornada() { 
