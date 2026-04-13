@@ -43,7 +43,7 @@
         #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
         .texto-legal { font-size: 10px; text-align: justify; height: 180px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.4; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
-        .rgpd-box { grid-column: 1 / 4; display: flex; align-items: center; gap: 10px; font-size: 12px; margin-top: 10px; }
+        .rgpd-box { grid-column: 1 / 3; display: flex; align-items: center; gap: 10px; font-size: 11px; margin-top: 5px; justify-content: flex-start; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
     </style>
 </head>
@@ -145,17 +145,16 @@
             const d = document.getElementById('dni').value.toUpperCase().trim();
             const n = document.getElementById('nom').value.trim();
             if(!d || !n) { alert("DNI y Nombre obligatorios"); return; }
-            
             const h = new Date().toLocaleTimeString();
             const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert([{ 
                 dni: d, nombre: n, cat: document.getElementById('cat').value,
                 email: document.getElementById('mail').value, cumple: document.getElementById('cumple').value,
                 dentro: true, hora: h 
             }], { onConflict: 'dni' }).select();
-
             if(error) { alert("Error: " + error.message); return; }
-
             document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
             await refrescarDatos();
             abrirTarjeta(data[0]);
         }
@@ -163,6 +162,13 @@
         function abrirTarjeta(s) { 
             if(!s) return;
             socioActual = s; 
+            const c = document.getElementById('cardMain');
+            c.style.border = "2px solid var(--gold)";
+            if(s.cat === "VIP Plata") { c.style.background = "linear-gradient(135deg, #71717a, #3f3f46)"; c.style.color = "white"; }
+            else if(s.cat === "VIP Gold") { c.style.background = "linear-gradient(135deg, #d4af37, #92721a)"; c.style.color = "black"; }
+            else if(s.cat === "Elite") { c.style.background = "linear-gradient(135deg, #1e293b, #000000)"; c.style.border = "2px solid #ef4444"; c.style.color = "white"; }
+            else { c.style.background = "#000"; c.style.color = "white"; }
+
             document.getElementById('card-id').innerText = "Nº " + (s.id || "---"); 
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni; 
@@ -175,14 +181,27 @@
             document.getElementById('modalTarjeta').style.display = 'flex'; 
         }
 
-        // Resto de funciones mínimas para que el código no rompa
         function validarEntrada() { const p = document.getElementById('passApp').value; if(p === "1234" || p === "0000") { nivel = (p === "1234" ? "jefe" : "personal"); entrar(); } else alert("Error"); }
         function entrar() { document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; document.getElementById('btnLogout').style.display='block'; if(nivel === 'jefe') document.getElementById('panelAdmin').style.display='grid'; refrescarDatos(); }
-        function render() { document.getElementById('st-total').innerText = db.length; document.getElementById('st-aforo').innerText = aforo; document.getElementById('lista').innerHTML = db.map(s => `<tr><td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td><td>${s.dentro ? '🟢' : '⚪'}</td><td>-</td><td>${s.hora||'-'}</td><td><button onclick="reAbrir('${s.dni}')">TARJETA</button></td></tr>`).join(''); }
+        function render() { document.getElementById('st-total').innerText = db.length; document.getElementById('st-aforo').innerText = aforo; document.getElementById('lista').innerHTML = db.map(s => `<tr><td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td><td>${s.dentro ? '🟢' : '⚪'}</td><td>-</td><td>${s.hora||'-'}</td><td><button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button></td></tr>`).join(''); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; }
         function cerrarSesion() { location.reload(); }
         async function resetJornada() { if(confirm("¿REINICIAR?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); refrescarDatos(); } }
+        async function marcarPago() { const n = !socioActual.pagado; await _supabase.from(NOMBRE_TABLA).update({ pagado: n }).eq('dni', socioActual.dni); socioActual.pagado = n; document.getElementById('selloPagado').style.display = n ? 'block' : 'none'; await refrescarDatos(); }
+        function gestionarEstatutos() { document.getElementById('box-firma').style.display = 'block'; }
+        function guardarFirmaSocio() { alert("FIRMADO"); document.getElementById('box-firma').style.display = 'none'; }
+        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
+        function autocompletarSocio() {
+            const dInput = document.getElementById('dni').value.trim().toUpperCase();
+            const s = db.find(x => x.dni === dInput);
+            if (s) {
+                document.getElementById('nom').value = s.nombre || "";
+                document.getElementById('cat').value = s.cat || "Estándar";
+                document.getElementById('mail').value = s.email || "";
+                document.getElementById('cumple').value = s.cumple || "";
+            }
+        }
     </script>
 </body>
 </html>
