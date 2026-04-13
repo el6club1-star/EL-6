@@ -95,7 +95,7 @@
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
 
         <table>
-            <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
+            <thead><tr><th>Nº SOCIO</th><th>DNI PROTEGIDO</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
             <tbody id="lista"></tbody>
         </table>
     </div>
@@ -211,9 +211,14 @@
             document.getElementById('st-total').innerText = db.length; 
             document.getElementById('st-aforo').innerText = aforo; 
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            document.getElementById('lista').innerHTML = f.map(s => `
+            document.getElementById('lista').innerHTML = f.map(s => {
+                // MÁSCARA DNI POR SEGURIDAD
+                const dniOriginal = s.dni || "";
+                const dniProtegido = dniOriginal.length > 3 ? "****" + dniOriginal.slice(-3) : dniOriginal;
+                
+                return `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id}</td><td>${dniProtegido}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
@@ -221,7 +226,7 @@
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
                         ${nivel === 'jefe' ? `<button class="btn-acc" onclick="borrarSocio('${s.dni}')">🗑️</button>` : ''}
                     </td>
-                </tr>`).join('');
+                </tr>`}).join('');
         }
 
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); await refrescarDatos(); }
@@ -273,7 +278,21 @@
 
         function exportarExcel() { let csv = "DNI;NOMBRE;HORA\n"; db.forEach(s => csv += `${s.dni};${s.nombre};${s.hora}\n`); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SOCIOS.csv'; a.click(); }
         function exportarBaseDatos() { const blob = new Blob([JSON.stringify(db)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click(); }
-        function abrirTarjeta(s) { socioActual = s; document.getElementById('card-id').innerText = "Nº " + (s.id || "1"); document.getElementById('card-nom').innerText = s.nombre; document.getElementById('card-dni').innerText = s.dni; document.getElementById('card-consumos').innerText = s.consumiciones || 0; document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; document.getElementById('qr-space').innerHTML = ""; const qr = new QRious({value: s.dni, size: 200}); const img = new Image(); img.src = qr.toDataURL(); img.style.width="140px"; document.getElementById('qr-space').appendChild(img); document.getElementById('modalTarjeta').style.display = 'flex'; }
+        
+        function abrirTarjeta(s) { 
+            socioActual = s; 
+            document.getElementById('card-id').innerText = "Nº " + (s.id || "1"); 
+            document.getElementById('card-nom').innerText = s.nombre; 
+            document.getElementById('card-dni').innerText = s.dni; // Aquí se muestra completo para el carnet
+            document.getElementById('card-consumos').innerText = s.consumiciones || 0; 
+            document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; 
+            document.getElementById('qr-space').innerHTML = ""; 
+            const qr = new QRious({value: s.dni, size: 200}); 
+            const img = new Image(); img.src = qr.toDataURL(); img.style.width="140px"; 
+            document.getElementById('qr-space').appendChild(img); 
+            document.getElementById('modalTarjeta').style.display = 'flex'; 
+        }
+
         async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
         function gestionarEstatutos() { document.getElementById('box-firma').style.display = 'block'; }
         async function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO"); document.getElementById('box-firma').style.display = 'none'; }
