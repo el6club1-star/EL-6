@@ -30,8 +30,8 @@
         .fila-vetada { background-color: #fee2e2 !important; color: #b91c1c !important; }
         .btn-acc { background: transparent; border: 1px solid currentColor; border-radius: 8px; cursor: pointer; font-weight: bold; color: inherit; font-size: 11px; margin-right: 8px; text-transform: uppercase; padding: 6px 10px; }
         #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; flex-direction: column; overflow-y: auto; padding: 20px 0; }
-        .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; z-index: 10; }
+        .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; }
+        #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; }
         #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
         .box-consumiciones { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
         .btn-cant { background: rgba(255,255,255,0.2); color: white; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
@@ -43,7 +43,6 @@
         #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
         .texto-legal { font-size: 10px; text-align: justify; height: 180px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.4; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
-        .rgpd-box { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: 12px; margin-top: 10px; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
     </style>
 </head>
@@ -76,7 +75,13 @@
         </div>
 
         <div class="reg-box">
-            <div><label style="font-size:11px; font-weight:bold;">ID / DNI</label><input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();"></div>
+            <div>
+                <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
+                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
+                <div style="font-size: 9px; margin-top: 5px;">
+                    <input type="checkbox" id="checkRGPD" style="width:auto;"> Acepto la Política de Privacidad y Estatutos y RGPD
+                </div>
+            </div>
             <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
             <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
             <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
@@ -86,10 +91,6 @@
                 </select>
             </div>
             <button class="btn-add" onclick="registrar()">REGISTRAR</button>
-            <div class="rgpd-box">
-                <input type="checkbox" id="checkRGPD">
-                <label for="checkRGPD">Acepto la <a href="javascript:void(0)" onclick="gestionarEstatutos()">Política de Privacidad y Estatutos</a>.</label>
-            </div>
         </div>
 
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
@@ -103,7 +104,7 @@
     <div id="modalTarjeta">
         <div class="card-vip" id="cardMain">
             <div id="selloPagado">PAGADO ✅</div>
-            <h2 style="font-size:16px; margin:0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">CLUB PRIVADO EL 6</h2>
+            <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
             <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
             <div id="qr-space"></div>
             <div class="box-consumiciones">
@@ -112,9 +113,9 @@
                 <button class="btn-cant" onclick="modificarConsumos(1)">+</button>
             </div>
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
-                <p>SOCIO: <span id="card-nom" style="float:right; font-weight:bold;">---</span></p>
+                <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
                 <p>DNI: <span id="card-dni" style="float:right;">---</span></p>
-                <p style="font-size:8px; margin-top:5px; opacity:0.8;">Acepta estatutos y RGPD mediante firma digital vinculada.</p>
+                <p style="font-size:8px; margin-top:5px; opacity:0.7;">Acepta estatutos y RGPD mediante firma digital vinculada.</p>
             </div>
         </div>
 
@@ -123,7 +124,7 @@
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
             <button class="btn-card btn-rules" onclick="gestionarEstatutos()">FIRMAR ESTATUTOS</button>
         </div>
-        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer; border-radius: 8px; border:none; background:#eee;" onclick="cerrar()">CERRAR</button>
+        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
 
         <div id="box-firma" style="display:none;">
             <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center; color: black;">ESTATUTOS Y PRIVACIDAD</h3>
@@ -238,6 +239,7 @@
             const m = document.getElementById('mail').value;
             const cat = document.getElementById('cat').value;
             if(!d || !n) return;
+            if(!document.getElementById('checkRGPD').checked) { alert("Debe aceptar la política de privacidad"); return; }
             const h = new Date().toLocaleTimeString();
             const existe = db.find(x => x.dni === d);
             let socioParaTarjeta;
@@ -262,12 +264,11 @@
             const cat = s.cat || "Estándar";
             const card = document.getElementById('cardMain');
             
-            // FONDOS ELEGANTES METALIZADOS
             if(cat === "VIP Gold") card.style.background = "linear-gradient(135deg, #d4af37 0%, #f9f295 50%, #d4af37 100%)";
             else if(cat === "VIP Plata") card.style.background = "linear-gradient(135deg, #a0a0a0 0%, #e0e0e0 50%, #a0a0a0 100%)";
             else if(cat === "Elite") card.style.background = "linear-gradient(135deg, #0f172a 0%, #1e40af 100%)";
             else if(cat === "Socio Plus") card.style.background = "linear-gradient(135deg, #064e3b 0%, #10b981 100%)";
-            else card.style.background = "#000"; // Estándar siempre negro elegante
+            else card.style.background = "#000";
 
             document.getElementById('card-id').innerText = "Nº " + (s.id || "1"); 
             document.getElementById('card-nom').innerText = s.nombre; 
