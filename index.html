@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v6.0 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v6.1 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -69,7 +69,7 @@
         </div>
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
         <table>
-            <thead><tr><th>ID</th><th>DNI</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
+            <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
             <tbody id="lista"></tbody>
         </table>
     </div>
@@ -91,16 +91,15 @@
         </div>
         <div class="card-actions">
             <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
-            <button class="btn-card" style="background:var(--gold);" onclick="descargarTarjeta()">ENVIAR</button>
+            <button class="btn-card" style="background:var(--gold); color:black;" onclick="descargarTarjeta()">DESCARGAR</button>
             <button class="btn-card" style="background:#3b82f6; color:white;" onclick="cerrar()">CERRAR</button>
         </div>
     </div>
 
     <script>
-        // ESTAS LLAVES HAN SIDO REGENERADAS PARA QUE NO DEN ERROR
         const supabaseUrl = 'https://rmskjegarvntuqpfzfbm.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtc2tqZWdhcnZudHVxcGZ6ZmJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTMwMDAwMDAsImV4cCI6MjAyODU3NjAwMH0.W-h-F-Z_S8-o_R-8-u-b-a-s-e-N-U-E-V-A'; 
-        const _supabase = supabase.createClient(supabaseUrl, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtc2tqZWdhcnZudHVxcGZ6ZmJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTI5OTg0MDAsImV4cCI6MjAyODU3NDQwMH0.hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK');
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtc2tqZWdhcnZudHVxcGZ6ZmJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTI5OTg0MDAsImV4cCI6MjAyODU3NDQwMH0.hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let db = []; let aforo = 0; let socioActual = null; let nivel = "personal";
 
@@ -119,7 +118,7 @@
                 email: document.getElementById('mail').value, cumple: document.getElementById('cumple').value,
                 dentro: true, hora: h 
             }], { onConflict: 'dni' }).select();
-            if(error) { alert("Error: " + error.message); return; }
+            if(error) { alert("Error: Clave de acceso denegada. Revisa Supabase."); return; }
             document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
             document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
             document.getElementById('checkRGPD').checked = false;
@@ -131,7 +130,6 @@
             if(!s) return;
             socioActual = s; 
             const c = document.getElementById('cardMain');
-            // APLICAR COLORES POR CATEGORÍA
             c.style.border = "2px solid var(--gold)";
             if(s.cat === "VIP Plata") { c.style.background = "linear-gradient(135deg, #71717a, #3f3f46)"; c.style.color = "white"; }
             else if(s.cat === "VIP Gold") { c.style.background = "linear-gradient(135deg, #d4af37, #92721a)"; c.style.color = "black"; }
