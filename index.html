@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -78,8 +79,9 @@
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
-                <div style="font-size: 9px; margin-top: 5px;">
-                    <input type="checkbox" id="checkRGPD" style="width:auto;"> Acepto la Política de Privacidad y Estatutos y RGPD
+                <div style="font-size: 8px; margin-top: 5px; display: flex; align-items: center; gap: 3px;">
+                    <input type="checkbox" id="checkRGPD" style="width:12px; height:12px;"> 
+                    <span>Acepto la <a href="javascript:void(0)" onclick="gestionarEstatutos()" style="color:blue; text-decoration:underline;">Política de Privacidad y Estatutos y RGPD</a></span>
                 </div>
             </div>
             <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
