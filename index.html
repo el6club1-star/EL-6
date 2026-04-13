@@ -20,7 +20,11 @@
         .stats-container { display: none; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .stat-card { background: #000; color: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
         .stat-card p { margin: 10px 0 0; font-size: 32px; font-weight: 900; }
-        .reg-box { display: grid; grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: end; }
+        
+        /* Ajuste de la rejilla para DNI arriba y los demás abajo */
+        .reg-box { display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: end; }
+        .fila-superior { grid-column: 1 / -1; margin-bottom: 10px; width: 250px; }
+        
         input, select { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .btn-add { background: var(--gold); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: 800; height: 46px; text-transform: uppercase; }
         .search-input { border: 2px solid var(--gold) !important; font-weight: bold; width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
@@ -45,15 +49,7 @@
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
         
-        /* Estilo específico para que la frase salga en una línea */
-        .contenedor-rgpd { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-            white-space: nowrap; 
-            margin-top: 5px;
-            font-size: 9px;
-        }
+        .contenedor-rgpd { display: flex; align-items: center; gap: 5px; white-space: nowrap; margin-top: 5px; font-size: 9px; }
         .contenedor-rgpd a { color: blue !important; text-decoration: underline !important; }
     </style>
 </head>
@@ -86,7 +82,7 @@
         </div>
 
         <div class="reg-box">
-            <div>
+            <div class="fila-superior">
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
                 <div class="contenedor-rgpd">
@@ -94,6 +90,7 @@
                     <span>Acepto la <a href="javascript:void(0)" onclick="gestionarEstatutos()">Política de Privacidad y Estatutos y RGPD</a></span>
                 </div>
             </div>
+
             <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
             <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
             <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
