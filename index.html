@@ -33,8 +33,8 @@
         .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; }
         #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; }
         #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
-        .box-consumiciones { background: rgba(255,255,255,0.1); border: 1px solid var(--gold); border-radius: 10px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .btn-cant { background: var(--gold); color: black; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .box-consumiciones { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .btn-cant { background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.5); width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .card-actions { display: flex; gap: 10px; margin-top: 15px; width: 320px; }
         .btn-card { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
         .btn-pay { background: var(--success); color: white; }
@@ -106,10 +106,10 @@
             <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
             <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
             <div id="qr-space"></div>
-            <div class="box-consumiciones" id="consumoBox">
-                <button class="btn-cant" id="btnMin" onclick="modificarConsumos(-1)">-</button>
+            <div class="box-consumiciones">
+                <button class="btn-cant" onclick="modificarConsumos(-1)">-</button>
                 <div style="font-size:11px;">CONSUMICIONES: <span id="card-consumos" style="font-weight:bold; font-size:16px;">0</span></div>
-                <button class="btn-cant" id="btnMax" onclick="modificarConsumos(1)">+</button>
+                <button class="btn-cant" onclick="modificarConsumos(1)">+</button>
             </div>
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
                 <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
@@ -260,19 +260,16 @@
         function abrirTarjeta(s) { 
             socioActual = s; 
             const cat = s.cat || "Estándar";
-            let color = "#d4af37"; // Dorado por defecto
+            let colorFondo = "#000"; // Negro por defecto
 
-            if(cat === "VIP Plata") color = "#c0c0c0";
-            if(cat === "Elite") color = "#3b82f6";
-            if(cat === "Socio Plus") color = "#22c55e";
-            if(cat === "Estándar") color = "#64748b";
+            if(cat === "VIP Gold") colorFondo = "#d4af37";
+            if(cat === "VIP Plata") colorFondo = "#c0c0c0";
+            if(cat === "Elite") colorFondo = "#1e40af";
+            if(cat === "Socio Plus") colorFondo = "#15803d";
+            if(cat === "Estándar") colorFondo = "#334155";
 
             const card = document.getElementById('cardMain');
-            card.style.borderColor = color;
-            document.getElementById('card-id').style.color = color;
-            document.getElementById('consumoBox').style.borderColor = color;
-            document.getElementById('btnMin').style.backgroundColor = color;
-            document.getElementById('btnMax').style.backgroundColor = color;
+            card.style.backgroundColor = colorFondo;
 
             document.getElementById('card-id').innerText = "Nº " + (s.id || "1"); 
             document.getElementById('card-nom').innerText = s.nombre; 
