@@ -231,12 +231,31 @@
         async function registrar() {
             const d = document.getElementById('dni').value.toUpperCase();
             const n = document.getElementById('nom').value;
-            if(!d || !n) return;
+            const c = document.getElementById('cat').value;
+            const m = document.getElementById('mail').value;
+            const cu = document.getElementById('cumple').value;
+            if(!d || !n) { alert("DNI y Nombre son obligatorios"); return; }
+            
             const h = new Date().toLocaleTimeString();
             const existe = db.find(x => x.dni === d);
-            if(existe) { await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: h }).eq('dni', d); } 
-            else { await _supabase.from(NOMBRE_TABLA).insert([{ dni: d, nombre: n, cat: document.getElementById('cat').value, dentro: true, hora: h }]); }
-            refrescarDatos();
+            
+            if(existe) { 
+                await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: h }).eq('dni', d); 
+            } else { 
+                await _supabase.from(NOMBRE_TABLA).insert([{ dni: d, nombre: n, cat: c, email: m, cumple: cu, dentro: true, hora: h }]); 
+            }
+            
+            // LIMPIAR CASILLAS
+            document.getElementById('dni').value = "";
+            document.getElementById('nom').value = "";
+            document.getElementById('mail').value = "";
+            document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
+
+            await refrescarDatos();
+            // ABRIR TARJETA DEL SOCIO REGISTRADO
+            const socioRecienFichado = db.find(x => x.dni === d);
+            abrirTarjeta(socioRecienFichado);
         }
 
         async function resetJornada() { 
