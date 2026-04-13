@@ -48,6 +48,7 @@
     </style>
 </head>
 <body>
+
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
@@ -161,13 +162,46 @@
             if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
         }
 
-        async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            if(!d || !n) return;
-            const h = new Date().toLocaleTimeString();
-            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert([{ dni: d, nombre: n, cat: document.getElementById('cat').value, email: document.getElementById('mail').value, cumple: document.getElementById('cumple').value, dentro: true, hora: h }], {onConflict: 'dni'}).select();
-            if(error) alert(error.message); else refrescarDatos();
+        async function modificarConsumos(valor) {
+            if(!socioActual) return;
+            const nuevos = (socioActual.consumiciones || 0) + valor;
+            if(nuevos < 0) return;
+            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: nuevos }).eq('dni', socioActual.dni);
+            socioActual.consumiciones = nuevos;
+            document.getElementById('card-consumos').innerText = nuevos;
+            refrescarDatos();
+        }
+
+        function autocompletarSocio() {
+            const dniInput = document.getElementById('dni').value.trim().toUpperCase();
+            const socio = db.find(x => x.dni === dniInput);
+            if (socio) {
+                document.getElementById('nom').value = socio.nombre || "";
+                document.getElementById('mail').value = socio.email || "";
+                document.getElementById('cat').value = socio.cat || "Estándar";
+                document.getElementById('cumple').value = socio.cumple || "";
+                document.getElementById('checkRGPD').checked = true;
+            }
+        }
+
+        function validarEntrada() {
+            const p = document.getElementById('passApp').value;
+            if(p === "1234") { nivel="jefe"; entrar(); } 
+            else if(p === "0000") { nivel="personal"; entrar(); } 
+            else alert("CÓDIGO INCORRECTO");
+        }
+
+        async function entrar() { 
+            document.getElementById('pantallaLogin').style.display='none'; 
+            document.getElementById('principal').style.display='block'; 
+            document.getElementById('btnLogout').style.display='block'; 
+            if(nivel === 'jefe') {
+                document.getElementById('btnExport').style.display='block'; 
+                document.getElementById('btnReset').style.display='block'; 
+                document.getElementById('panelAdmin').style.display='grid'; 
+                document.getElementById('adminExtra').style.display='flex';
+            }
+            await refrescarDatos(); 
         }
 
         function render() {
@@ -179,7 +213,7 @@
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id || '-'}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
@@ -193,20 +227,35 @@
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); await refrescarDatos(); }
         async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); await refrescarDatos(); } }
         async function borrarSocio(dni) { if(confirm("¿BORRAR SOCIO?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); await refrescarDatos(); } }
-        async function resetJornada() { if(confirm("¿REINICIAR NOCHE?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); await refrescarDatos(); } }
-        function validarEntrada() { const p = document.getElementById('passApp').value; if(p === "1234") { nivel="jefe"; entrar(); } else if(p === "0000") { nivel="personal"; entrar(); } else alert("ERROR"); }
-        function entrar() { document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; document.getElementById('btnLogout').style.display='block'; if(nivel === 'jefe') { document.getElementById('btnExport').style.display='block'; document.getElementById('btnReset').style.display='block'; document.getElementById('panelAdmin').style.display='grid'; document.getElementById('adminExtra').style.display='flex'; } refrescarDatos(); }
+        
+        async function registrar() {
+            const d = document.getElementById('dni').value.toUpperCase();
+            const n = document.getElementById('nom').value;
+            if(!d || !n) return;
+            const h = new Date().toLocaleTimeString();
+            const existe = db.find(x => x.dni === d);
+            if(existe) { await _supabase.from(NOMBRE_TABLA).update({ dentro: true, hora: h }).eq('dni', d); } 
+            else { await _supabase.from(NOMBRE_TABLA).insert([{ dni: d, nombre: n, cat: document.getElementById('cat').value, dentro: true, hora: h }]); }
+            refrescarDatos();
+        }
+
+        async function resetJornada() { 
+            if(confirm("¿REINICIAR NOCHE?")) { 
+                await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); 
+                await refrescarDatos(); 
+            } 
+        }
+
         function exportarExcel() { let csv = "DNI;NOMBRE;HORA\n"; db.forEach(s => csv += `${s.dni};${s.nombre};${s.hora}\n`); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SOCIOS.csv'; a.click(); }
-        function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
+        function exportarBaseDatos() { const blob = new Blob([JSON.stringify(db)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click(); }
         function abrirTarjeta(s) { socioActual = s; document.getElementById('card-id').innerText = "Nº " + (s.id || "1"); document.getElementById('card-nom').innerText = s.nombre; document.getElementById('card-dni').innerText = s.dni; document.getElementById('card-consumos').innerText = s.consumiciones || 0; document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; document.getElementById('qr-space').innerHTML = ""; const qr = new QRious({value: s.dni, size: 200}); const img = new Image(); img.src = qr.toDataURL(); img.style.width="140px"; document.getElementById('qr-space').appendChild(img); document.getElementById('modalTarjeta').style.display = 'flex'; }
-        async function modificarConsumos(v) { const n = (socioActual.consumiciones || 0) + v; if(n < 0) return; await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni); socioActual.consumiciones = n; document.getElementById('card-consumos').innerText = n; refrescarDatos(); }
-        async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); reAbrir(socioActual.dni); }
-        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
+        async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
         function gestionarEstatutos() { document.getElementById('box-firma').style.display = 'block'; }
-        function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO"); document.getElementById('box-firma').style.display = 'none'; }
+        async function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO"); document.getElementById('box-firma').style.display = 'none'; }
+        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
+        function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
         function cerrarSesion() { location.reload(); }
-        function autocompletarSocio() { const d = document.getElementById('dni').value.trim().toUpperCase(); const s = db.find(x => x.dni === d); if (s) { document.getElementById('nom').value = s.nombre; document.getElementById('mail').value = s.email; document.getElementById('cat').value = s.cat; document.getElementById('cumple').value = s.cumple; document.getElementById('checkRGPD').checked = true; } }
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         canvas.addEventListener('mousedown', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
         canvas.addEventListener('mousemove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
