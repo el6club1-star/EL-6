@@ -21,9 +21,10 @@
         .stat-card { background: #000; color: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
         .stat-card p { margin: 10px 0 0; font-size: 32px; font-weight: 900; }
         
-        /* Ajuste de la rejilla para DNI arriba y los demás abajo */
-        .reg-box { display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: end; }
-        .fila-superior { grid-column: 1 / -1; margin-bottom: 10px; width: 250px; }
+        /* REG-BOX: DNI ARRIBA, RESTO EN UNA SOLA FILA ABAJO */
+        .reg-box { display: flex; flex-direction: column; gap: 15px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); }
+        .fila-dni { width: 300px; }
+        .fila-datos { display: grid; grid-template-columns: 1.5fr 1fr 1.2fr 1fr auto; gap: 12px; align-items: end; }
         
         input, select { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .btn-add { background: var(--gold); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: 800; height: 46px; text-transform: uppercase; }
@@ -82,7 +83,7 @@
         </div>
 
         <div class="reg-box">
-            <div class="fila-superior">
+            <div class="fila-dni">
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
                 <div class="contenedor-rgpd">
@@ -91,15 +92,17 @@
                 </div>
             </div>
 
-            <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
-            <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
-            <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
-            <div><label style="font-size:11px; font-weight:bold;">TIPO</label>
-                <select id="cat">
-                    <option>Estándar</option><option>Socio Plus</option><option>VIP Plata</option><option>VIP Gold</option><option>Elite</option>
-                </select>
+            <div class="fila-datos">
+                <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
+                <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
+                <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
+                <div><label style="font-size:11px; font-weight:bold;">TIPO</label>
+                    <select id="cat">
+                        <option>Estándar</option><option>Socio Plus</option><option>VIP Plata</option><option>VIP Gold</option><option>Elite</option>
+                    </select>
+                </div>
+                <button class="btn-add" onclick="registrar()">REGISTRAR</button>
             </div>
-            <button class="btn-add" onclick="registrar()">REGISTRAR</button>
         </div>
 
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
