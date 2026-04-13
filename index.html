@@ -229,28 +229,34 @@
         async function borrarSocio(dni) { if(confirm("¿BORRAR SOCIO?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); await refrescarDatos(); } }
         
         async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
+            const d = document.getElementById('dni').value.toUpperCase().trim();
+            const n = document.getElementById('nom').value.trim();
             const c = document.getElementById('cat').value;
             const m = document.getElementById('mail').value;
             const cu = document.getElementById('cumple').value;
-            if(!d || !n) { alert("DNI y Nombre son obligatorios"); return; }
+            
+            if(!d || !n) { alert("DNI y Nombre obligatorios"); return; }
             
             const h = new Date().toLocaleTimeString();
-            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert([{ dni: d, nombre: n, cat: c, email: m, cumple: cu, dentro: true, hora: h }], {onConflict: 'dni'}).select();
             
-            if(!error) {
-                // LIMPIAR CASILLAS
-                document.getElementById('dni').value = "";
-                document.getElementById('nom').value = "";
-                document.getElementById('mail').value = "";
-                document.getElementById('cumple').value = "";
-                document.getElementById('checkRGPD').checked = false;
+            // 1. Guardar o actualizar en Supabase
+            const { error } = await _supabase.from(NOMBRE_TABLA).upsert([{ 
+                dni: d, nombre: n, cat: c, email: m, cumple: cu, dentro: true, hora: h 
+            }], { onConflict: 'dni' });
 
-                await refrescarDatos();
-                // ABRIR TARJETA DIRECTAMENTE
-                abrirTarjeta(data[0]);
-            }
+            if(error) { alert("Error al guardar"); return; }
+
+            // 2. Limpiar campos del formulario inmediatamente
+            document.getElementById('dni').value = "";
+            document.getElementById('nom').value = "";
+            document.getElementById('mail').value = "";
+            document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
+
+            // 3. Forzar refresco y buscar el socio para abrir la tarjeta
+            await refrescarDatos();
+            const socioRegistrado = db.find(x => x.dni === d);
+            if(socioRegistrado) abrirTarjeta(socioRegistrado);
         }
 
         async function resetJornada() { 
@@ -262,14 +268,41 @@
 
         function exportarExcel() { let csv = "DNI;NOMBRE;HORA\n"; db.forEach(s => csv += `${s.dni};${s.nombre};${s.hora}\n`); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SOCIOS.csv'; a.click(); }
         function exportarBaseDatos() { const blob = new Blob([JSON.stringify(db)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click(); }
-        function abrirTarjeta(s) { if(!s) return; socioActual = s; document.getElementById('card-id').innerText = "Nº " + (s.id || "1"); document.getElementById('card-nom').innerText = s.nombre; document.getElementById('card-dni').innerText = s.dni; document.getElementById('card-consumos').innerText = s.consumiciones || 0; document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; document.getElementById('qr-space').innerHTML = ""; const qr = new QRious({value: s.dni, size: 200}); const img = new Image(); img.src = qr.toDataURL(); img.style.width="140px"; document.getElementById('qr-space').appendChild(img); document.getElementById('modalTarjeta').style.display = 'flex'; }
-        async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
+        
+        function abrirTarjeta(s) { 
+            if(!s) return;
+            socioActual = s; 
+            document.getElementById('card-id').innerText = "Nº " + (s.id || "---"); 
+            document.getElementById('card-nom').innerText = s.nombre; 
+            document.getElementById('card-dni').innerText = s.dni; 
+            document.getElementById('card-consumos').innerText = s.consumiciones || 0; 
+            document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; 
+            
+            document.getElementById('qr-space').innerHTML = ""; 
+            const qr = new QRious({value: s.dni, size: 200}); 
+            const img = new Image(); 
+            img.src = qr.toDataURL(); 
+            img.style.width="140px"; 
+            document.getElementById('qr-space').appendChild(img); 
+            
+            document.getElementById('modalTarjeta').style.display = 'flex'; 
+        }
+
+        async function marcarPago() { 
+            const nuevoEstado = !socioActual.pagado;
+            await _supabase.from(NOMBRE_TABLA).update({ pagado: nuevoEstado }).eq('dni', socioActual.dni); 
+            socioActual.pagado = nuevoEstado;
+            document.getElementById('selloPagado').style.display = nuevoEstado ? 'block' : 'none';
+            await refrescarDatos(); 
+        }
+
         function gestionarEstatutos() { document.getElementById('box-firma').style.display = 'block'; }
-        async function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO"); document.getElementById('box-firma').style.display = 'none'; }
-        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
+        async function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO Y ACEPTADO"); document.getElementById('box-firma').style.display = 'none'; }
+        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA-EL6.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
         function cerrarSesion() { location.reload(); }
+        
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         canvas.addEventListener('mousedown', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
         canvas.addEventListener('mousemove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
