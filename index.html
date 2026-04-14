@@ -12,7 +12,7 @@
         #pantallaLogin { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: var(--gold); }
         #pantallaLogin input { padding: 15px; border: 1px solid var(--gold); background: #111; color: white; border-radius: 8px; text-align: center; margin-bottom: 15px; width: 250px; font-size: 20px; }
         .btn-logout { position: fixed; top: 20px; right: 20px; background: #000; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; z-index: 10001; }
-        .container { max-width: 1250px; margin: auto; background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #e2e8f0; display:none; }
+        .container { max-width: 1350px; margin: auto; background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #e2e8f0; display:none; }
         header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 30px; padding-bottom: 15px; position: relative; }
         header h1 { letter-spacing: 8px; text-transform: uppercase; margin: 0; font-size: 32px; font-weight: 800; }
         .btn-excel { position: absolute; right: 0; top: 10px; background: #15803d; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; display:none; }
@@ -21,8 +21,7 @@
         .stat-card { background: #000; color: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
         .stat-card p { margin: 10px 0 0; font-size: 32px; font-weight: 900; }
         
-        /* FILA ÚNICA PARA LAS CASILLAS */
-        .reg-box { display: grid; grid-template-columns: 1fr 1.5fr 1fr 1.5fr 1fr auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: start; }
+        .reg-box { display: grid; grid-template-columns: 1.2fr 1.5fr 1fr 1.5fr 1fr auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: start; }
         
         input, select { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .btn-add { background: var(--gold); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: 800; height: 46px; text-transform: uppercase; }
@@ -43,9 +42,9 @@
         .btn-pay { background: var(--success); color: white; }
         .btn-send { background: var(--gold); color: black; }
         .btn-rules { background: #3b82f6; color: white; }
-        #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 400px; color: #000; box-sizing: border-box; }
-        .texto-legal { font-size: 11px; text-align: justify; height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.5; }
-        canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
+        #box-firma { background: white; padding: 20px; border-radius: 15px; margin-top: 10px; width: 450px; color: #000; box-sizing: border-box; }
+        .texto-legal { font-size: 11px; text-align: justify; height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #ffffff !important; color: #000000 !important; line-height: 1.6; }
+        canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 120px; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
         
         .contenedor-rgpd { display: flex; align-items: center; gap: 5px; white-space: nowrap; margin-top: 5px; font-size: 8px; }
@@ -136,7 +135,7 @@
         <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
 
         <div id="box-firma" style="display:none;">
-            <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center; color: black;">ESTATUTOS Y POLÍTICA DE PRIVACIDAD</h3>
+            <h3 style="margin:0 0 10px 0; font-size:16px; text-align:center; color: black;">ESTATUTOS Y POLÍTICA DE PRIVACIDAD - CLUB PRIVADO EL 6</h3>
             <div class="texto-legal">
                 <p><strong>1. RESPONSABILIDAD DE ACCESO:</strong> El código de acceso, llave o mando facilitado por la dirección es estrictamente personal e intransferible. El socio titular asume la responsabilidad total de la custodia de su identificación de acceso, siendo responsable directo de cualquier uso indebido, entrada no autorizada de terceros o negligencia que comprometa la exclusividad y seguridad del club.</p>
                 <p><strong>2. EXONERACIÓN DE RESPONSABILIDAD POR INCIDENTES:</strong> CLUB PRIVADO EL 6 queda exento de toda responsabilidad civil o penal por cualquier tipo de incidente, lesión, percance físico o daño que pudiera ocurrir dentro de las instalaciones. El socio declara que accede al recinto bajo su propia cuenta y riesgo, conociendo las características del club y exonerando a la dirección de cualquier reclamación judicial o extrajudicial.</p>
@@ -151,7 +150,7 @@
                 <p><strong>11. EXENCIÓN POR CAUSAS DE FUERZA MAYOR:</strong> El club queda libre de cualquier responsabilidad por la interrupción de los servicios o el cierre temporal del recinto debido a causas ajenas a su control, tales como averías técnicas externas, decisiones gubernamentales, sanitarias o cualquier otra situación de fuerza mayor que impida la apertura normal de las instalaciones.</p>
                 <p><strong>12. JURISDICCIÓN, SUMISIÓN Y LEY APLICABLE:</strong> Para la resolución de cualquier controversia o conflicto derivado de la interpretación o cumplimiento de los presentes estatutos, tanto el socio como el club se someten expresamente a la jurisdicción de los Juzgados y Tribunales de la ciudad de MADRID, con renuncia expresa a cualquier otro fuero o jurisdicción que pudiera corresponderles por domicilio o ley.</p>
             </div>
-            <canvas id="canvasFirma" width="370" height="100"></canvas>
+            <canvas id="canvasFirma" width="410" height="120"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
         </div>
     </div>
