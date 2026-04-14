@@ -21,7 +21,7 @@
         .stat-card { background: #000; color: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
         .stat-card p { margin: 10px 0 0; font-size: 32px; font-weight: 900; }
         
-        /* TODO EN UNA SOLA FILA */
+        /* FILA ÚNICA PARA LAS CASILLAS */
         .reg-box { display: grid; grid-template-columns: 1fr 1.5fr 1fr 1.5fr 1fr auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: start; }
         
         input, select { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; box-sizing: border-box; }
@@ -43,8 +43,8 @@
         .btn-pay { background: var(--success); color: white; }
         .btn-send { background: var(--gold); color: black; }
         .btn-rules { background: #3b82f6; color: white; }
-        #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 350px; color: #000; box-sizing: border-box; }
-        .texto-legal { font-size: 10px; text-align: justify; height: 180px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.4; }
+        #box-firma { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; width: 400px; color: #000; box-sizing: border-box; }
+        .texto-legal { font-size: 11px; text-align: justify; height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; background: #ffffff !important; color: #000000 !important; line-height: 1.5; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 100px; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
         
@@ -136,22 +136,22 @@
         <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
 
         <div id="box-firma" style="display:none;">
-            <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center; color: black;">ESTATUTOS Y PRIVACIDAD</h3>
+            <h3 style="margin:0 0 10px 0; font-size:14px; text-align:center; color: black;">ESTATUTOS Y POLÍTICA DE PRIVACIDAD</h3>
             <div class="texto-legal">
-                <p><strong>1. RESPONSABILIDAD DE ACCESO:</strong> El código de acceso facilitado es personal e intransferible.</p>
-                <p><strong>2. EXONERACIÓN DE RESPONSABILIDAD:</strong> EL 6 queda exento de responsabilidad por incidentes.</p>
-                <p><strong>3. PROTECCIÓN DE DATOS (RGPD):</strong> Datos gestionados para membresía y seguridad.</p>
-                <p><strong>4. DERECHO AL OLVIDO:</strong> Solicitar supresión en El6club1@gmail.com.</p>
-                <p><strong>5. VIDEOVIGILANCIA:</strong> Grabación 24h por seguridad.</p>
-                <p><strong>6. OBJETOS PERSONALES:</strong> El club no responde por pérdidas o robos.</p>
-                <p><strong>7. RÉGIMEN DISCIPLINARIO:</strong> Reserva de admisión y veto por mal comportamiento.</p>
-                <p><strong>8. DAÑOS PATRIMONIALES:</strong> Responsabilidad económica del socio por daños.</p>
-                <p><strong>9. DISPOSITIVOS DE ACCESO:</strong> Llaves y mandos propiedad del club.</p>
-                <p><strong>10. MODIFICACIÓN DE NORMAS:</strong> La dirección puede cambiar el reglamento.</p>
-                <p><strong>11. FUERZA MAYOR:</strong> Exención por causas ajenas al control del club.</p>
-                <p><strong>12. JURISDICCIÓN:</strong> Sometimiento a los juzgados de MADRID.</p>
+                <p><strong>1. RESPONSABILIDAD DE ACCESO:</strong> El código de acceso, llave o mando facilitado por la dirección es estrictamente personal e intransferible. El socio titular asume la responsabilidad total de la custodia de su identificación de acceso, siendo responsable directo de cualquier uso indebido, entrada no autorizada de terceros o negligencia que comprometa la exclusividad y seguridad del club.</p>
+                <p><strong>2. EXONERACIÓN DE RESPONSABILIDAD POR INCIDENTES:</strong> CLUB PRIVADO EL 6 queda exento de toda responsabilidad civil o penal por cualquier tipo de incidente, lesión, percance físico o daño que pudiera ocurrir dentro de las instalaciones. El socio declara que accede al recinto bajo su propia cuenta y riesgo, conociendo las características del club y exonerando a la dirección de cualquier reclamación judicial o extrajudicial.</p>
+                <p><strong>3. PROTECCIÓN DE DATOS DE CARÁCTER PERSONAL (RGPD):</strong> En cumplimiento del Reglamento General de Protección de Datos, se informa que los datos personales facilitados por el socio serán incorporados a un fichero automatizado cuya finalidad es exclusivamente la gestión interna de la membresía, el control de accesos por seguridad y la comunicación directa con el socio. El club se compromete al deber de secreto y no cederá estos datos a terceros bajo ningún concepto, salvo requerimiento judicial o policial.</p>
+                <p><strong>4. DERECHO AL OLVIDO Y CANCELACIÓN:</strong> Todo socio tiene derecho a ejercer su facultad de acceso, rectificación, cancelación y oposición sobre sus datos personales. En caso de desear la supresión total y definitiva de sus datos del sistema de gestión del club, deberá solicitarlo de forma escrita mediante el correo electrónico oficial de la entidad: El6club1@gmail.com.</p>
+                <p><strong>5. CONSENTIMIENTO DE VIDEOVIGILANCIA:</strong> Por estrictos motivos de seguridad de los socios y para la protección del patrimonio del club, todas las instalaciones cuentan con un sistema de videovigilancia y grabación de imágenes operativo las 24 horas del día. El socio presta su consentimiento expreso para ser grabado, entendiendo que dichas imágenes solo serán revisadas en caso de incidente grave o solicitud de las autoridades.</p>
+                <p><strong>6. OBJETOS PERSONALES Y PERTENENCIAS:</strong> El club no se hace responsable en ningún caso por la pérdida, extravío, robo o deterioro de objetos personales, dinero en efectivo, dispositivos electrónicos o cualquier otra pertenencia dejada por el socio en el interior del recinto, taquillas o zonas comunes. Se recomienda no dejar objetos de valor sin supervisión.</p>
+                <p><strong>7. RÉGIMEN DISCIPLINARIO Y DERECHO DE ADMISIÓN:</strong> La dirección se reserva de forma absoluta y discrecional el derecho de admisión. El incumplimiento de las normas de decoro, cualquier falta de respeto hacia otros socios o el personal, o el uso indebido de las instalaciones será motivo de expulsión inmediata y revocación de la membresía (veto permanente) sin derecho a devolución de cuotas si las hubiera.</p>
+                <p><strong>8. DAÑOS PATRIMONIALES Y RESPONSABILIDAD ECONÓMICA:</strong> Cualquier desperfecto, rotura o daño causado de forma intencionada o por uso negligente en el mobiliario, equipos tecnológicos o estructura del club será responsabilidad económica directa del socio causante. El socio se compromete a abonar el importe íntegro de la reparación o reposición del bien dañado tras la valoración de la dirección.</p>
+                <p><strong>9. DISPOSITIVOS DE ACCESO Y PROPIEDAD DEL CLUB:</strong> Las llaves físicas, mandos a distancia o tarjetas de proximidad entregadas al socio son propiedad exclusiva de CLUB PRIVADO EL 6. El socio tiene la obligación de devolver dichos dispositivos en caso de causar baja en la asociación o cuando la dirección lo solicite por motivos de mantenimiento o seguridad del sistema.</p>
+                <p><strong>10. MODIFICACIÓN UNILATERAL DE NORMAS:</strong> La dirección del club se reserva la facultad de modificar, actualizar o ampliar el presente reglamento interno y los estatutos con el fin de adaptarse a nuevas normativas legales o para mejorar el funcionamiento y la armonía de la asociación. Las modificaciones entrarán en vigor de forma inmediata tras su publicación o comunicación interna.</p>
+                <p><strong>11. EXENCIÓN POR CAUSAS DE FUERZA MAYOR:</strong> El club queda libre de cualquier responsabilidad por la interrupción de los servicios o el cierre temporal del recinto debido a causas ajenas a su control, tales como averías técnicas externas, decisiones gubernamentales, sanitarias o cualquier otra situación de fuerza mayor que impida la apertura normal de las instalaciones.</p>
+                <p><strong>12. JURISDICCIÓN, SUMISIÓN Y LEY APLICABLE:</strong> Para la resolución de cualquier controversia o conflicto derivado de la interpretación o cumplimiento de los presentes estatutos, tanto el socio como el club se someten expresamente a la jurisdicción de los Juzgados y Tribunales de la ciudad de MADRID, con renuncia expresa a cualquier otro fuero o jurisdicción que pudiera corresponderles por domicilio o ley.</p>
             </div>
-            <canvas id="canvasFirma" width="320" height="100"></canvas>
+            <canvas id="canvasFirma" width="370" height="100"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
         </div>
     </div>
@@ -293,7 +293,7 @@
 
         async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
         function gestionarEstatutos() { document.getElementById('box-firma').style.display = 'block'; }
-        async function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO"); document.getElementById('box-firma').style.display = 'none'; }
+        async function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO Y ACEPTADO"); document.getElementById('box-firma').style.display = 'none'; }
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
