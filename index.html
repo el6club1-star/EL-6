@@ -263,6 +263,26 @@
         function exportarExcel() { let csv = "DNI;NOMBRE;HORA\n"; db.forEach(s => csv += `${s.dni};${s.nombre};${s.hora}\n`); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SOCIOS.csv'; a.click(); }
         function exportarBaseDatos() { const blob = new Blob([JSON.stringify(db)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click(); }
         
+        async function importarBaseDatos(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (confirm(`¿Importar ${data.length} socios? Se añadirán a la base actual.`)) {
+                        for (const s of data) {
+                            delete s.id; // Evitar conflictos de ID autoincremental
+                            await _supabase.from(NOMBRE_TABLA).upsert(s, { onConflict: 'dni' });
+                        }
+                        alert("Importación completada.");
+                        await refrescarDatos();
+                    }
+                } catch (err) { alert("Error al leer el archivo."); }
+            };
+            reader.readAsText(file);
+        }
+
         function abrirTarjeta(s) { 
             socioActual = s; 
             const cat = s.cat || "Estándar";
