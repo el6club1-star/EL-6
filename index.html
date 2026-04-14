@@ -42,7 +42,7 @@
         .btn-pay { background: var(--success); color: white; }
         .btn-send { background: var(--gold); color: black; }
         .btn-rules { background: #3b82f6; color: white; }
-        #box-firma { background: white; padding: 20px; border-radius: 15px; margin-top: 10px; width: 480px; color: #000; box-sizing: border-box; }
+        #box-firma { display: none; background: white; padding: 20px; border-radius: 15px; margin-top: 10px; width: 90%; max-width: 500px; color: #000; box-sizing: border-box; z-index: 6000; }
         .texto-legal { font-size: 11px; text-align: justify; height: 380px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #ffffff !important; color: #000000 !important; line-height: 1.6; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 120px; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
@@ -85,7 +85,7 @@
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
                 <div class="contenedor-rgpd">
                     <input type="checkbox" id="checkRGPD" style="width:auto;"> 
-                    <span>Acepto <a href="javascript:void(0)" onclick="gestionarEstatutos()">Privacidad/Estatutos/RGPD</a></span>
+                    <span>Acepto <a href="javascript:void(0)" onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
                 </div>
             </div>
             <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
@@ -126,14 +126,13 @@
             </div>
         </div>
 
-        <div class="card-actions">
+        <div class="card-actions" id="accionesTarjeta">
             <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
-            <button class="btn-card btn-rules" onclick="gestionarEstatutos()">FIRMAR ESTATUTOS</button>
+            <button class="btn-card btn-rules" onclick="gestionarEstatutos('tarjeta')">FIRMAR ESTATUTOS</button>
         </div>
-        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
-
-        <div id="box-firma" style="display:none;">
+        
+        <div id="box-firma">
             <h3 style="margin:0 0 10px 0; font-size:16px; text-align:center; color: black;">ESTATUTOS Y POLÍTICA DE PRIVACIDAD - CLUB PRIVADO EL 6</h3>
             <div class="texto-legal">
                 <p><strong>1. RESPONSABILIDAD DE ACCESO:</strong> El código de acceso, llave o mando facilitado por la dirección es estrictamente personal e intransferible. El socio titular asume la responsabilidad total de la custodia de su identificación de acceso, siendo responsable directo de cualquier uso indebido, entrada no autorizada de terceros o negligencia que comprometa la exclusividad y seguridad del club.</p>
@@ -151,7 +150,10 @@
             </div>
             <canvas id="canvasFirma" width="440" height="120"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
+            <button onclick="cerrarFirma()" style="width:100%; padding:5px; background:#ccc; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">VOLVER</button>
         </div>
+
+        <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
     </div>
 
     <script>
@@ -272,7 +274,7 @@
                     const data = JSON.parse(e.target.result);
                     if (confirm(`¿Importar ${data.length} socios? Se añadirán a la base actual.`)) {
                         for (const s of data) {
-                            delete s.id; // Evitar conflictos de ID autoincremental
+                            delete s.id;
                             await _supabase.from(NOMBRE_TABLA).upsert(s, { onConflict: 'dni' });
                         }
                         alert("Importación completada.");
@@ -304,14 +306,48 @@
             const img = new Image(); img.src = qr.toDataURL(); img.style.width="140px"; 
             document.getElementById('qr-space').appendChild(img); 
             document.getElementById('modalTarjeta').style.display = 'flex'; 
+            document.getElementById('box-firma').style.display = 'none';
+            document.getElementById('cardMain').style.display = 'block';
+            document.getElementById('accionesTarjeta').style.display = 'flex';
         }
 
         async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
-        function gestionarEstatutos() { document.getElementById('box-firma').style.display = 'block'; }
-        async function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO Y ACEPTADO"); document.getElementById('box-firma').style.display = 'none'; }
+        
+        function gestionarEstatutos(origen) { 
+            if(origen === 'registro') {
+                document.getElementById('modalTarjeta').style.display = 'flex';
+                document.getElementById('cardMain').style.display = 'none';
+                document.getElementById('accionesTarjeta').style.display = 'none';
+            } else {
+                document.getElementById('cardMain').style.display = 'none';
+                document.getElementById('accionesTarjeta').style.display = 'none';
+            }
+            document.getElementById('box-firma').style.display = 'block'; 
+        }
+
+        function cerrarFirma() {
+            if(socioActual) {
+                document.getElementById('cardMain').style.display = 'block';
+                document.getElementById('accionesTarjeta').style.display = 'flex';
+                document.getElementById('box-firma').style.display = 'none';
+            } else {
+                cerrar();
+            }
+        }
+
+        async function guardarFirmaSocio() { 
+            document.getElementById('checkRGPD').checked = true; 
+            alert("FIRMADO Y ACEPTADO"); 
+            cerrarFirma();
+        }
+
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
-        function cerrar() { document.getElementById('modalTarjeta').style.display='none'; document.getElementById('box-firma').style.display='none'; }
+        function cerrar() { 
+            document.getElementById('modalTarjeta').style.display='none'; 
+            document.getElementById('box-firma').style.display='none'; 
+            document.getElementById('cardMain').style.display='block';
+        }
         function cerrarSesion() { location.reload(); }
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
         canvas.addEventListener('mousedown', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
