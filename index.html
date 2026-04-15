@@ -184,6 +184,14 @@
 
         function autocompletarSocio() {
             const dniInput = document.getElementById('dni').value.trim().toUpperCase();
+            if (dniInput === "") {
+                document.getElementById('nom').value = "";
+                document.getElementById('mail').value = "";
+                document.getElementById('cat').value = "Estándar";
+                document.getElementById('cumple').value = "";
+                document.getElementById('checkRGPD').checked = false;
+                return;
+            }
             const socio = db.find(x => x.dni === dniInput);
             if (socio) {
                 document.getElementById('nom').value = socio.nombre || "";
