@@ -42,13 +42,13 @@
         .btn-pay { background: var(--success); color: white; }
         .btn-send { background: var(--gold); color: black; }
         .btn-rules { background: #3b82f6; color: white; }
-        #box-firma { display: none; background: white; padding: 20px; border-radius: 15px; margin-top: 10px; width: 90%; max-width: 500px; color: #000; box-sizing: border-box; z-index: 6000; }
+        #box-firma { display: none; background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 500px; color: #000; box-sizing: border-box; z-index: 6000; position: relative; }
         .texto-legal { font-size: 11px; text-align: justify; height: 380px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #ffffff !important; color: #000000 !important; line-height: 1.6; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 120px; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
         
         .contenedor-rgpd { display: flex; align-items: center; gap: 5px; white-space: nowrap; margin-top: 5px; font-size: 8px; }
-        .contenedor-rgpd a { color: blue !important; text-decoration: underline !important; }
+        .contenedor-rgpd a { color: blue !important; text-decoration: underline !important; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -85,7 +85,7 @@
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
                 <div class="contenedor-rgpd">
                     <input type="checkbox" id="checkRGPD" style="width:auto;"> 
-                    <span>Acepto <a href="javascript:void(0)" onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
+                    <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
                 </div>
             </div>
             <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
@@ -214,6 +214,11 @@
             await refrescarDatos(); 
         }
 
+        function formatearDNI(dni) {
+            if(!dni || dni.length < 7) return dni;
+            return dni.substring(0, 2) + "*****" + dni.substring(dni.length - 1);
+        }
+
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
@@ -223,7 +228,7 @@
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
@@ -314,14 +319,10 @@
         async function marcarPago() { await _supabase.from(NOMBRE_TABLA).update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni); await refrescarDatos(); abrirTarjeta(db.find(x => x.dni === socioActual.dni)); }
         
         function gestionarEstatutos(origen) { 
-            if(origen === 'registro') {
-                document.getElementById('modalTarjeta').style.display = 'flex';
-                document.getElementById('cardMain').style.display = 'none';
-                document.getElementById('accionesTarjeta').style.display = 'none';
-            } else {
-                document.getElementById('cardMain').style.display = 'none';
-                document.getElementById('accionesTarjeta').style.display = 'none';
-            }
+            document.getElementById('modalTarjeta').style.display = 'flex';
+            document.getElementById('cardMain').style.display = 'none';
+            document.getElementById('accionesTarjeta').style.display = 'none';
+            document.getElementById('btnCerrarModal').style.display = 'none';
             document.getElementById('box-firma').style.display = 'block'; 
         }
 
@@ -329,6 +330,7 @@
             if(socioActual) {
                 document.getElementById('cardMain').style.display = 'block';
                 document.getElementById('accionesTarjeta').style.display = 'flex';
+                document.getElementById('btnCerrarModal').style.display = 'block';
                 document.getElementById('box-firma').style.display = 'none';
             } else {
                 cerrar();
@@ -347,6 +349,7 @@
             document.getElementById('modalTarjeta').style.display='none'; 
             document.getElementById('box-firma').style.display='none'; 
             document.getElementById('cardMain').style.display='block';
+            document.getElementById('btnCerrarModal').style.display = 'block';
         }
         function cerrarSesion() { location.reload(); }
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
