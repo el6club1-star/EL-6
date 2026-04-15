@@ -232,7 +232,7 @@
                     <td>${s.dentro ? '🟢 DENTRO' : '⚪ FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button class="btn-acc" onclick="tVeto('${s.dni}')">VETAR</button>
+                        <button class="btn-acc" onclick="tVeto('${s.dni}')">${s.vetado ? 'QUITAR VETO' : 'VETAR'}</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
                         ${nivel === 'jefe' ? `<button class="btn-acc" onclick="borrarSocio('${s.dni}')">🗑️</button>` : ''}
                     </td>
@@ -240,7 +240,22 @@
         }
 
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); await refrescarDatos(); }
-        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); await refrescarDatos(); } }
+        
+        async function tVeto(dni) { 
+            const s = db.find(x => x.dni === dni);
+            if (s.vetado) {
+                if(confirm("¿Quitar veto a este socio?")) {
+                    await _supabase.from(NOMBRE_TABLA).update({ vetado: false, motivo: null }).eq('dni', dni);
+                }
+            } else {
+                const m = prompt("Motivo del veto:");
+                if(m) {
+                    await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni);
+                }
+            }
+            await refrescarDatos();
+        }
+
         async function borrarSocio(dni) { if(confirm("¿BORRAR SOCIO?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); await refrescarDatos(); } }
         
         async function registrar() {
