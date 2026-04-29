@@ -2,184 +2,158 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v6.0 - CLUB PRIVADO EL 6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA ELITE v6.5 - EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --gold: #d4af37; --bg: #ffffff; --card: #f8fafc; --text: #1e293b; --success: #22c55e; --danger: #ef4444; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        :root { --gold: #d4af37; --bg: #000; --card: #111; --text: #fff; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
         
-        /* Pantalla de Login */
-        #pantallaLogin { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 99999; display: flex; justify-content: center; align-items: center; flex-direction: column; color: var(--gold); }
-        #pantallaLogin input { padding: 15px; border: 1px solid var(--gold); background: #111; color: white; border-radius: 8px; text-align: center; margin-bottom: 15px; width: 250px; font-size: 20px; }
-        
-        .container { max-width: 1350px; margin: auto; background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #e2e8f0; display:none; }
-        header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 30px; padding-bottom: 15px; position: relative; }
-        
-        /* Estilos de Tabla y Panel */
-        .stats-container { display: none; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-        .stat-card { background: #000; color: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
-        .reg-box { display: grid; grid-template-columns: 1.2fr 1.5fr 1fr 1.5fr 1fr auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 15px; color: var(--gold); border-bottom: 2px solid #e2e8f0; font-size: 12px; }
-        td { padding: 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        /* Contenedores */
+        .admin-view { display: none; max-width: 1200px; margin: auto; padding: 20px; }
+        .socio-view { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh; }
 
-        /* Modal Tarjeta */
-        #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; flex-direction: column; }
-        .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; }
+        /* Login */
+        #pantallaLogin { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        input[type="password"] { padding: 15px; border: 1px solid var(--gold); background: #111; color: white; border-radius: 8px; font-size: 20px; margin-bottom: 10px; text-align: center; }
+
+        /* Tarjeta VIP */
+        .card-vip { width: 320px; background: #000; border: 2px solid var(--gold); border-radius: 20px; padding: 25px; text-align: center; position: relative; box-shadow: 0 0 30px rgba(212,175,55,0.2); }
         #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; }
-        .btn-card { padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border:none; text-transform: uppercase; margin: 5px; }
+        .consumos-box { background: rgba(212,175,55,0.1); border: 1px solid var(--gold); padding: 15px; border-radius: 12px; margin: 15px 0; }
+        .sello-pagado { position: absolute; top: 15px; right: -30px; background: #22c55e; color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; display:none; }
         
-        #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; }
+        /* Tabla Admin */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #111; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
+        th { color: var(--gold); font-size: 12px; }
+        .btn-add { background: var(--gold); color: black; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="pantallaLogin">
-        <h1 style="letter-spacing: 10px;">EL 6</h1>
-        <input type="password" id="passApp" placeholder="CÓDIGO">
-        <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; color:white; font-weight:bold;">ACCEDER</button>
+        <h1 style="color:var(--gold); letter-spacing: 5px;">EL 6 ADMIN</h1>
+        <input type="password" id="passApp" placeholder="CÓDIGO ACCESO">
+        <button onclick="validarEntrada()" class="btn-add">ACCEDER AL PANEL</button>
     </div>
 
-    <div class="container" id="principal">
-        <header>
-            <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
-            <button onclick="location.reload()" style="position:absolute; right:0; top:0; background:red; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">SALIR</button>
+    <div id="vistaSocio" class="socio-view">
+        <div class="card-vip">
+            <div id="selloSocio" class="sello-pagado">PAGADO ✅</div>
+            <h2 style="color:var(--gold); margin:0;">CLUB PRIVADO EL 6</h2>
+            <p id="socio-id" style="font-size: 24px; font-weight: bold; margin: 10px 0;">Nº --</p>
+            <div id="qr-space"></div>
+            <div class="consumos-box">
+                <span style="font-size: 12px; color: var(--gold);">CONSUMICIONES DISPONIBLES</span>
+                <div id="socio-consumos" style="font-size: 32px; font-weight: 900;">0</div>
+            </div>
+            <p id="socio-nombre" style="font-weight: bold; margin: 5px 0;"></p>
+            <p id="socio-dni" style="font-size: 10px; opacity: 0.6;"></p>
+        </div>
+        <p style="font-size: 12px; margin-top: 20px; opacity: 0.5;">Tarjeta digital intransferible</p>
+    </div>
+
+    <div id="vistaAdmin" class="admin-view">
+        <header style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--gold); padding-bottom:10px;">
+            <h1 style="color:var(--gold);">PANEL DE CONTROL EL 6</h1>
+            <button onclick="location.reload()" style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px;">CERRAR SESIÓN</button>
         </header>
 
-        <div id="panelAdmin" class="stats-container">
-            <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
-            <div class="stat-card"><h3>AFORO</h3><p id="st-aforo">0</p></div>
-            <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados">0</p></div>
+        <div style="background:#111; padding:20px; border-radius:15px; margin-top:20px; display:grid; grid-template-columns: repeat(4, 1fr) auto; gap:10px;">
+            <input type="text" id="reg-dni" placeholder="DNI" style="padding:10px;">
+            <input type="text" id="reg-nom" placeholder="NOMBRE">
+            <input type="number" id="reg-cons" placeholder="CONSUMOS">
+            <select id="reg-cat"><option>Estándar</option><option>VIP Gold</option></select>
+            <button onclick="registrarNuevo()" class="btn-add">REGISTRAR SOCIO</button>
         </div>
 
-        <div class="reg-box">
-            <input type="text" id="dni" placeholder="DNI" oninput="autocompletarSocio()">
-            <input type="text" id="nom" placeholder="NOMBRE">
-            <select id="cat">
-                <option>Estándar</option><option>VIP Gold</option><option>Elite</option>
-            </select>
-            <button class="btn-card" style="background:var(--gold); color:white;" onclick="registrar()">REGISTRAR</button>
-        </div>
-
-        <input type="text" id="buscador" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()" style="width:100%; padding:10px; margin-bottom:10px;">
-
-        <table>
-            <thead><tr><th>ID</th><th>DNI</th><th>NOMBRE</th><th>CAT</th><th>SALDO</th><th>ACCIONES</th></tr></thead>
-            <tbody id="lista"></tbody>
+        <table id="tablaSocios">
+            <thead>
+                <tr><th>ID</th><th>DNI</th><th>NOMBRE</th><th>CONSUMICIONES</th><th>PAGADO</th><th>ACCIONES</th></tr>
+            </thead>
+            <tbody id="listaSocios"></tbody>
         </table>
     </div>
 
-    <div id="modalTarjeta">
-        <div class="card-vip" id="cardMain">
-            <div id="selloPagado">PAGADO ✅</div>
-            <h2 style="margin:0; font-size:16px;">CLUB PRIVADO EL 6</h2>
-            <div id="card-id" style="font-size:30px; font-weight:bold; margin:10px 0;"></div>
-            <div id="qr-space"></div>
-            <div style="text-align:left; font-size:12px;">
-                <p>SOCIO: <span id="card-nom" style="float:right;">--</span></p>
-                <p>SALDO: <span id="card-saldo" style="float:right; font-size:18px; color:var(--gold);">0 €</span></p>
-            </div>
-        </div>
-        <div id="controlesAdmin" style="margin-top:20px;">
-            <button class="btn-card" style="background:var(--success); color:white;" onclick="marcarPago()">PAGAR</button>
-            <button class="btn-card" style="background:#eee;" onclick="cerrarModal()">CERRAR</button>
-        </div>
-    </div>
-
     <script>
-        // CONFIGURACIÓN SUPABASE
         const supabaseUrl = 'https://rmskjegarvntuqpfzfbm.supabase.co';
         const supabaseKey = 'sb_publishable_hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let db = [];
-        let socioActual = null;
-
-        // CARGAR DATOS
-        async function refrescarDatos() {
-            const { data } = await _supabase.from('socios').select('*').order('id', { ascending: false });
-            db = data || [];
-            render();
-        }
-
-        function validarEntrada() {
-            if(document.getElementById('passApp').value === "1234") {
-                document.getElementById('pantallaLogin').style.display = 'none';
-                document.getElementById('principal').style.display = 'block';
-                document.getElementById('panelAdmin').style.display = 'grid';
-                refrescarDatos();
-            } else { alert("Código incorrecto"); }
-        }
-
-        function render() {
-            const bus = document.getElementById('buscador').value.toLowerCase();
-            const f = db.filter(s => s.nombre.toLowerCase().includes(bus) || s.dni.includes(bus.toUpperCase()));
-            
-            document.getElementById('st-total').innerText = db.length;
-            document.getElementById('st-aforo').innerText = db.filter(x => x.dentro).length;
-            
-            document.getElementById('lista').innerHTML = f.map(s => `
-                <tr>
-                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.consumiciones || 0}€</td>
-                    <td><button onclick="abrirTarjetaDni('${s.dni}')">VER TARJETA</button></td>
-                </tr>`).join('');
-        }
-
-        async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            const c = document.getElementById('cat').value;
-            if(!d || !n) return alert("Faltan datos");
-            
-            await _supabase.from('socios').upsert({ dni: d, nombre: n, cat: c });
-            refrescarDatos();
-        }
-
-        function abrirTarjetaDni(dni) {
-            const s = db.find(x => x.dni === dni);
-            if(!s) return;
-            socioActual = s;
-            document.getElementById('card-id').innerText = "Nº " + s.id;
-            document.getElementById('card-nom').innerText = s.nombre;
-            document.getElementById('card-saldo').innerText = (s.consumiciones || 0) + " €";
-            document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none';
-            
-            document.getElementById('qr-space').innerHTML = "";
-            new QRious({ element: document.createElement('canvas'), value: s.dni, size: 150 }).canvas.style.display = "block";
-            const qrcanvas = new QRious({ value: s.dni, size: 150 }).image;
-            document.getElementById('qr-space').appendChild(qrcanvas);
-
-            document.getElementById('modalTarjeta').style.display = 'flex';
-        }
-
-        async function marcarPago() {
-            await _supabase.from('socios').update({ pagado: !socioActual.pagado }).eq('dni', socioActual.dni);
-            refrescarDatos();
-            cerrarModal();
-        }
-
-        function cerrarModal() { document.getElementById('modalTarjeta').style.display = 'none'; }
-
-        // --- ANTENA INTELIGENTE PARA LA URL ---
+        // Detectar si es Socio por URL al cargar
         window.onload = async () => {
             const params = new URLSearchParams(window.location.search);
             const dniUrl = params.get('d');
+
             if (dniUrl) {
-                // Si hay DNI en la URL, ocultamos todo y buscamos al socio
+                // Es un socio: Ocultamos login y admin para siempre
                 document.getElementById('pantallaLogin').style.display = 'none';
+                document.getElementById('vistaAdmin').remove(); // Borramos el código admin para que no lo puedan hackear
+                
                 const { data } = await _supabase.from('socios').select('*').eq('dni', dniUrl).single();
                 if (data) {
-                    abrirTarjetaDni(data.dni);
-                    document.getElementById('controlesAdmin').style.display = 'none'; // El socio no puede ver botones de pago
+                    document.getElementById('vistaSocio').style.display = 'flex';
+                    document.getElementById('socio-id').innerText = "Nº " + data.id;
+                    document.getElementById('socio-nombre').innerText = data.nombre;
+                    document.getElementById('socio-dni').innerText = data.dni;
+                    document.getElementById('socio-consumos').innerText = data.consumiciones || 0;
+                    if(data.pagado) document.getElementById('selloSocio').style.display = 'block';
+                    
+                    new QRious({ element: document.createElement('canvas'), value: data.dni, size: 150 });
+                    const qr = new QRious({ value: data.dni, size: 150 }).image;
+                    document.getElementById('qr-space').appendChild(qr);
                 } else {
-                    alert("Socio no encontrado");
+                    document.body.innerHTML = "<h1>Socio no encontrado</h1>";
                 }
             }
         };
+
+        // Panel de Control (Jefe/Trabajador)
+        function validarEntrada() {
+            if(document.getElementById('passApp').value === "1234") {
+                document.getElementById('pantallaLogin').style.display = 'none';
+                document.getElementById('vistaAdmin').style.display = 'block';
+                cargarTabla();
+            } else { alert("CÓDIGO INCORRECTO"); }
+        }
+
+        async function cargarTabla() {
+            const { data } = await _supabase.from('socios').select('*').order('id', { ascending: false });
+            const lista = document.getElementById('listaSocios');
+            lista.innerHTML = data.map(s => `
+                <tr>
+                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td>
+                    <td><b>${s.consumiciones}</b></td>
+                    <td>${s.pagado ? '✅' : '❌'}</td>
+                    <td>
+                        <button onclick="modificarConsumos('${s.dni}', 1)">+1</button>
+                        <button onclick="modificarConsumos('${s.dni}', -1)">-1</button>
+                        <button onclick="togglePagado('${s.dni}', ${s.pagado})">PAGO</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function registrarNuevo() {
+            const d = document.getElementById('reg-dni').value;
+            const n = document.getElementById('reg-nom').value;
+            const c = document.getElementById('reg-cons').value;
+            await _supabase.from('socios').insert([{ dni: d, nombre: n, consumiciones: c, pagado: false }]);
+            cargarTabla();
+        }
+
+        async function modificarConsumos(dni, valor) {
+            const { data } = await _supabase.from('socios').select('consumiciones').eq('dni', dni).single();
+            await _supabase.from('socios').update({ consumiciones: (data.consumiciones || 0) + valor }).eq('dni', dni);
+            cargarTabla();
+        }
+
+        async function togglePagado(dni, actual) {
+            await _supabase.from('socios').update({ pagado: !actual }).eq('dni', dni);
+            cargarTabla();
+        }
     </script>
 </body>
 </html>
