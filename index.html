@@ -379,6 +379,22 @@
         canvas.addEventListener('mousedown', e => { dibujando = true; const p = getP(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
         canvas.addEventListener('mousemove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
         window.addEventListener('mouseup', () => dibujando = false);
+
+        /* --- ANTENA PARA URL (EL 6) --- */
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('d')) {
+                const dniUrl = urlParams.get('d');
+                const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').eq('dni', dniUrl).single();
+                if (data && !error) {
+                    document.getElementById('pantallaLogin').style.display = 'none';
+                    abrirTarjeta(data);
+                    document.getElementById('accionesTarjeta').style.display = 'none';
+                    document.getElementById('btnCerrarModal').style.display = 'none';
+                    document.getElementById('btnLogout').style.display = 'none';
+                }
+            }
+        };
     </script>
 </body>
 </html>
