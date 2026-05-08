@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v5.8.3 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v5.8.5 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -59,8 +59,6 @@
             <button class="btn-reset-noche" id="btnReset" onclick="resetJornada()">🔄 REINICIAR NOCHE</button>
             <div class="admin-btns" id="adminExtra" style="display:none; position: absolute; right: 0; top: 50px;">
                 <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 BACKUP</button>
-                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 IMPORTAR</button>
-                <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
             </div>
             <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 EXCEL</button>
             <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
@@ -142,7 +140,7 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
         const NOMBRE_TABLA = 'socios';
 
-        let db = []; let aforo = 0; let socioActual = null; let nivel = "personal";
+        let db = []; let aforo = 0; let socioActual = null; let nivelActual = null;
         const canvas = document.getElementById('canvasFirma');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
@@ -155,35 +153,36 @@
 
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
-            if(p === "1234") { nivel="jefe"; entrar(); } 
-            else if(p === "0000") { nivel="personal"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
+            if(p === "1234") { nivelActual="jefe"; entrar(); } 
+            else if(p === "0000") { nivelActual="personal"; entrar(); } 
+            else { alert("CÓDIGO INCORRECTO"); document.getElementById('passApp').value = ""; }
         }
 
         async function entrar() { 
             document.getElementById('pantallaLogin').style.display='none'; 
             document.getElementById('principal').style.display='block'; 
             document.getElementById('btnLogout').style.display='block'; 
-            if(nivel === 'jefe') {
-                document.getElementById('btnExport').style.display='block'; 
-                document.getElementById('btnReset').style.display='block'; 
-                document.getElementById('panelAdmin').style.display='grid'; 
-                document.getElementById('adminExtra').style.display='flex';
-            } else {
-                document.getElementById('btnExport').style.display='none'; 
-                document.getElementById('btnReset').style.display='none'; 
-                document.getElementById('panelAdmin').style.display='none'; 
-                document.getElementById('adminExtra').style.display='none';
-            }
+            const isAdmin = (nivelActual === 'jefe');
+            document.getElementById('btnExport').style.display = isAdmin ? 'block' : 'none'; 
+            document.getElementById('btnReset').style.display = isAdmin ? 'block' : 'none'; 
+            document.getElementById('panelAdmin').style.display = isAdmin ? 'grid' : 'none'; 
+            document.getElementById('adminExtra').style.display = isAdmin ? 'flex' : 'none';
             await refrescarDatos(); 
         }
 
         function cerrarSesion() {
-            nivel = "personal";
+            nivelActual = null;
             document.getElementById('passApp').value = "";
             document.getElementById('principal').style.display='none';
             document.getElementById('btnLogout').style.display='none';
             document.getElementById('pantallaLogin').style.display='flex';
+            db = [];
+        }
+
+        function ofuscarDNI(dni) {
+            if (nivelActual === 'jefe') return dni;
+            if (!dni) return "****";
+            return "****" + dni.slice(-4);
         }
 
         async function registrar() {
@@ -200,8 +199,29 @@
             if(!error && data) { 
                 await refrescarDatos(); 
                 document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+                document.getElementById('checkRGPD').checked = false;
                 abrirTarjeta(data[0]); 
             }
+        }
+
+        function render() {
+            const b = document.getElementById('buscador').value.toLowerCase();
+            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+            if(nivelActual === "personal" && b === "") f = [];
+            
+            document.getElementById('st-total').innerText = db.length; 
+            document.getElementById('st-aforo').innerText = aforo; 
+            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+            
+            document.getElementById('lista').innerHTML = f.map(s => `
+                <tr style="${s.vetado ? 'background:#fee2e2' : ''}">
+                    <td>${s.id}</td><td>${ofuscarDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td>
+                        <button class="btn-acc" onclick="toggleEntrada('${s.dni}')">E/S</button>
+                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">CARD</button>
+                    </td>
+                </tr>`).join('');
         }
 
         function abrirTarjeta(s) { 
@@ -214,7 +234,7 @@
             else card.style.background = "#000";
             document.getElementById('card-id').innerText = "Nº " + (s.id || ""); 
             document.getElementById('card-nom').innerText = s.nombre; 
-            document.getElementById('card-dni').innerText = s.dni; 
+            document.getElementById('card-dni').innerText = ofuscarDNI(s.dni); 
             document.getElementById('card-consumos').innerText = s.consumiciones || 0; 
             document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; 
             document.getElementById('qr-space').innerHTML = ""; 
@@ -244,24 +264,6 @@
             await refrescarDatos();
         }
 
-        function render() {
-            const b = document.getElementById('buscador').value.toLowerCase();
-            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if(nivel === "personal" && b === "") f = [];
-            document.getElementById('st-total').innerText = db.length; 
-            document.getElementById('st-aforo').innerText = aforo; 
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            document.getElementById('lista').innerHTML = f.map(s => `
-                <tr style="${s.vetado ? 'background:#fee2e2' : ''}">
-                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td>
-                        <button class="btn-acc" onclick="toggleEntrada('${s.dni}')">E/S</button>
-                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">CARD</button>
-                    </td>
-                </tr>`).join('');
-        }
-
         async function toggleEntrada(dni) {
             const s = db.find(x => x.dni === dni);
             await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni);
@@ -283,6 +285,8 @@
             const s = db.find(x => x.dni === d);
             if(s) { document.getElementById('nom').value = s.nombre; document.getElementById('cat').value = s.cat; document.getElementById('checkRGPD').checked = true; }
         }
+        async function resetJornada() { if(confirm("¿REINICIAR NOCHE?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); await refrescarDatos(); } }
+        function exportarExcel() { let csv = "DNI;NOMBRE;HORA\n"; db.forEach(s => csv += `${s.dni};${s.nombre};${s.hora}\n`); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'SOCIOS.csv'; a.click(); }
     </script>
 </body>
 </html>
