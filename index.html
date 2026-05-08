@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v5.8.5 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v5.8.6 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -36,12 +36,8 @@
         .btn-cant { background: rgba(255,255,255,0.2); color: white; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .card-actions { display: flex; gap: 10px; margin-top: 15px; width: 320px; }
         .btn-card { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
-        .btn-pay { background: var(--success); color: white; }
-        .btn-send { background: var(--gold); color: black; }
         #box-firma { display: none; background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 500px; color: #000; box-sizing: border-box; z-index: 6000; }
-        .texto-legal { font-size: 10px; text-align: justify; height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; color: #000; background: #fff; }
-        canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 120px; }
-        .contenedor-rgpd { display: flex; align-items: center; gap: 5px; margin-top: 5px; font-size: 9px; }
+        canvas#canvasFirma { border: 1px dashed #000; background: #fff; touch-action: none; width: 100%; height: 120px; }
     </style>
 </head>
 <body>
@@ -57,9 +53,6 @@
     <div class="container" id="principal">
         <header>
             <button class="btn-reset-noche" id="btnReset" onclick="resetJornada()">🔄 REINICIAR NOCHE</button>
-            <div class="admin-btns" id="adminExtra" style="display:none; position: absolute; right: 0; top: 50px;">
-                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 BACKUP</button>
-            </div>
             <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 EXCEL</button>
             <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
         </header>
@@ -74,10 +67,7 @@
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
-                <div class="contenedor-rgpd">
-                    <input type="checkbox" id="checkRGPD">
-                    <span>Acepto <a onclick="gestionarEstatutos()">Privacidad/Estatutos</a></span>
-                </div>
+                <div style="font-size:9px; margin-top:5px;"><input type="checkbox" id="checkRGPD"> Acepto Estatutos</div>
             </div>
             <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE"></div>
             <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
@@ -93,7 +83,7 @@
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
 
         <table>
-            <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
+            <thead><tr><th>Nº SOCIO</th><th>ID/DNI</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
             <tbody id="lista"></tbody>
         </table>
     </div>
@@ -115,23 +105,16 @@
             </div>
         </div>
         <div class="card-actions" id="accionesTarjeta">
-            <button class="btn-card btn-pay" onclick="marcarPago()">PAGAR</button>
-            <button class="btn-card btn-send" onclick="descargarTarjeta()">DESCARGAR</button>
+            <button class="btn-card" style="background:var(--success); color:white;" onclick="marcarPago()">PAGAR</button>
+            <button class="btn-card" style="background:var(--gold); color:black;" onclick="descargarTarjeta()">DESCARGAR</button>
             <button class="btn-card" style="background:#3b82f6; color:white;" onclick="gestionarEstatutos()">FIRMAR</button>
         </div>
         <div id="box-firma">
-            <h3 style="text-align:center;">ESTATUTOS EL 6</h3>
-            <div class="texto-legal">
-                <p><strong>1. ACCESO:</strong> Personal e intransferible.</p>
-                <p><strong>2. PRIVACIDAD:</strong> Datos solo para gestión interna.</p>
-                <p><strong>3. SEGURIDAD:</strong> Videovigilancia activa 24h.</p>
-                <p><strong>4. NORMAS:</strong> Mal comportamiento = Veto.</p>
-            </div>
+            <h3 style="text-align:center;">FIRMA DE ESTATUTOS</h3>
             <canvas id="canvasFirma" width="440" height="120"></canvas>
-            <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
-            <button onclick="cerrarFirma()" style="width:100%; padding:5px; background:#ccc; border:none; margin-top:5px; cursor:pointer;">VOLVER</button>
+            <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR</button>
         </div>
-        <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
+        <button style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
     </div>
 
     <script>
@@ -166,7 +149,6 @@
             document.getElementById('btnExport').style.display = isAdmin ? 'block' : 'none'; 
             document.getElementById('btnReset').style.display = isAdmin ? 'block' : 'none'; 
             document.getElementById('panelAdmin').style.display = isAdmin ? 'grid' : 'none'; 
-            document.getElementById('adminExtra').style.display = isAdmin ? 'flex' : 'none';
             await refrescarDatos(); 
         }
 
@@ -179,10 +161,12 @@
             db = [];
         }
 
-        function ofuscarDNI(dni) {
-            if (nivelActual === 'jefe') return dni;
+        // --- FUNCIÓN CRÍTICA DE SEGURIDAD ---
+        function maskDNI(dni) {
+            if (nivelActual === 'jefe') return dni; 
             if (!dni) return "****";
-            return "****" + dni.slice(-4);
+            // Tapamos todo menos los últimos 3 caracteres
+            return "****" + dni.substring(dni.length - 3);
         }
 
         async function registrar() {
@@ -199,7 +183,6 @@
             if(!error && data) { 
                 await refrescarDatos(); 
                 document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-                document.getElementById('checkRGPD').checked = false;
                 abrirTarjeta(data[0]); 
             }
         }
@@ -215,7 +198,9 @@
             
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr style="${s.vetado ? 'background:#fee2e2' : ''}">
-                    <td>${s.id}</td><td>${ofuscarDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id}</td>
+                    <td style="font-weight:bold; color:${nivelActual==='jefe'?'black':'#666'}">${maskDNI(s.dni)}</td>
+                    <td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" onclick="toggleEntrada('${s.dni}')">E/S</button>
@@ -232,9 +217,10 @@
             else if(cat === "VIP Plata") card.style.background = "linear-gradient(135deg, #a0a0a0, #e0e0e0, #a0a0a0)";
             else if(cat === "Elite") card.style.background = "linear-gradient(135deg, #0f172a, #1e40af)";
             else card.style.background = "#000";
+            
             document.getElementById('card-id').innerText = "Nº " + (s.id || ""); 
             document.getElementById('card-nom').innerText = s.nombre; 
-            document.getElementById('card-dni').innerText = ofuscarDNI(s.dni); 
+            document.getElementById('card-dni').innerText = maskDNI(s.dni); // Aplicado aquí también
             document.getElementById('card-consumos').innerText = s.consumiciones || 0; 
             document.getElementById('selloPagado').style.display = s.pagado ? 'block' : 'none'; 
             document.getElementById('qr-space').innerHTML = ""; 
@@ -271,9 +257,8 @@
         }
 
         function gestionarEstatutos() { document.getElementById('cardMain').style.display='none'; document.getElementById('accionesTarjeta').style.display='none'; document.getElementById('box-firma').style.display='block'; }
-        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; document.getElementById('accionesTarjeta').style.display='flex'; }
-        function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO"); cerrarFirma(); }
-        function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
+        function guardarFirmaSocio() { document.getElementById('checkRGPD').checked = true; alert("FIRMADO"); cerrar(); }
+        const getP = (e) => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; };
         canvas.addEventListener('mousedown', e => { dibujando = true; ctx.beginPath(); const p = getP(e); ctx.moveTo(p.x, p.y); });
         canvas.addEventListener('mousemove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }});
         window.addEventListener('mouseup', () => dibujando = false);
