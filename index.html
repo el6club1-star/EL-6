@@ -10,7 +10,6 @@
         :root { --gold: #d4af37; --bg: #ffffff; --card: #f8fafc; --text: #1e293b; --success: #22c55e; --danger: #ef4444; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         
-        /* ESTILOS ANTENA */
         #antena { position: fixed; top: 15px; left: 15px; display: flex; align-items: center; gap: 6px; z-index: 100000; font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 20px; background: rgba(0,0,0,0.05); pointer-events: none; }
         .dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; }
         .online { background: var(--success); box-shadow: 0 0 8px var(--success); }
@@ -176,7 +175,6 @@
         const ctx = canvas.getContext('2d');
         let dibujando = false;
 
-        // FUNCIÓN ANTENA
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
             const txt = document.getElementById('statusText');
@@ -386,6 +384,7 @@
         async function guardarFirmaSocio() { 
             document.getElementById('checkRGPD').checked = true; 
             alert("FIRMADO Y ACEPTADO"); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             cerrarFirma();
         }
 
@@ -403,7 +402,6 @@
         canvas.addEventListener('mousemove', e => { if(dibujando) { const p = getP(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
         window.addEventListener('mouseup', () => dibujando = false);
 
-        // Verificación de antena cada 10 segundos
         setInterval(refrescarDatos, 10000);
     </script>
 </body>
