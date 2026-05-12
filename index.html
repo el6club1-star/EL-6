@@ -27,7 +27,7 @@
         .stat-card { background: #000; color: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
         .stat-card p { margin: 10px 0 0; font-size: 32px; font-weight: 900; }
         
-        .reg-box { display: grid; grid-template-columns: 1.2fr 1.5fr 1fr 1.5fr 1fr auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: start; }
+        .reg-box { display: none; grid-template-columns: 1.2fr 1.5fr 1fr 1.5fr 1fr auto; gap: 12px; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; background: rgba(0,0,0,0.02); align-items: start; }
         
         input, select { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .btn-add { background: var(--gold); color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: 800; height: 46px; text-transform: uppercase; }
@@ -87,7 +87,7 @@
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
 
-        <div class="reg-box">
+        <div class="reg-box" id="cajaRegistro">
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
@@ -166,7 +166,7 @@
 
     <script>
         const supabaseUrl = 'https://rmskjegarvntuqpfzfbm.supabase.co';
-        const supabaseKey = 'sb_publishable_hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtc2tqZWdhcnZudHVxcGZ6ZmJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NDA0NTcsImV4cCI6MjA5MTIxNjQ1N30.UkiL9reGKiQkox67FIcsEdIMNpWyEZ6vgH7LqPmgvOs';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
         const NOMBRE_TABLA = 'socios';
 
@@ -226,7 +226,8 @@
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
             if(p === "1234") { nivel="jefe"; entrar(); } 
-            else if(p === "0000") { nivel="personal"; entrar(); } 
+            else if(p === "1111") { nivel="puerta"; entrar(); } 
+            else if(p === "2222") { nivel="camarero"; entrar(); } 
             else alert("CÓDIGO INCORRECTO");
         }
 
@@ -234,12 +235,21 @@
             document.getElementById('pantallaLogin').style.display='none'; 
             document.getElementById('principal').style.display='block'; 
             document.getElementById('btnLogout').style.display='block'; 
+            
+            // JEFE VE TODO
             if(nivel === 'jefe') {
                 document.getElementById('btnExport').style.display='block'; 
                 document.getElementById('btnReset').style.display='block'; 
                 document.getElementById('panelAdmin').style.display='grid'; 
                 document.getElementById('adminExtra').style.display='flex';
+                document.getElementById('cajaRegistro').style.display='grid';
             }
+            // PUERTA VE REGISTRO
+            if(nivel === 'puerta') {
+                document.getElementById('cajaRegistro').style.display='grid';
+            }
+            // CAMARERO SOLO VE BUSCADOR (Ya está visible por defecto)
+
             await refrescarDatos(); 
         }
 
@@ -251,7 +261,8 @@
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if(nivel === "personal" && b === "") f = [];
+            if(nivel === "camarero" && b === "") f = [];
+            
             document.getElementById('st-total').innerText = db.length; 
             document.getElementById('st-aforo').innerText = aforo; 
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
