@@ -103,7 +103,7 @@
             <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
         </div>
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
-        <button onclick="activarEscaneo()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ESCANEAR QR</button>
+        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
         <table>
             <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
@@ -150,6 +150,7 @@
         const canvas = document.getElementById('canvasFirma');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
+        let camActiva = false;
         let CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || { jefe: "1234", puerta: "0000", camarero: "2222" };
         let html5QrCode;
 
@@ -173,7 +174,8 @@
 
         function marcarPago() {
             document.getElementById('selloPagado').style.display = 'block';
-            document.getElementById('btnPagarTarjeta').style.display = 'none';
+            document.getElementById('btnPagarTarjeta').innerText = 'PAGO REALIZADO';
+            document.getElementById('btnPagarTarjeta').style.background = '#15803d';
         }
 
         function autocompletarSocio() {
@@ -214,8 +216,8 @@
         }
 
         function formatearDNI(dni) {
-            if(!dni || dni.length < 5) return dni;
-            return dni.substring(0, 2) + "***" + dni.substring(dni.length - 3);
+            if(!dni || dni.length < 3) return dni;
+            return dni.charAt(0) + "*******" + dni.charAt(dni.length - 1);
         }
 
         function render() {
@@ -258,8 +260,16 @@
         async function registrar() {
             const d = document.getElementById('dni').value.toUpperCase();
             const n = document.getElementById('nom').value;
+            const e = document.getElementById('mail').value;
+            const c = document.getElementById('cumple').value;
+            const cat = document.getElementById('cat').value;
             if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ dni: d, nombre: n, dentro: true, hora: new Date().toLocaleTimeString(), cat: document.getElementById('cat').value }).select();
+            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ dni: d, nombre: n, email: e, cumple: c, dentro: true, hora: new Date().toLocaleTimeString(), cat: cat }).select();
+            
+            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
+
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
@@ -270,7 +280,8 @@
             document.getElementById('qr-space').innerHTML = ""; 
             const qr = new QRious({value: s.dni, size: 140}); document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
             document.getElementById('selloPagado').style.display = 'none';
-            document.getElementById('btnPagarTarjeta').style.display = 'block';
+            document.getElementById('btnPagarTarjeta').innerText = 'PAGAR';
+            document.getElementById('btnPagarTarjeta').style.background = 'var(--success)';
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
 
@@ -280,7 +291,7 @@
         function cerrarSesion() { location.reload(); }
         function gestionarEstatutos() { document.getElementById('modalTarjeta').style.display='flex'; document.getElementById('box-firma').style.display='block'; document.getElementById('cardMain').style.display='none'; }
         function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
-        function guardarFirmaSocio() { alert("Firmado y aceptado"); cerrarFirma(); document.getElementById('checkRGPD').checked = true; }
+        function guardarFirmaSocio() { alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); cerrarFirma(); document.getElementById('checkRGPD').checked = true; }
         
         function actualizarClave() {
             const t = document.getElementById('tipoClave').value; const n = document.getElementById('nuevaClaveInput').value;
@@ -289,16 +300,30 @@
 
         async function resetJornada() { if(confirm("¿Reset?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); refrescarDatos(); } }
 
-        function activarEscaneo() {
-            document.getElementById('reader').style.display = 'block';
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
-                document.getElementById('buscador').value = t; 
-                render(); 
-                pararCamara(); 
-            }).catch(err => alert("Error cámara: " + err));
+        function toggleCamara() {
+            if(!camActiva) {
+                document.getElementById('reader').style.display = 'block';
+                document.getElementById('btnCam').innerText = "❌ APAGAR CÁMARA";
+                html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
+                    document.getElementById('buscador').value = t; 
+                    render(); 
+                    pararCamara(); 
+                });
+                camActiva = true;
+            } else {
+                pararCamara();
+            }
         }
-        function pararCamara() { if(html5QrCode) html5QrCode.stop().then(()=>document.getElementById('reader').style.display='none'); }
+        function pararCamara() { 
+            if(html5QrCode) {
+                html5QrCode.stop().then(()=> {
+                    document.getElementById('reader').style.display='none';
+                    document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
+                    camActiva = false;
+                });
+            }
+        }
 
         canvas.addEventListener('mousedown', () => dibujando = true);
         window.addEventListener('mouseup', () => { dibujando = false; ctx.beginPath(); });
