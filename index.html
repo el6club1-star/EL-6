@@ -191,89 +191,6 @@
             if(!error) refrescarDatos();
         }
 
-        async function modificarConsumos(v) {
-            if(!socioActual) return;
-            const n = (socioActual.consumiciones || 0) + v;
-            if(n >= 0) { await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni); socioActual.consumiciones = n; refrescarDatos(); document.getElementById('card-consumos').innerText = n; }
-        }
-
-        async function marcarPago() {
-            const ahora = new Date().toISOString();
-            const esPagado = socioActual.pago_realizado;
-            await _supabase.from(NOMBRE_TABLA).update({ pago_realizado: !esPagado, hora_pago: !esPagado ? ahora : null }).eq('dni', socioActual.dni);
-            socioActual.pago_realizado = !esPagado;
-            socioActual.hora_pago = !esPagado ? ahora : null;
-            actualizarVisualPago();
-        }
-
-        function actualizarVisualPago() {
-            const sello = document.getElementById('selloPagado');
-            const btn = document.getElementById('btnPagarTarjeta');
-            let pagadoValido = socioActual.pago_realizado;
-            if(socioActual.hora_pago) {
-                const diff = (new Date() - new Date(socioActual.hora_pago)) / (1000 * 60 * 60);
-                if(diff > 5) pagadoValido = false; 
-            }
-            if(pagadoValido) { sello.style.display = 'block'; btn.innerText = 'PAGO REALIZADO'; btn.style.background = '#15803d'; } 
-            else { sello.style.display = 'none'; btn.innerText = 'PAGAR'; btn.style.background = 'var(--success)'; }
-        }
-
-        function autocompletarSocio() {
-            const val = document.getElementById('dni').value.trim().toUpperCase();
-            if(!val) return;
-            const s = db.find(x => x.dni === val);
-            if(s) { 
-                document.getElementById('nom').value = s.nombre; 
-                document.getElementById('mail').value = s.email; 
-                document.getElementById('cat').value = (s.cat || "estándar").toLowerCase(); 
-                document.getElementById('cumple').value = s.cumple; 
-                document.getElementById('checkRGPD').checked = true; 
-            }
-        }
-
-        function validarEntrada() {
-            const p = document.getElementById('passApp').value;
-            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
-        }
-
-        function entrar() { 
-            document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; 
-            document.getElementById('btnLogout').style.display='block'; 
-            if(nivel === 'jefe') { document.getElementById('btnExport').style.display='block'; document.getElementById('btnReset').style.display='block'; document.getElementById('panelAdmin').style.display='grid'; document.getElementById('adminExtra').style.display='flex'; document.getElementById('configClaves').style.display = 'block'; }
-            if(nivel === 'camarero') document.getElementById('cajaRegistro').style.display = 'none';
-            refrescarDatos(); 
-        }
-
-        function formatearDNI(dni) {
-            if(!dni || dni.length < 3) return dni;
-            return dni.charAt(0) + "*******" + dni.charAt(dni.length - 1);
-        }
-
-        function render() {
-            const b = document.getElementById('buscador').value.toLowerCase();
-            const total = db.length;
-            const vetados = db.filter(x => x.vetado).length;
-            document.getElementById('st-total').innerText = total;
-            document.getElementById('st-aforo').innerText = aforo;
-            document.getElementById('st-vetados').innerText = vetados;
-
-            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
-            document.getElementById('lista').innerHTML = f.map(s => `
-                <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                    </td>
-                </tr>`).join('');
-        }
-
         async function registrar() {
             const d = document.getElementById('dni').value.toUpperCase();
             const n = document.getElementById('nom').value;
@@ -286,6 +203,72 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
+        function render() {
+            const b = document.getElementById('buscador').value.toLowerCase();
+            document.getElementById('st-total').innerText = db.length;
+            document.getElementById('st-aforo').innerText = aforo;
+            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+
+            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
+            document.getElementById('lista').innerHTML = f.map(s => `
+                <tr class="${s.vetado ? 'fila-vetada' : ''}">
+                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
+                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
+
+        function validarEntrada() {
+            const p = document.getElementById('passApp').value;
+            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
+            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
+            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
+            else alert("CÓDIGO INCORRECTO");
+        }
+
+        function entrar() { 
+            document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; 
+            document.getElementById('btnLogout').style.display='block'; 
+            if(nivel === 'jefe') { 
+                document.getElementById('btnExport').style.display='block'; 
+                document.getElementById('btnReset').style.display='block'; 
+                document.getElementById('panelAdmin').style.display='grid'; 
+                document.getElementById('adminExtra').style.display='flex'; 
+                document.getElementById('configClaves').style.display = 'block'; 
+            }
+            if(nivel === 'camarero') document.getElementById('cajaRegistro').style.display = 'none';
+            refrescarDatos(); 
+        }
+
+        function gestionarEstatutos() { 
+            document.getElementById('box-firma').style.display='block'; 
+            document.getElementById('cardMain').style.display='none'; 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(socioActual && socioActual.firma_b64) {
+                const img = new Image();
+                img.onload = function() { ctx.drawImage(img, 0, 0); };
+                img.src = socioActual.firma_b64;
+            }
+        }
+
+        async function guardarFirmaSocio() { 
+            const f = canvas.toDataURL();
+            if(socioActual) {
+                await _supabase.from(NOMBRE_TABLA).update({ firma_b64: f }).eq('dni', socioActual.dni);
+                socioActual.firma_b64 = f;
+            }
+            alert("Firmado correctamente"); cerrarFirma(); 
+        }
+
+        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; }
         function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
@@ -302,49 +285,11 @@
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
 
-        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
-        function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
-        function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        async function resetJornada() { if(confirm("¿Reiniciar aforo?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false }); refrescarDatos(); } }
         function cerrarSesion() { location.reload(); }
-        
-        function gestionarEstatutos() { 
-            document.getElementById('modalTarjeta').style.display='flex'; 
-            document.getElementById('box-firma').style.display='block'; 
-            document.getElementById('cardMain').style.display='none'; 
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if(socioActual && socioActual.firma_b64) {
-                const imgFirma = new Image();
-                imgFirma.onload = function() { ctx.drawImage(imgFirma, 0, 0); };
-                imgFirma.src = socioActual.firma_b64;
-            }
-        }
-        
-        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; }
-        
-        async function guardarFirmaSocio() { 
-            const firmaB64 = canvas.toDataURL();
-            if(socioActual) {
-                await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
-                socioActual.firma_b64 = firmaB64;
-            }
-            alert("Firmado y aceptado"); 
-            cerrarFirma(); 
-            document.getElementById('checkRGPD').checked = true; 
-        }
-
-        function toggleCamara() {
-            if(!camActiva) {
-                document.getElementById('reader').style.display = 'block';
-                document.getElementById('btnCam').innerText = "❌ APAGAR CÁMARA";
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
-                    document.getElementById('buscador').value = t; render(); pararCamara(); 
-                });
-                camActiva = true;
-            } else { pararCamara(); }
-        }
-        function pararCamara() { if(html5QrCode) { html5QrCode.stop().then(()=> { document.getElementById('reader').style.display='none'; document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR"; camActiva = false; }); } }
+        function cerrar() { document.getElementById('modalTarjeta').style.display='none'; }
+        function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
+        function formatearDNI(dni) { return dni ? dni.charAt(0) + "****" + dni.slice(-1) : ""; }
 
         canvas.addEventListener('mousedown', () => dibujando = true);
         window.addEventListener('mouseup', () => { dibujando = false; ctx.beginPath(); });
