@@ -404,6 +404,64 @@
             document.getElementById('box-firma').style.display='none'; 
             document.getElementById('cardMain').style.display='block';
             document.getElementById('btnCerrarModal').style.display = 'block';
+            // --- PEGAR AQUÍ (Aprox. Línea 310 en adelante) ---
+
+let CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || { jefe: "1234", puerta: "0000", camarero: "2222" };
+let html5QrCode;
+
+function actualizarClave() {
+    const tipo = document.getElementById('tipoClave').value;
+    const nueva = document.getElementById('nuevaClaveInput').value;
+    if(nueva) { 
+        CLAVES[tipo] = nueva; 
+        localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); 
+        alert("Clave de " + tipo + " actualizada."); 
+        document.getElementById('nuevaClaveInput').value = ""; 
+    }
+}
+
+function activarEscaneo() {
+    document.getElementById('reader').style.display = 'block';
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+        document.getElementById('buscador').value = text; 
+        render();
+        const s = db.find(x => x.dni === text); 
+        if(s) abrirTarjeta(s);
+        pararCamara();
+    }).catch(() => alert("Error cámara"));
+}
+
+function pararCamara() { 
+    if(html5QrCode) html5QrCode.stop().then(()=>document.getElementById('reader').style.display='none'); 
+}
+
+// Sobrescribimos tu validarEntrada para usar los nuevos PINS
+function validarEntrada() {
+    const p = document.getElementById('passApp').value;
+    if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
+    else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
+    else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
+    else alert("CÓDIGO INCORRECTO");
+}
+
+function aplicarPermisosEspeciales() {
+    if(nivel === 'camarero') {
+        document.querySelector('.reg-box').style.display = 'none';
+        document.getElementById('btnReset').style.display = 'none';
+        document.querySelectorAll('.btn-acc').forEach(b => {
+            if(b.innerText.includes('ENTRAR') || b.innerText.includes('VETAR')) b.style.display = 'none';
+        });
+    }
+    if(nivel === 'jefe') document.getElementById('configClaves').style.display = 'block';
+}
+
+// Modificamos tu función entrar para que ejecute los permisos
+const originalEntrar = entrar;
+entrar = async function() {
+    await originalEntrar();
+    aplicarPermisosEspeciales();
+};
         }
         function cerrarSesion() { location.reload(); }
         function getP(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
