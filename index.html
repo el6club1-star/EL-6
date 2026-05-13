@@ -83,7 +83,7 @@
             <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
-        <div class="reg-box">
+        <div class="reg-box" id="cajaRegistro">
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
@@ -172,8 +172,13 @@
         }
 
         function autocompletarSocio() {
-            const d = document.getElementById('dni').value.trim().toUpperCase();
-            const s = db.find(x => x.dni === d);
+            const val = document.getElementById('dni').value.trim().toUpperCase();
+            if(!val) {
+                document.getElementById('nom').value = ""; document.getElementById('mail').value = "";
+                document.getElementById('cat').value = "Estándar"; document.getElementById('cumple').value = "";
+                document.getElementById('checkRGPD').checked = false; return;
+            }
+            const s = db.find(x => x.dni === val);
             if(s) { document.getElementById('nom').value = s.nombre; document.getElementById('mail').value = s.email; document.getElementById('cat').value = s.cat; document.getElementById('cumple').value = s.cumple; document.getElementById('checkRGPD').checked = true; }
         }
 
@@ -197,10 +202,15 @@
                 document.getElementById('configClaves').style.display = 'block';
             }
             if(nivel === 'camarero') {
-                document.querySelector('.reg-box').style.display = 'none';
+                document.getElementById('cajaRegistro').style.display = 'none';
                 document.getElementById('btnReset').style.display = 'none';
             }
             refrescarDatos(); 
+        }
+
+        function formatearDNI(dni) {
+            if(!dni || dni.length < 5) return dni;
+            return dni.substring(0, 2) + "***" + dni.substring(dni.length - 3);
         }
 
         function render() {
@@ -212,14 +222,29 @@
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
                     </td>
                 </tr>`).join('');
+        }
+
+        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
+
+        function exportarBaseDatos() {
+            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
+        }
+
+        function exportarExcel() {
+            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA\n";
+            db.forEach(s => csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora}\n`);
+            const blob = new Blob([csv], {type: "text/csv"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "SOCIOS_EL6.csv"; a.click();
         }
 
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
@@ -237,7 +262,7 @@
             socioActual = s; document.getElementById('card-id').innerText = "Nº " + s.id;
             document.getElementById('card-nom').innerText = s.nombre; document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
-            document.getElementById('qr-space').innerHTML = ""; new QRious({element: document.createElement('canvas'), value: s.dni, size: 200});
+            document.getElementById('qr-space').innerHTML = ""; 
             const qr = new QRious({value: s.dni, size: 140}); document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
@@ -260,7 +285,11 @@
         function activarEscaneo() {
             document.getElementById('reader').style.display = 'block';
             html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { document.getElementById('buscador').value = t; render(); pararCamara(); });
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
+                document.getElementById('buscador').value = t; 
+                render(); 
+                pararCamara(); 
+            }).catch(err => alert("Error cámara: " + err));
         }
         function pararCamara() { if(html5QrCode) html5QrCode.stop().then(()=>document.getElementById('reader').style.display='none'); }
 
