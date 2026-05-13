@@ -171,6 +171,11 @@
             if(n >= 0) { await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni); socioActual.consumiciones = n; refrescarDatos(); document.getElementById('card-consumos').innerText = n; }
         }
 
+        function marcarPago() {
+            document.getElementById('selloPagado').style.display = 'block';
+            document.getElementById('btnPagarTarjeta').style.display = 'none';
+        }
+
         function autocompletarSocio() {
             const val = document.getElementById('dni').value.trim().toUpperCase();
             if(!val) {
@@ -216,7 +221,7 @@
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if(nivel === "personal" && b === "") f = [];
+            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
             document.getElementById('st-total').innerText = db.length; 
             document.getElementById('st-aforo').innerText = aforo; 
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
@@ -264,16 +269,18 @@
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
             document.getElementById('qr-space').innerHTML = ""; 
             const qr = new QRious({value: s.dni, size: 140}); document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
+            document.getElementById('selloPagado').style.display = 'none';
+            document.getElementById('btnPagarTarjeta').style.display = 'block';
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
 
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
-        function cerrar() { document.getElementById('modalTarjeta').style.display='none'; }
+        function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
         function cerrarSesion() { location.reload(); }
         function gestionarEstatutos() { document.getElementById('modalTarjeta').style.display='flex'; document.getElementById('box-firma').style.display='block'; document.getElementById('cardMain').style.display='none'; }
-        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; }
-        function guardarFirmaSocio() { alert("Firmado"); cerrarFirma(); document.getElementById('checkRGPD').checked = true; }
+        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function guardarFirmaSocio() { alert("Firmado y aceptado"); cerrarFirma(); document.getElementById('checkRGPD').checked = true; }
         
         function actualizarClave() {
             const t = document.getElementById('tipoClave').value; const n = document.getElementById('nuevaClaveInput').value;
