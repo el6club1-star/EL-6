@@ -83,7 +83,7 @@
             <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
-        <div class="reg-box">
+        <div class="reg-box" id="cajaRegistro">
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
@@ -197,7 +197,7 @@
                 document.getElementById('configClaves').style.display = 'block';
             }
             if(nivel === 'camarero') {
-                document.querySelector('.reg-box').style.display = 'none';
+                document.getElementById('cajaRegistro').style.display = 'none';
                 document.getElementById('btnReset').style.display = 'none';
             }
             refrescarDatos(); 
@@ -237,7 +237,7 @@
             socioActual = s; document.getElementById('card-id').innerText = "Nº " + s.id;
             document.getElementById('card-nom').innerText = s.nombre; document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
-            document.getElementById('qr-space').innerHTML = ""; new QRious({element: document.createElement('canvas'), value: s.dni, size: 200});
+            document.getElementById('qr-space').innerHTML = ""; 
             const qr = new QRious({value: s.dni, size: 140}); document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
@@ -260,7 +260,11 @@
         function activarEscaneo() {
             document.getElementById('reader').style.display = 'block';
             html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { document.getElementById('buscador').value = t; render(); pararCamara(); });
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
+                document.getElementById('buscador').value = t; 
+                render(); 
+                pararCamara(); 
+            }).catch(err => alert("Error cámara: " + err));
         }
         function pararCamara() { if(html5QrCode) html5QrCode.stop().then(()=>document.getElementById('reader').style.display='none'); }
 
