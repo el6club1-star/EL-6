@@ -177,6 +177,20 @@
             } catch (err) { actualizarAntena(false); }
         }
 
+        async function toggleEntrada(dni) {
+            const s = db.find(x => x.dni === dni);
+            const { error } = await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni);
+            if(!error) refrescarDatos();
+        }
+
+        async function tVeto(dni) {
+            const s = db.find(x => x.dni === dni);
+            const m = s.vetado ? null : prompt("Motivo del veto:");
+            if(!s.vetado && m === null) return;
+            const { error } = await _supabase.from(NOMBRE_TABLA).update({ vetado: !s.vetado, motivo: m }).eq('dni', dni);
+            if(!error) refrescarDatos();
+        }
+
         async function modificarConsumos(v) {
             if(!socioActual) return;
             const n = (socioActual.consumiciones || 0) + v;
@@ -240,6 +254,12 @@
 
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
+            const total = db.length;
+            const vetados = db.filter(x => x.vetado).length;
+            document.getElementById('st-total').innerText = total;
+            document.getElementById('st-aforo').innerText = aforo;
+            document.getElementById('st-vetados').innerText = vetados;
+
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
             if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
             document.getElementById('lista').innerHTML = f.map(s => `
@@ -250,7 +270,6 @@
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
                     </td>
                 </tr>`).join('');
         }
@@ -293,7 +312,6 @@
             document.getElementById('box-firma').style.display='block'; 
             document.getElementById('cardMain').style.display='none'; 
             
-            // LIMPIAR Y LUEGO CARGAR FIRMA SI EXISTE
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if(socioActual && socioActual.firma_b64) {
                 const imgFirma = new Image();
@@ -310,7 +328,7 @@
                 await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
                 socioActual.firma_b64 = firmaB64;
             }
-            alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
+            alert("Firmado y aceptado"); 
             cerrarFirma(); 
             document.getElementById('checkRGPD').checked = true; 
         }
