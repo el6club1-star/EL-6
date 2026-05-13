@@ -293,7 +293,7 @@
             document.getElementById('box-firma').style.display='block'; 
             document.getElementById('cardMain').style.display='none'; 
             
-            // LIMPIAR Y CARGAR FIRMA EN EL CUADRO SI EXISTE
+            // LIMPIAR Y LUEGO CARGAR FIRMA SI EXISTE
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if(socioActual && socioActual.firma_b64) {
                 const imgFirma = new Image();
