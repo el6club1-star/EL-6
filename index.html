@@ -144,7 +144,7 @@
         </div>
         <div id="box-firma">
             <h3 style="margin:0 0 10px 0; font-size:16px; text-align:center; color: black;">ESTATUTOS</h3>
-            <div class="texto-legal"><p>Contenido legal del club...</p></div>
+            <div class="texto-legal"><p><b>NORMAS DEL CLUB EL 6:</b> 1. Prohibido fumar... 2. Derecho de admisión... (Contenido completo de estatutos)</p></div>
             <canvas id="canvasFirma" width="440" height="120"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
             <button onclick="cerrarFirma()" style="width:100%; padding:5px; background:#ccc; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">VOLVER</button>
@@ -191,6 +191,25 @@
             if(!error) refrescarDatos();
         }
 
+        async function modificarConsumos(v) {
+            if(!socioActual) return;
+            const n = (socioActual.consumiciones || 0) + v;
+            if(n >= 0) { await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni); socioActual.consumiciones = n; refrescarDatos(); document.getElementById('card-consumos').innerText = n; }
+        }
+
+        async function marcarPago() {
+            const esPagado = socioActual.pago_realizado;
+            await _supabase.from(NOMBRE_TABLA).update({ pago_realizado: !esPagado, hora_pago: !esPagado ? new Date().toISOString() : null }).eq('dni', socioActual.dni);
+            refrescarDatos(); setTimeout(() => { socioActual = db.find(x => x.dni === socioActual.dni); actualizarVisualPago(); }, 500);
+        }
+
+        function actualizarVisualPago() {
+            const sello = document.getElementById('selloPagado');
+            const btn = document.getElementById('btnPagarTarjeta');
+            if(socioActual.pago_realizado) { sello.style.display = 'block'; btn.innerText = 'PAGO OK'; btn.style.background = '#15803d'; } 
+            else { sello.style.display = 'none'; btn.innerText = 'PAGAR'; btn.style.background = 'var(--success)'; }
+        }
+
         async function registrar() {
             const d = document.getElementById('dni').value.toUpperCase();
             const n = document.getElementById('nom').value;
@@ -198,9 +217,8 @@
             const c = document.getElementById('cumple').value;
             const cat = document.getElementById('cat').value;
             if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ dni: d, nombre: n, email: e, cumple: c, dentro: true, hora: new Date().toLocaleTimeString(), cat: cat }).select();
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = ""; document.getElementById('mail').value = ""; document.getElementById('cumple').value = ""; document.getElementById('checkRGPD').checked = false;
-            refrescarDatos(); if(data) abrirTarjeta(data[0]);
+            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ dni: d, nombre: n, email: e, cumple: c, dentro: true, hora: new Date().toLocaleTimeString(), cat: cat }).select();
+            if(!error) { refrescarDatos(); if(data) abrirTarjeta(data[0]); }
         }
 
         function render() {
@@ -213,7 +231,7 @@
             if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.id}</td><td>${s.dni}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
@@ -224,14 +242,14 @@
                 </tr>`).join('');
         }
 
-        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
+        async function borrarSocio(dni) { if(confirm("¿Borrar permanentemente?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
 
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
             if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
             else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
             else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
+            else alert("ERROR");
         }
 
         function entrar() { 
@@ -244,7 +262,6 @@
                 document.getElementById('adminExtra').style.display='flex'; 
                 document.getElementById('configClaves').style.display = 'block'; 
             }
-            if(nivel === 'camarero') document.getElementById('cajaRegistro').style.display = 'none';
             refrescarDatos(); 
         }
 
@@ -265,10 +282,11 @@
                 await _supabase.from(NOMBRE_TABLA).update({ firma_b64: f }).eq('dni', socioActual.dni);
                 socioActual.firma_b64 = f;
             }
-            alert("Firmado correctamente"); cerrarFirma(); 
+            alert("Socio ha firmado correctamente"); cerrarFirma(); 
         }
 
         function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; }
+        
         function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
@@ -279,23 +297,34 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
             document.getElementById('qr-space').innerHTML = ""; 
-            const qr = new QRious({value: s.dni, size: 140}); 
+            new QRious({element: document.createElement('canvas'), value: s.dni, size: 140});
+            const qr = new QRious({value: s.dni, size: 140});
             document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
             actualizarVisualPago();
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
 
-        async function resetJornada() { if(confirm("¿Reiniciar aforo?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false }); refrescarDatos(); } }
+        async function resetJornada() { if(confirm("¿Vaciar aforo?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false }); refrescarDatos(); } }
+        async function exportarExcel() {
+            let csv = "ID;DNI;Nombre;Email;Categoria;Dentro;Vetado\n";
+            db.forEach(s => { csv += `${s.id};${s.dni};${s.nombre};${s.email};${s.cat};${s.dentro};${s.vetado}\n`; });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.setAttribute('href', url); a.setAttribute('download', 'SOCIOS_EL6.csv'); a.click();
+        }
+
         function cerrarSesion() { location.reload(); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
-        function formatearDNI(dni) { return dni ? dni.charAt(0) + "****" + dni.slice(-1) : ""; }
 
         canvas.addEventListener('mousedown', () => dibujando = true);
         window.addEventListener('mouseup', () => { dibujando = false; ctx.beginPath(); });
         canvas.addEventListener('mousemove', e => { if(dibujando) { const r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke(); } });
+        canvas.addEventListener('touchstart', (e) => { dibujando = true; e.preventDefault(); });
+        canvas.addEventListener('touchend', () => { dibujando = false; ctx.beginPath(); });
+        canvas.addEventListener('touchmove', (e) => { if(dibujando) { const r = canvas.getBoundingClientRect(); const t = e.touches[0]; ctx.lineTo(t.clientX - r.left, t.clientY - r.top); ctx.stroke(); } e.preventDefault(); });
 
-        setInterval(refrescarDatos, 10000);
+        setInterval(refrescarDatos, 15000);
     </script>
 </body>
 </html>
