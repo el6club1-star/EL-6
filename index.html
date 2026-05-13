@@ -35,7 +35,6 @@
         .fila-vetada { background-color: #fee2e2 !important; color: #b91c1c !important; }
         .btn-acc { background: transparent; border: 1px solid currentColor; border-radius: 8px; cursor: pointer; font-weight: bold; color: inherit; font-size: 11px; margin-right: 8px; text-transform: uppercase; padding: 6px 10px; }
         
-        /* DISEÑOS DE TARJETAS POR CATEGORÍA */
         #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; flex-direction: column; overflow-y: auto; padding: 20px 0; }
         .card-vip { width: 320px; border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); transition: 0.3s; }
         
@@ -49,6 +48,7 @@
         #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
         .box-consumiciones { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
         .btn-cant { background: rgba(255,255,255,0.2); color: white; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        
         .card-actions { display: flex; gap: 10px; margin-top: 15px; width: 320px; }
         .btn-card { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
         .btn-pay { background: var(--success); color: white; }
@@ -56,8 +56,7 @@
         .btn-rules { background: #3b82f6; color: white; }
         
         #box-firma { display: none; background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 500px; color: #000; box-sizing: border-box; z-index: 6000; position: relative; }
-        #previewFirmaSocio { width: 80px; height: 40px; background: white; border: 1px solid #ccc; margin-top: 5px; display: none; margin-left: auto; margin-right: auto; }
-        .texto-legal { font-size: 11px; text-align: justify; height: 380px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #ffffff !important; color: #000000 !important; line-height: 1.6; }
+        .texto-legal { font-size: 11px; text-align: justify; height: 280px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #ffffff !important; color: #000000 !important; line-height: 1.6; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 120px; }
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
         .contenedor-rgpd { display: flex; align-items: center; gap: 5px; white-space: nowrap; margin-top: 5px; font-size: 8px; }
@@ -100,7 +99,7 @@
                 <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
                 <div class="contenedor-rgpd">
                     <input type="checkbox" id="checkRGPD" style="width:auto;"> 
-                    <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
+                    <span>Acepto <a onclick="gestionarEstatutos()">Privacidad/Estatutos/RGPD</a></span>
                 </div>
             </div>
             <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
@@ -135,13 +134,13 @@
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
                 <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
                 <p>DNI: <span id="card-dni" style="float:right;">---</span></p>
-                <img id="previewFirmaSocio" src="" alt="Firma">
             </div>
         </div>
+        
         <div class="card-actions" id="accionesTarjeta">
             <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
             <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
-            <button class="btn-card btn-rules" onclick="gestionarEstatutos('tarjeta')">FIRMAR ESTATUTOS</button>
+            <button class="btn-card btn-rules" onclick="gestionarEstatutos()">FIRMAR ESTATUTOS</button>
         </div>
         <div id="box-firma">
             <h3 style="margin:0 0 10px 0; font-size:16px; text-align:center; color: black;">ESTATUTOS</h3>
@@ -187,11 +186,7 @@
         async function marcarPago() {
             const ahora = new Date().toISOString();
             const esPagado = socioActual.pago_realizado;
-            // Actúa como interruptor
-            await _supabase.from(NOMBRE_TABLA).update({ 
-                pago_realizado: !esPagado, 
-                hora_pago: !esPagado ? ahora : null 
-            }).eq('dni', socioActual.dni);
+            await _supabase.from(NOMBRE_TABLA).update({ pago_realizado: !esPagado, hora_pago: !esPagado ? ahora : null }).eq('dni', socioActual.dni);
             socioActual.pago_realizado = !esPagado;
             socioActual.hora_pago = !esPagado ? ahora : null;
             actualizarVisualPago();
@@ -200,34 +195,18 @@
         function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
-            
-            // Verificar si el pago ha caducado (5 horas)
             let pagadoValido = socioActual.pago_realizado;
             if(socioActual.hora_pago) {
-                const hPago = new Date(socioActual.hora_pago);
-                const hAhora = new Date();
-                const diff = (hAhora - hPago) / (1000 * 60 * 60);
+                const diff = (new Date() - new Date(socioActual.hora_pago)) / (1000 * 60 * 60);
                 if(diff > 5) pagadoValido = false; 
             }
-
-            if(pagadoValido) {
-                sello.style.display = 'block';
-                btn.innerText = 'PAGO REALIZADO';
-                btn.style.background = '#15803d';
-            } else {
-                sello.style.display = 'none';
-                btn.innerText = 'PAGAR';
-                btn.style.background = 'var(--success)';
-            }
+            if(pagadoValido) { sello.style.display = 'block'; btn.innerText = 'PAGO REALIZADO'; btn.style.background = '#15803d'; } 
+            else { sello.style.display = 'none'; btn.innerText = 'PAGAR'; btn.style.background = 'var(--success)'; }
         }
 
         function autocompletarSocio() {
             const val = document.getElementById('dni').value.trim().toUpperCase();
-            if(!val) {
-                document.getElementById('nom').value = ""; document.getElementById('mail').value = "";
-                document.getElementById('cat').value = "estándar"; document.getElementById('cumple').value = "";
-                document.getElementById('checkRGPD').checked = false; return;
-            }
+            if(!val) return;
             const s = db.find(x => x.dni === val);
             if(s) { 
                 document.getElementById('nom').value = s.nombre; 
@@ -247,20 +226,10 @@
         }
 
         function entrar() { 
-            document.getElementById('pantallaLogin').style.display='none'; 
-            document.getElementById('principal').style.display='block'; 
+            document.getElementById('pantallaLogin').style.display='none'; document.getElementById('principal').style.display='block'; 
             document.getElementById('btnLogout').style.display='block'; 
-            if(nivel === 'jefe') { 
-                document.getElementById('btnExport').style.display='block'; 
-                document.getElementById('btnReset').style.display='block'; 
-                document.getElementById('panelAdmin').style.display='grid'; 
-                document.getElementById('adminExtra').style.display='flex';
-                document.getElementById('configClaves').style.display = 'block';
-            }
-            if(nivel === 'camarero') {
-                document.getElementById('cajaRegistro').style.display = 'none';
-                document.getElementById('btnReset').style.display = 'none';
-            }
+            if(nivel === 'jefe') { document.getElementById('btnExport').style.display='block'; document.getElementById('btnReset').style.display='block'; document.getElementById('panelAdmin').style.display='grid'; document.getElementById('adminExtra').style.display='flex'; document.getElementById('configClaves').style.display = 'block'; }
+            if(nivel === 'camarero') document.getElementById('cajaRegistro').style.display = 'none';
             refrescarDatos(); 
         }
 
@@ -273,9 +242,6 @@
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
             if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
-            document.getElementById('st-total').innerText = db.length; 
-            document.getElementById('st-aforo').innerText = aforo; 
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
@@ -289,23 +255,6 @@
                 </tr>`).join('');
         }
 
-        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
-
-        function exportarBaseDatos() {
-            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
-        }
-
-        function exportarExcel() {
-            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA\n";
-            db.forEach(s => csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora}\n`);
-            const blob = new Blob([csv], {type: "text/csv"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "SOCIOS_EL6.csv"; a.click();
-        }
-
-        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
-        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
-        
         async function registrar() {
             const d = document.getElementById('dni').value.toUpperCase();
             const n = document.getElementById('nom').value;
@@ -313,16 +262,8 @@
             const c = document.getElementById('cumple').value;
             const cat = document.getElementById('cat').value;
             if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            
-            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-                hora: new Date().toLocaleTimeString(), cat: cat 
-            }).select();
-            
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
-
+            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ dni: d, nombre: n, email: e, cumple: c, dentro: true, hora: new Date().toLocaleTimeString(), cat: cat }).select();
+            document.getElementById('dni').value = ""; document.getElementById('nom').value = ""; document.getElementById('mail').value = ""; document.getElementById('cumple').value = ""; document.getElementById('checkRGPD').checked = false;
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
@@ -331,25 +272,13 @@
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
             card.className = `card-vip cat-${catLimpia}`;
-            
             document.getElementById('card-id').innerText = "Nº " + s.id;
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
-            
-            // Mostrar firma si existe
-            const firmaPrev = document.getElementById('previewFirmaSocio');
-            if(s.firma_b64) {
-                firmaPrev.src = s.firma_b64;
-                firmaPrev.style.display = 'block';
-            } else {
-                firmaPrev.style.display = 'none';
-            }
-
             document.getElementById('qr-space').innerHTML = ""; 
             const qr = new QRious({value: s.dni, size: 140}); 
             document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
-            
             actualizarVisualPago();
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
@@ -358,8 +287,22 @@
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
         function cerrarSesion() { location.reload(); }
-        function gestionarEstatutos() { document.getElementById('modalTarjeta').style.display='flex'; document.getElementById('box-firma').style.display='block'; document.getElementById('cardMain').style.display='none'; }
-        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        
+        function gestionarEstatutos() { 
+            document.getElementById('modalTarjeta').style.display='flex'; 
+            document.getElementById('box-firma').style.display='block'; 
+            document.getElementById('cardMain').style.display='none'; 
+            
+            // LIMPIAR Y CARGAR FIRMA EN EL CUADRO SI EXISTE
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(socioActual && socioActual.firma_b64) {
+                const imgFirma = new Image();
+                imgFirma.onload = function() { ctx.drawImage(imgFirma, 0, 0); };
+                imgFirma.src = socioActual.firma_b64;
+            }
+        }
+        
+        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; }
         
         async function guardarFirmaSocio() { 
             const firmaB64 = canvas.toDataURL();
@@ -369,16 +312,8 @@
             }
             alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
             cerrarFirma(); 
-            abrirTarjeta(socioActual);
             document.getElementById('checkRGPD').checked = true; 
         }
-        
-        function actualizarClave() {
-            const t = document.getElementById('tipoClave').value; const n = document.getElementById('nuevaClaveInput').value;
-            if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
-        }
-
-        async function resetJornada() { if(confirm("¿Reset?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); refrescarDatos(); } }
 
         function toggleCamara() {
             if(!camActiva) {
@@ -386,28 +321,12 @@
                 document.getElementById('btnCam').innerText = "❌ APAGAR CÁMARA";
                 html5QrCode = new Html5Qrcode("reader");
                 html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
-                    document.getElementById('buscador').value = t; 
-                    render(); 
-                    pararCamara(); 
+                    document.getElementById('buscador').value = t; render(); pararCamara(); 
                 });
                 camActiva = true;
-            } else {
-                pararCamara();
-            }
+            } else { pararCamara(); }
         }
-        function pararCamara() { 
-            if(html5QrCode) {
-                html5QrCode.stop().then(()=> {
-                    document.getElementById('reader').style.display='none';
-                    document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
-                    camActiva = false;
-                }).catch(() => {
-                    document.getElementById('reader').style.display='none';
-                    document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
-                    camActiva = false;
-                });
-            }
-        }
+        function pararCamara() { if(html5QrCode) { html5QrCode.stop().then(()=> { document.getElementById('reader').style.display='none'; document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR"; camActiva = false; }); } }
 
         canvas.addEventListener('mousedown', () => dibujando = true);
         window.addEventListener('mouseup', () => { dibujando = false; ctx.beginPath(); });
