@@ -7,6 +7,7 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         :root { --gold: #d4af37; --bg: #ffffff; --card: #f8fafc; --text: #1e293b; --success: #22c55e; --danger: #ef4444; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
@@ -154,6 +155,11 @@
     </div>
 
     <script>
+        // CONFIGURACIÓN EMAILJS (RELLENA ESTOS DATOS)
+        (function(){
+            emailjs.init("TU_USER_ID_AQUÍ"); 
+        })();
+
         const supabaseUrl = 'https://rmskjegarvntuqpfzfbm.supabase.co';
         const supabaseKey = 'sb_publishable_hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -187,7 +193,6 @@
         async function marcarPago() {
             const ahora = new Date().toISOString();
             const esPagado = socioActual.pago_realizado;
-            // Actúa como interruptor
             await _supabase.from(NOMBRE_TABLA).update({ 
                 pago_realizado: !esPagado, 
                 hora_pago: !esPagado ? ahora : null 
@@ -200,8 +205,6 @@
         function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
-            
-            // Verificar si el pago ha caducado (5 horas)
             let pagadoValido = socioActual.pago_realizado;
             if(socioActual.hora_pago) {
                 const hPago = new Date(socioActual.hora_pago);
@@ -209,7 +212,6 @@
                 const diff = (hAhora - hPago) / (1000 * 60 * 60);
                 if(diff > 5) pagadoValido = false; 
             }
-
             if(pagadoValido) {
                 sello.style.display = 'block';
                 btn.innerText = 'PAGO REALIZADO';
@@ -260,6 +262,8 @@
             if(nivel === 'camarero') {
                 document.getElementById('cajaRegistro').style.display = 'none';
                 document.getElementById('btnReset').style.display = 'none';
+                // REGLA SOLICITADA: En nivel 2222 solo botón Tarjeta
+                document.getElementById('accionesTarjeta').innerHTML = '<button class="btn-card btn-rules" onclick="gestionarEstatutos()">FIRMAR ESTATUTOS</button>';
             }
             refrescarDatos(); 
         }
@@ -319,6 +323,16 @@
                 hora: new Date().toLocaleTimeString(), cat: cat 
             }).select();
             
+            // FUNCIÓN DE ENVÍO DE EMAIL
+            if(e) {
+                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+                    to_name: n,
+                    to_email: e,
+                    dni: d,
+                    categoria: cat
+                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
+            }
+
             document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
             document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
             document.getElementById('checkRGPD').checked = false;
@@ -337,7 +351,6 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
             
-            // Mostrar firma si existe
             const firmaPrev = document.getElementById('previewFirmaSocio');
             if(s.firma_b64) {
                 firmaPrev.src = s.firma_b64;
