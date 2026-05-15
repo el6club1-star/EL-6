@@ -127,6 +127,7 @@
             <div id="selloPagado">PAGADO ✅</div>
             <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
             <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
+            <div id="card-categoria-texto" style="font-size:12px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; opacity:0.9;"></div>
             <div id="qr-space"></div>
             <div class="box-consumiciones">
                 <button class="btn-cant" onclick="modificarConsumos(-1)">-</button>
@@ -287,7 +288,7 @@
                     <td>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="reAbrir('${s.dni}')">TARJETA</button>
                         <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
                     </td>
                 </tr>`).join('');
@@ -347,6 +348,7 @@
             card.className = `card-vip cat-${catLimpia}`;
             
             document.getElementById('card-id').innerText = "Nº " + s.id;
+            document.getElementById('card-categoria-texto').innerText = s.cat || "ESTÁNDAR";
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
