@@ -288,7 +288,7 @@
                     <td>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
                         <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
                     </td>
                 </tr>`).join('');
@@ -348,7 +348,7 @@
             card.className = `card-vip cat-${catLimpia}`;
             
             document.getElementById('card-id').innerText = "Nº " + s.id;
-            document.getElementById('card-categoria-texto').innerText = s.cat || "ESTÁNDAR";
+            document.getElementById('card-categoria-texto').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
