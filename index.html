@@ -353,11 +353,19 @@
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
             
             const firmaPrev = document.getElementById('previewFirmaSocio');
+            const btnRules = document.querySelector('.btn-rules'); // Buscamos el botón de estatutos
+            
             if(s.firma_b64) {
                 firmaPrev.src = s.firma_b64;
                 firmaPrev.style.display = 'block';
+                // Si ya está firmado, ponemos el botón verde con el tic
+                btnRules.innerText = "ESTATUTOS FIRMADOS ✅";
+                btnRules.style.background = "#22c55e"; 
             } else {
                 firmaPrev.style.display = 'none';
+                // Si no está firmado, lo dejamos azul normal
+                btnRules.innerText = "FIRMAR ESTATUTOS";
+                btnRules.style.background = "#3b82f6";
             }
 
             document.getElementById('qr-space').innerHTML = ""; 
