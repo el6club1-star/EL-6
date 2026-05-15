@@ -137,6 +137,7 @@
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
                 <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
                 <p>DNI: <span id="card-dni" style="float:right;">---</span></p>
+                <p>CATEGORÍA: <span id="card-cat-abajo" style="float:right;">---</span></p>
                 <img id="previewFirmaSocio" src="" alt="Firma">
             </div>
         </div>
@@ -346,9 +347,9 @@
             card.className = `card-vip cat-${catLimpia}`;
             
             document.getElementById('card-id').innerText = "Nº " + s.id;
-            document.getElementById('card-categoria-texto').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni;
+            document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
             
             const firmaPrev = document.getElementById('previewFirmaSocio');
