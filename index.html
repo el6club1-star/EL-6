@@ -380,7 +380,33 @@
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
         function cerrarSesion() { location.reload(); }
-        function gestionarEstatutos() { document.getElementById('modalTarjeta').style.display='flex'; document.getElementById('box-firma').style.display='block'; document.getElementById('cardMain').style.display='none'; }
+        function gestionarEstatutos() {
+            document.getElementById('modalTarjeta').style.display = 'flex';
+            document.getElementById('box-firma').style.display = 'block';
+            document.getElementById('cardMain').style.display = 'none';
+            
+            // Limpiamos el recuadro blanco por si acaso antes de empezar
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Buscamos el botón de aceptar para poder esconderlo si ya firmó
+            const btnAceptarFirma = document.querySelector('#box-firma button[onclick="guardarFirmaSocio()"]');
+            
+            // Si el socio ya tiene su firma guardada en Supabase...
+            if (socioActual && socioActual.firma_b64) {
+                const imgFirma = new Image();
+                imgFirma.src = socioActual.firma_b64;
+                imgFirma.onload = function() {
+                    // Pintamos su firma guardada exactamente dentro del recuadro blanco
+                    ctx.drawImage(imgFirma, 0, 0, canvas.width, canvas.height);
+                };
+                
+                // Ocultamos el botón de "ACEPTAR Y FIRMAR" para que no se pueda sobrescribir
+                if(btnAceptarFirma) btnAceptarFirma.style.display = 'none';
+            } else {
+                // Si NO tiene firma, nos aseguramos de que el botón sí se vea para que pueda firmar
+                if(btnAceptarFirma) btnAceptarFirma.style.display = 'block';
+            }
+        }
         function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
         
         async function guardarFirmaSocio() { 
