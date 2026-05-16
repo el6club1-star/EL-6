@@ -407,7 +407,12 @@
                 if(btnAceptarFirma) btnAceptarFirma.style.display = 'block';
             }
         }
-        function cerrarFirma() { document.getElementById('box-firma').style.display='none'; document.getElementById('cardMain').style.display='block'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function cerrarFirma() { 
+            document.getElementById('box-firma').style.display='none'; 
+            document.getElementById('cardMain').style.display='block'; 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            ctx.beginPath(); // Esto reinicia el lápiz de dibujo
+        }
         
         async function guardarFirmaSocio() { 
             const firmaB64 = canvas.toDataURL();
