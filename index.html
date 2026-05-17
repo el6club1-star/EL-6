@@ -285,14 +285,16 @@
                 document.getElementById('configClaves').style.display = 'block';
             }
             if(nivel === 'camarero') {
-    document.getElementById('cajaRegistro').style.display = 'none';
-    document.getElementById('btnReset').style.display = 'none';
-    document.getElementById('panelAdmin').style.display = 'none';
-    document.getElementById('btnCam').style.display = 'none';
-    if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-    if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-    if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+            document.getElementById('cajaRegistro').style.display = 'none';
+            document.getElementById('btnReset').style.display = 'none';
+            document.getElementById('panelAdmin').style.display = 'none';
+            document.getElementById('btnCam').style.display = 'none';
+            if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+            if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+            if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+        }
 
+        refrescarDatos();
                 
             }
             refrescarDatos(); 
