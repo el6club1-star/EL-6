@@ -299,9 +299,8 @@
         
 
         function formatearDNI(dni) {
-        function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
-            return dni.charAt(0) + "*******" + dni.charAt(dni.length - 1);
+            return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
         }
 
         function render() {
