@@ -370,6 +370,15 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             document.getElementById('card-consumos').innerText = s.consumiciones || 0;
+            // Ocultar el botón "+" si es camarero para evitar fraudes
+const botonMas = document.querySelector(".btn-cant[onclick='modificarConsumos(1)']");
+if (botonMas) {
+    if (nivel === 'camarero') {
+        botonMas.style.visibility = 'hidden'; // El camarero no lo ve ni lo puede pulsar
+    } else {
+        botonMas.style.visibility = 'visible'; // El jefe y la puerta sí lo ven
+    }
+}
             
             const firmaPrev = document.getElementById('previewFirmaSocio');
             if(s.firma_b64) {
