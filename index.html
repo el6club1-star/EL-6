@@ -386,6 +386,21 @@ if (botonMas) {
         botonMas.style.visibility = 'visible'; // El jefe y la puerta sí lo ven
     }
 }
+            // Ocultar botones de la tarjeta para el camarero
+            const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
+            btnsTarjeta.forEach(btn => {
+                const texto = btn.innerText.toUpperCase();
+                if (nivel === 'camarero') {
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA')) {
+                        btn.style.display = 'none';
+                    }
+                } else {
+                    // Para jefe o personal, nos aseguramos de que sí se vean (quitando el 'none')
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA')) {
+                        btn.style.display = ''; 
+                    }
+                }
+            });
             
             const firmaPrev = document.getElementById('previewFirmaSocio');
             if(s.firma_b64) {
