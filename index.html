@@ -391,12 +391,12 @@ if (botonMas) {
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
                 if (nivel === 'camarero') {
-                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA')) {
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     }
                 } else {
                     // Para jefe o personal, nos aseguramos de que sí se vean (quitando el 'none')
-                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA')) {
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = ''; 
                     }
                 }
