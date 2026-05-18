@@ -471,13 +471,42 @@ if (botonMas) {
             document.getElementById('box-firma').style.display = 'none';
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
-        async function guardarConsumoSocio(dni) {
-            const nuevoConsumo = document.getElementById('select-consumo').value;
-            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: nuevoConsumo }).eq('dni', dni);
-            if (socioActual && socioActual.dni === dni) {
-                socioActual.consumiciones = nuevoConsumo;
+        async function cambiarCantidadProducto(dni, producto, cambio) {
+            let consumos = {};
+            const stringOriginal = (socioActual && socioActual.dni === dni ? socioActual.consumiciones : '') || '';
+            
+            if (stringOriginal.includes(':')) {
+                stringOriginal.split(',').forEach(item => {
+                    const [p, c] = item.split(':');
+                    if(p) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                });
+            } else if (stringOriginal && stringOriginal !== 'ENTRADA' && isNaN(stringOriginal)) {
+                consumos[stringOriginal.toUpperCase()] = 1;
+            } else if (!isNaN(stringOriginal) && parseInt(stringOriginal) > 0) {
+                consumos['COPA'] = parseInt(stringOriginal);
             }
-            refrescarDatos();
+
+            let cantActual = consumos[producto] || 0;
+            let nuevaCant = cantActual + cambio;
+            if (nuevaCant < 0) nuevaCant = 0;
+            consumos[producto] = nuevaCant;
+
+            let resultadoString = Object.keys(consumos)
+                .filter(p => consumos[p] > 0)
+                .map(p => `${p}:${consumos[p]}`)
+                .join(',');
+
+            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+            
+            if (socioActual && socioActual.dni === dni) {
+                socioActual.consumiciones = resultadoString;
+                const productosLista = ['COPA', 'CERVEZA', 'AGUA', 'REFRESCO', 'ENERGÉTICO', 'CHUPITO'];
+                productosLista.forEach(prod => {
+                    const el = document.getElementById(`cant-${prod}`);
+                    if(el) el.innerText = consumos[prod] || 0;
+                });
+            }
+        }
         }
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
