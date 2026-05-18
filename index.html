@@ -483,8 +483,9 @@
         async function añadirProductoDesplegable(dni, producto) {
             if (!producto) return;
             await modificarCantidadDirecta(dni, producto, 1);
-            document.getElementById('select-add-consumo').value = ""; // Resetea el desplegable
+            document.getElementById('select-add-consumo').value = "";
         }
+        
 
         async function modificarCantidadDirecta(dni, producto, cambio) {
             let consumos = {};
