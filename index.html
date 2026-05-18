@@ -437,15 +437,16 @@
 
             htmlConsumos += `</div>`;
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
+
             // Ocultar el botón "+" si es camarero para evitar fraudes
-const botonMas = document.querySelector(".btn-cant[onclick='modificarConsumos(1)']");
-if (botonMas) {
-    if (nivel === 'camarero') {
-        botonMas.style.visibility = 'hidden'; // El camarero no lo ve ni lo puede pulsar
-    } else {
-        botonMas.style.visibility = 'visible'; // El jefe y la puerta sí lo ven
-    }
-}
+            const botonMas = document.querySelectorySelector ? document.querySelector(".btn-cant[onclick='modificarConsumos(1)']") : null; 
+            if (botonMas) {
+                if (nivel === 'camarero') {
+                    botonMas.style.visibility = 'hidden';
+                } else {
+                    botonMas.style.visibility = 'visible';
+                }
+            }            
             // Ocultar botones de la tarjeta para el camarero
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
