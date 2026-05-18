@@ -376,7 +376,21 @@
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
-            document.getElementById('card-consumos').innerText = s.consumiciones || 0;
+            // Menú dinámico de consumiciones
+            const opcionesConsumo = ['ENTRADA', 'COPA', 'CERVEZA', 'AGUA', 'REFRESCO', 'ENERGÉTICO', 'CHUPITO'];
+            let selectHTML = `<select id="select-consumo" style="padding: 5px; border-radius: 5px; font-weight: bold;" onchange="guardarConsumoSocio('${s.dni}')" ${nivel === 'camarero' ? 'disabled' : ''}>`;
+            
+            const consumoActual = (s.consumiciones || 'ENTRADA').toUpperCase();
+            if (!opcionesConsumo.includes(consumoActual)) {
+                opcionesConsumo.push(consumoActual);
+            }
+            
+            opcionesConsumo.forEach(opc => {
+                selectHTML += `<option value="${opc}" ${consumoActual === opc ? 'selected' : ''}>${opc}</option>`;
+            });
+            selectHTML += `</select>`;
+            
+            document.getElementById('card-consumos').innerHTML = selectHTML;
             // Ocultar el botón "+" si es camarero para evitar fraudes
 const botonMas = document.querySelector(".btn-cant[onclick='modificarConsumos(1)']");
 if (botonMas) {
@@ -419,7 +433,14 @@ if (botonMas) {
             document.getElementById('box-firma').style.display = 'none';
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
-
+        async function guardarConsumoSocio(dni) {
+            const nuevoConsumo = document.getElementById('select-consumo').value;
+            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: nuevoConsumo }).eq('dni', dni);
+            if (socioActual && socioActual.dni === dni) {
+                socioActual.consumiciones = nuevoConsumo;
+            }
+            refrescarDatos();
+        }
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
