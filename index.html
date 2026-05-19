@@ -365,7 +365,7 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
-    function abrirTarjeta(s) {
+   function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -377,12 +377,14 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // CONFIGURACIÓN DE CONSUMICIONES (VISTAS IDÉNTICAS - RESTRICCIÓN CAMARERO)
+            // CONFIGURACIÓN DE CONSUMICIONES: LIMPIEZA DE MEMORIA CACHÉ POR SOCIO
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-            window.consumosActualesGlobal = {}; 
             
+            // Forzamos el reseteo absoluto de la variable global para eliminar el bug de arrastrar cantidades antiguas
+            window.consumosActualesGlobal = {}; 
             productosValidos.forEach(p => window.consumosActualesGlobal[p] = 0);
+            
             const stringOriginal = String(s.consumiciones || '').trim();
             
             if (stringOriginal.includes(':')) {
@@ -396,7 +398,7 @@
                 window.consumosActualesGlobal['COPA'] = parseInt(stringOriginal);
             }
 
-            // Dejamos la tarjeta impecable: solo el botón estilizado, sin texto sobrante fuera
+            // Renderizado estricto del disparador de gestión (sin textos fantasma fuera)
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
                     <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -407,7 +409,7 @@
             
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Creamos o actualizamos la burbuja de manera externa en el modal para que no se corte
+            // Instanciamos el contenedor flotante directo sobre el Modal para evitar el borrado o recortes
             let burbujaExterna = document.getElementById('ventanilla-consumos');
             if (!burbujaExterna) {
                 burbujaExterna = document.createElement('div');
@@ -424,7 +426,6 @@
                 <div style="display: flex; flex-direction: column; gap: 8px;">
             `;
 
-            // Renderizado de productos con lógica de rol integrada
             productosValidos.forEach(prod => {
                 const cantidad = window.consumosActualesGlobal[prod];
                 
@@ -448,14 +449,18 @@
             burbujaExterna.innerHTML = htmlBurbuja;
             // =========================================================================
 
+            // FILTRO DE VISIBILIDAD DE BOTONES DEL MODAL (FIX BOTÓN PAGAR CAMARERO 2222)
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
                 if (nivel === 'camarero') {
-                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                    // Quitamos la palabra PAGAR de aquí para que el camarero sí conserve visible su botón de cobro obligatorio
+                    if (texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
+                    } else {
+                        btn.style.display = '';
                     }
                 } else {
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
@@ -508,13 +513,17 @@
                 .map(p => `${p}:${window.consumosActualesGlobal[p]}`)
                 .join(','); 
 
+            // Sincronización en tiempo real con Supabase
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            let socioActivo = (typeof db !== 'undefined') ? db.find(x => x.dni === dni) : socioActual;
-            if (!socioActivo) socioActivo = socioActual;
-            
-            if (socioActivo) socioActivo.consumiciones = resultadoString;
-            if (socioActual && socioActual.dni === dni) socioActual.consumiciones = resultadoString;
+            // Sincronización forzada con los arrays locales db y memoria RAM para mutación entre pantallas
+            if (typeof db !== 'undefined') {
+                let idx = db.findIndex(x => x.dni === dni);
+                if (idx !== -1) db[idx].consumiciones = resultadoString;
+            }
+            if (socioActual && socioActual.dni === dni) {
+                socioActual.consumiciones = resultadoString;
+            }
         }
 
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
