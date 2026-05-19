@@ -365,7 +365,7 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
-       function abrirTarjeta(s) {
+      function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -377,7 +377,7 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // NUEVO SISTEMA: LISTA EN MENÚ DESPLEGABLE CON MÁS Y MENOS INDIVIDUALES
+            // NUEVO SISTEMA INTERACTIVO: VENTANILLA FLOTANTE & FIX DE BOTONES INDEPENDIENTES
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             let consumosActuales = {};
@@ -396,13 +396,13 @@
                 consumosActuales['COPA'] = parseInt(stringOriginal);
             }
 
-            // Construcción del contenedor desplegable fino y elegante
+            // Área de renderizado del estado actual de las consumiciones en la tarjeta
             let htmlConsumos = `
-                <div style="margin: 10px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
+                <div style="margin: 10px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif; position: relative;">
             `;
 
             if (nivel === 'camarero') {
-                // VISTA CAMARERO (2222): Formato recibo directo, ultra-limpio y sin "unidades"
+                // VISTA CAMARERO (2222): Vista limpia, sin botones, sin palabra "Uds"
                 htmlConsumos += `
                     <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
                         <p style="font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.5); margin: 0 0 4px 0; text-align: center; font-weight: bold;">CONSUMICIONES</p>
@@ -414,7 +414,7 @@
                         tieneConsumos = true;
                         htmlConsumos += `
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px dashed rgba(255,255,255,0.1);">
-                                <span style="font-size: 11px; font-weight: 600; color: #fff;">${prod}</span>
+                                <span style="font-size: 11px; font-weight: 600; color: #fff; text-transform: uppercase;">${prod}</span>
                                 <span style="font-size: 11px; font-weight: 700; color: #d4af37; background: rgba(214,175,55,0.1); padding: 1px 6px; border-radius: 4px;">${cantidad}</span>
                             </div>
                         `;
@@ -425,24 +425,53 @@
                 }
                 htmlConsumos += `</div>`;
             } else {
-                // VISTA JEFE/GESTIÓN: Menú desplegable elegante (Acordeón) con botoneras individuales
+                // VISTA JEFE/GESTIÓN: Resumen compacto + Botón disparador de la mini-ventanilla flotante
                 htmlConsumos += `
-                    <details style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; overflow: hidden; transition: all 0.3s ease;">
-                        <summary style="padding: 8px 12px; font-size: 11px; font-weight: 700; color: #d4af37; letter-spacing: 1px; text-align: center; cursor: pointer; list-style: none; user-select: none; background: rgba(255,255,255,0.03);">
-                            ⚡ GESTIONAR CONSUMICIONES ▾
-                        </summary>
-                        <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
+                    <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='block'" style="width: 100%; background: rgba(255,255,255,0.08); color: #d4af37; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; margin-bottom: 6px; transition: 0.2s;">
+                        ⚡ GESTIONAR CONSUMICIONES ▾
+                    </button>
+                    
+                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 4px;">
+                `;
+                
+                let countItems = 0;
+                productosValidos.forEach(prod => {
+                    const cantidad = consumosActuales[prod];
+                    if (cantidad > 0) {
+                        countItems++;
+                        htmlConsumos += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 0;">
+                                <span style="font-size: 10px; color: rgba(255,255,255,0.7); text-transform: uppercase;">${prod}</span>
+                                <span style="font-size: 11px; font-weight: 700; color: #d4af37;">${cantidad}</span>
+                            </div>
+                        `;
+                    }
+                });
+                if (countItems === 0) {
+                    htmlConsumos += `<div style="text-align: center; color: rgba(255,255,255,0.3); font-size: 10px; font-style: italic;">Ninguna activa (Pulsa Gestionar)</div>`;
+                }
+                htmlConsumos += `</div>`;
+
+                // LA VENTANILLA CHIQUITITA (Flota de forma absoluta por encima de todo, sin estirar la tarjeta)
+                htmlConsumos += `
+                    <div id="ventanilla-consumos" style="display: none; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 230px; background: #1a1a1a; border: 2px solid #d4af37; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); z-index: 99999; padding: 10px; box-sizing: border-box;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR SALDOS</span>
+                            <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
                 `;
 
+                // Bucle de controles aislado de forma estricta pasando literales de String exactos
                 productosValidos.forEach(prod => {
                     const cantidad = consumosActuales[prod];
                     htmlConsumos += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 0;">
-                            <span style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.85); text-transform: uppercase;">${prod}</span>
-                            <div style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); padding: 2px 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 20px; height: 20px; border-radius: 4px; border: none; background: rgba(255,255,255,0.15); color: #fff; font-weight: bold; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center;">-</button>
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 4px 6px; border-radius: 6px;">
+                            <span style="font-size: 10px; font-weight: 600; color: #eee; text-transform: uppercase;">${prod}</span>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1); event.stopPropagation();" style="width: 22px; height: 22px; border-radius: 4px; border: none; background: rgba(255,255,255,0.15); color: #fff; font-weight: bold; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;">-</button>
                                 <span style="font-size: 11px; font-weight: 700; min-width: 14px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 20px; height: 20px; border-radius: 4px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center;">+</button>
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1); event.stopPropagation();" style="width: 22px; height: 22px; border-radius: 4px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;">+</button>
                             </div>
                         </div>
                     `;
@@ -450,7 +479,7 @@
 
                 htmlConsumos += `
                         </div>
-                    </details>
+                    </div>
                 `;
             }
 
@@ -521,10 +550,11 @@
                 if (nuevaCant < 0) nuevaCant = 0;
                 resultadoString = String(nuevaCant);
             } else {
-                let cantActual = consumos[producto] || 0;
+                // Selección y mutación quirúrgica y aislada del producto seleccionado
+                let cantActual = consumos[producto.toUpperCase()] || 0;
                 let nuevaCant = cantActual + cambio;
                 if (nuevaCant < 0) nuevaCant = 0;
-                consumos[producto] = nuevaCant;
+                consumos[producto.toUpperCase()] = nuevaCant;
 
                 resultadoString = Object.keys(consumos)
                     .filter(p => consumos[p] > 0)
@@ -537,11 +567,13 @@
             if (socioActivo) socioActivo.consumiciones = resultadoString;
             if (socioActual && socioActual.dni === dni) socioActual.consumiciones = resultadoString;
             
-            // Reabrir manteniendo el menú desplegado para comodidad visual del jefe al hacer clicks
+            // Reabrimos la tarjeta actualizada
             abrirTarjeta(socioActivo);
-            const menuDesplegable = document.querySelector('details');
-            if (menuDesplegable && nivel !== 'camarero') {
-                menuDesplegable.open = true;
+            
+            // Si estaba la ventanilla abierta en gestión, la mantenemos abierta tras el click para poder seguir sumando/restando sin cierres molestos
+            const ventanilla = document.getElementById('ventanilla-consumos');
+            if (ventanilla && nivel !== 'camarero') {
+                ventanilla.style.display = 'block';
             }
         }
 
