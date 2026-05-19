@@ -366,7 +366,7 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
-        function abrirTarjeta(s) {
+      function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -377,7 +377,7 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-            // Configuración del listado y parseo seguro
+            // Configuración de productos válidos y parseo
             const productosValidos = ['COPA', 'CERVEZA', 'AGUA', 'REFRESCO', 'ENERGÉTICO', 'CHUPITO'];
             let consumosActuales = {};
             const stringOriginal = s.consumiciones || '';
@@ -391,11 +391,11 @@
                 consumosActuales[stringOriginal.toUpperCase()] = 1;
             }
 
-            // Contenedor principal con centrado y estructura limpia
+            // Contenedor principal centrado para las consumiciones
             let htmlConsumos = `<div style="width: 100%; max-width: 250px; margin: 0 auto; font-family: system-ui, sans-serif; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">`;
 
             if (nivel === 'camarero') {
-                // Vista limpia para el camarero (Solo lectura)
+                // Vista del camarero (Solo lectura)
                 let tieneAlgo = false;
                 productosValidos.forEach(prod => {
                     const cantidad = consumosActuales[prod] || 0;
@@ -412,18 +412,18 @@
                     htmlConsumos += `<div style="font-size: 12px; color: #888; text-align: center; padding: 15px 0; font-style: italic;">Sin consumiciones activas</div>`;
                 }
             } else {
-                // DISEÑO DESPLEGABLE PREMIUM ELEGANTE (Gris oscuro y blanco, sin verdes)
+                // MENÚ DESPLEGABLE PREMIUM VIP (Elegante en tonos oscuros neutros, sin verdes)
                 htmlConsumos += `
                     <div style="position: relative; width: 100%;">
-                        <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; padding: 11px 14px; background: #18181b; color: #f4f4f5; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.3px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.2s;">
-                            <option value="" style="color: #71717a;">+ AÑADIR CONSUMICIÓN...</option>
-                            ${productosValidos.map(p => `<option value="${p}" style="background: #18181b; color: #ffffff;">${p}</option>`).join('')}
+                        <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; padding: 11px 14px; background: rgba(25, 25, 25, 0.95); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.2s;">
+                            <option value="" style="color: #888;">+ AÑADIR CONSUMICIÓN...</option>
+                            ${productosValidos.map(p => `<option value="${p}" style="background: #1c1c1e; color: #ffffff;">${p}</option>`).join('')}
                         </select>
-                        <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #a1a1aa; pointer-events: none; font-size: 10px;">▼</div>
+                        <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #ffffff; opacity: 0.6; pointer-events: none; font-size: 10px;">▼</div>
                     </div>
                     <div id="lista-consumos-editor" style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding-right: 2px;">`;
                 
-                // Lista de productos añadidos con selectores estilizados oscuros neutros
+                // Lista de productos con botones oscuros perfectamente balanceados
                 productosValidos.forEach(prod => {
                     const cantidad = consumosActuales[prod] || 0;
                     if (cantidad > 0) {
@@ -433,7 +433,7 @@
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">-</button>
                                     <span style="font-size: 12px; font-weight: 700; color: #ffffff; min-width: 24px; text-align: center;">${cantidad}</span>
-                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.08); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">+</button>
+                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">+</button>
                                 </div>
                             </div>`;
                     }
@@ -444,7 +444,7 @@
             htmlConsumos += `</div>`;
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // CONTROL EXCLUSIVO DE VISIBILIDAD DE BOTONES (Sin romper flujos flex del HTML original)
+            // CONTROL DE VISIBILIDAD DE LOS BOTONES DE ACCIÓN (Mantiene intacta la estructura original)
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
@@ -456,12 +456,12 @@
                     }
                 } else {
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                        btn.style.display = ''; 
+                        btn.style.display = ''; // Conserva el flex/block nativo sin romper el centrado
                     }
                 }
             });
             
-            // Render de firma
+            // Preview de la Firma
             const firmaPrev = document.getElementById('previewFirmaSocio');
             if(s.firma_b64) {
                 firmaPrev.src = s.firma_b64;
@@ -470,7 +470,7 @@
                 firmaPrev.style.display = 'none';
             }
 
-            // Render de QR
+            // Generador del código QR
             document.getElementById('qr-space').innerHTML = ""; 
             const qr = new QRious({value: s.dni, size: 140}); 
             document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
@@ -491,7 +491,7 @@
         async function modificarCantidadDirecta(dni, producto, cambio) {
             let consumos = {};
             
-            // Localizar el objeto real en la base de datos local 'db' para evitar desfases
+            // Sincronizar directo con los datos en memoria 'db' para evitar retrasos de lectura
             let socioActivo = (typeof db !== 'undefined') ? db.find(x => x.dni === dni) : socioActual;
             if (!socioActivo) socioActivo = socioActual;
             
@@ -511,16 +511,16 @@
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[producto] = nuevaCant;
 
-            // SEPARACIÓN ESTRICTA POR COMAS: Formato limpio que Supabase y el camarero entienden perfectamente
+            // Cadena unificada limpia separada por comas para Supabase
             let resultadoString = Object.keys(consumos)
                 .filter(p => consumos[p] > 0)
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Actualizar Supabase
+            // Guardado en la base de datos
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // Sincronizar referencias internas al momento
+            // Actualizar referencias activas
             if (socioActivo) socioActivo.consumiciones = resultadoString;
             if (socioActual && socioActual.dni === dni) socioActual.consumiciones = resultadoString;
             
@@ -528,7 +528,7 @@
                 await refrescarDatos();
             }
             
-            // Volver a pintar la tarjeta manteniendo el estado visual e inferior intacto
+            // Pintar de nuevo la tarjeta manteniendo toda la estructura intacta
             abrirTarjeta(socioActivo);
         }
 
