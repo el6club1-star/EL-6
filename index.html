@@ -377,17 +377,18 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // ELIMINACIÓN DE CACHÉ Y LECTURA LIMPIA POR APERTURA
+            // CONFIGURACIÓN DE CONSUMICIONES: ULTRA-SINCRONIZACIÓN Y FIX DE FORMATO
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             
-            // Forzamos que la variable de consumo empiece a cero absoluto en cada click
+            // Forzamos el vaciado absoluto del objeto en cada apertura
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
             
-            // Leemos el dato real que viene de la base de datos de este socio único
+            // Convertimos a string limpio lo que viene de Supabase
             const stringOriginal = String(s.consumiciones || '').trim();
             
+            // SI ES UN NÚMERO SUELTO VIEJO (Ej: el "12" que fallaba), lo ignoramos o reseteamos para que no ensucie
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
                     const [prod, cant] = item.split(':');
@@ -395,11 +396,13 @@
                         consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
                     }
                 });
-            } else if (stringOriginal && !isNaN(stringOriginal) && parseInt(stringOriginal) > 0) {
-                consumosSocio['COPA'] = parseInt(stringOriginal);
+            } else {
+                // Si entra aquí es que era un número suelto antiguo (como el 12). 
+                // Lo ponemos todo a 0 para que quede limpio y use el nuevo formato sincronizado.
+                productosValidos.forEach(p => consumosSocio[p] = 0);
             }
 
-            // Inyectamos el botón de control en la tarjeta sin textos duplicados
+            // Inyectamos el botón de la tarjeta (completamente limpio por fuera)
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
                     <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -410,7 +413,7 @@
             
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Control y limpieza radical de la burbuja externa fija para evitar duplicados antiguos
+            // Comprobación y limpieza radical de la burbuja flotante externa
             let burbujaExterna = document.getElementById('ventanilla-consumos');
             if (!burbujaExterna) {
                 burbujaExterna = document.createElement('div');
@@ -419,7 +422,7 @@
                 document.getElementById('modalTarjeta').appendChild(burbujaExterna);
             }
             
-            // Vaciamos por completo el HTML residual que tuviera la burbuja antes de pintar el nuevo socio
+            // Vaciamos el HTML para que no pinte datos del socio anterior
             burbujaExterna.innerHTML = "";
 
             let htmlBurbuja = `
@@ -453,13 +456,14 @@
             burbujaExterna.innerHTML = htmlBurbuja;
             // =========================================================================
 
-            // OCULTACIÓN ESTRICTA DE BOTONES DE ACCIÓN PARA EL CAMARERO
+            // CONTROL EXCLUSIVO DE VISIBILIDAD DE BOTONES
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
                 if (nivel === 'camarero') {
+                    // El camarero NO ve el botón de Pagar, ni enviar, ni descargar, ni estatutos.
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     } else {
@@ -500,7 +504,7 @@
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             
-            // Buscamos la referencia exacta del socio dentro de la base de datos local RAM (db o datos)
+            // Localizamos al socio en los arrays locales de la app
             let socioActivo = null;
             if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
             if (!socioActivo && typeof datos !== 'undefined') socioActivo = datos.find(x => x.dni === dni);
@@ -516,33 +520,31 @@
                     const [p, c] = item.split(':');
                     if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
                 });
-            } else if (stringOriginal && !isNaN(stringOriginal) && parseInt(stringOriginal) > 0) {
-                consumos['COPA'] = parseInt(stringOriginal);
             }
 
-            // Realizamos el cambio numérico directo
+            // Aplicamos la suma o resta en local
             let cantActual = consumos[prodKey] || 0;
             let nuevaCant = cantActual + cambio;
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[prodKey] = nuevaCant;
 
-            // Actualizamos el contador en la pantalla inmediatamente
+            // Actualizamos la pantalla de forma reactiva instantánea
             const elementoContador = document.getElementById(`v-cant-${producto}`);
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
 
-            // Construimos la cadena formateada limpia
+            // Mapeamos al formato estricto texto -> PROD:CANT,PROD:CANT
             let resultadoString = Object.keys(consumos)
                 .filter(p => consumos[p] > 0)
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // SINCRONIZACIÓN PERSISTENTE TOTAL (Supabase + Memoria RAM de la App)
+            // Subida síncrona limpia a Supabase
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // Sincronizamos todas las posibles colecciones para que al entrar y salir no se borre el dato
+            // Guardamos el string en todas las listas de memoria RAM globales para que persista al cerrar y abrir
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) db[idx].consumiciones = resultadoString;
@@ -677,6 +679,7 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
+        // Cada 10 segundos el sistema refresca la base de datos para que el camarero reciba lo que envías desde Puerta/Jefe
         setInterval(() => {
             if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
                 refrescarDatos();
