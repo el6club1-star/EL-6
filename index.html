@@ -283,15 +283,15 @@
                 document.getElementById('cajaRegistro').style.display = 'none';
                 document.getElementById('btnReset').style.display = 'none';
                 document.getElementById('panelAdmin').style.display = 'none';
-                document.getElementById('btnCam').style.display = 'none';
                 if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.none = 'block';
                 if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
-                
-                // INICIALIZACIÓN INMEDIATA Y ULTRA RÁPIDA DE LA CÁMARA PARA EL CAMARERO (2222)
-                setTimeout(() => {
-                    toggleCamara();
-                }, 50);
+            }
+
+            // El botón de la cámara se mantiene siempre visible y quieto para que el camarero pulse manualmente
+            const botonCamaraPrincipal = document.getElementById('btnCam');
+            if (botonCamaraPrincipal) {
+                botonCamaraPrincipal.style.display = 'block';
             }
 
             refrescarDatos();
@@ -376,7 +376,6 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-            // Configuración de productos válidos y parseo ultra-flexible (Detecta números puros de Supabase)
             const productosValidos = ['COPA', 'CERVEZA', 'AGUA', 'REFRESCO', 'ENERGÉTICO', 'CHUPITO'];
             let consumosActuales = {};
             let esNumeroPuro = false;
@@ -396,11 +395,9 @@
                 consumosActuales[stringOriginal.toUpperCase()] = 1;
             }
 
-            // CONTENEDOR PRINCIPAL TOTALMENTE CENTRADO
             let htmlConsumos = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; box-sizing: border-box; margin: 0 auto;">`;
 
             if (nivel === 'camarero') {
-                // VISTA DEL CAMARERO: Corregida para mostrar números puros de consumiciones
                 if (esNumeroPuro) {
                     if (totalConsumosPuros > 0) {
                         htmlConsumos += `
@@ -412,7 +409,6 @@
                         htmlConsumos += `<div style="font-size: 12px; color: #a1a1aa; text-align: center; padding: 15px 0; font-style: italic;">Sin consumiciones activas</div>`;
                     }
                 } else {
-                    // Vista desglosada si cambia el formato en Supabase
                     let tieneAlgo = false;
                     productosValidos.forEach(prod => {
                         const cantidad = consumosActuales[prod] || 0;
@@ -430,7 +426,6 @@
                     }
                 }
             } else {
-                // MODO ADMIN / JEFE: Desplegable VIP Centrado y elegante (Gris oscuro y blanco)
                 htmlConsumos += `
                     <div style="position: relative; width: 100%; max-width: 240px; display: flex; justify-content: center; box-sizing: border-box;">
                         <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; padding: 11px 35px 11px 14px; background: #1e1e1e; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; letter-spacing: 0.5px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); box-sizing: border-box;">
@@ -441,7 +436,6 @@
                     </div>`;
 
                 if (esNumeroPuro) {
-                    // Si en la BD hay un número, dejamos un editor rápido para ese contador global
                     htmlConsumos += `
                         <div id="lista-consumos-editor" style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 240px; box-sizing: border-box;">
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); box-sizing: border-box;">
@@ -454,7 +448,6 @@
                             </div>
                         </div>`;
                 } else {
-                    // Si es formato de texto desglosado
                     htmlConsumos += `<div id="lista-consumos-editor" style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 240px; max-height: 150px; overflow-y: auto; box-sizing: border-box;">`;
                     productosValidos.forEach(prod => {
                         const cantidad = consumosActuales[prod] || 0;
@@ -477,11 +470,9 @@
             htmlConsumos += `</div>`;
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Limpieza absoluta de residuos y botones fantasma antiguos
             const elementosBasura = document.querySelectorAll('.btn-cant, [onclick*="cambiarCant"]');
             elementosBasura.forEach(el => el.remove());
 
-            // CONTROL ESTRICTO DE VISIBILIDAD DE BOTONES INFERIORES
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
@@ -497,14 +488,7 @@
                     }
                 }
             });
-
-            // FUERZA ENTRADA CAMARERO (2222): Asegura que el botón de escanear QR esté visible
-            const botonCamaraPrincipal = document.getElementById('btnCam');
-            if (botonCamaraPrincipal) {
-                botonCamaraPrincipal.style.display = 'block';
-            }
             
-            // Preview de la Firma
             const firmaPrev = document.getElementById('previewFirmaSocio');
             if(s.firma_b64) {
                 firmaPrev.src = s.firma_b64;
@@ -513,7 +497,6 @@
                 firmaPrev.style.display = 'none';
             }
 
-            // Generador del código QR
             document.getElementById('qr-space').innerHTML = ""; 
             const qr = new QRious({value: s.dni, size: 140}); 
             document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
@@ -556,12 +539,10 @@
             let resultadoString = "";
 
             if (esNumerico || producto === 'NUMERICO_PURO') {
-                // Lógica de cálculo si vuestra base de datos usa un número entero simple
                 let nuevaCant = (producto === 'NUMERICO_PURO' ? valorNumericoActual : valorNumericoActual) + cambio;
                 if (nuevaCant < 0) nuevaCant = 0;
                 resultadoString = String(nuevaCant);
             } else {
-                // Lógica si usa formato desglosado por comas
                 let cantActual = consumos[producto] || 0;
                 let nuevaCant = cantActual + cambio;
                 if (nuevaCant < 0) nuevaCant = 0;
@@ -573,14 +554,11 @@
                     .join(','); 
             }
 
-            // Guardar directo a Supabase de forma segura
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // Sincronizar memoria interna al instante
             if (socioActivo) socioActivo.consumiciones = resultadoString;
             if (socioActual && socioActual.dni === dni) socioActual.consumiciones = resultadoString;
             
-            // Redibuja la tarjeta sin llamadas agresivas que alteren las visibilidades inferiores
             abrirTarjeta(socioActivo);
         }
 
@@ -675,7 +653,6 @@
             }
         }
 
-        // Firma y control de trazo en Canvas
         function obtenerPosicion(e) {
             const r = canvas.getBoundingClientRect();
             const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -701,7 +678,6 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        // Actualizaciones en segundo plano sin pisar la vista del modal activo
         setInterval(() => {
             if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
                 refrescarDatos();
