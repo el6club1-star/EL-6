@@ -365,7 +365,7 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
-   function abrirTarjeta(s) {
+  function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -377,13 +377,13 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // CONFIGURACIÓN DE CONSUMICIONES: LIMPIEZA DE MEMORIA CACHÉ POR SOCIO
+            // LECTURA DIRECTA DE LA BASE DE DATOS (EVITA EL ERROR DE LAS 12 COPAS FANTASMA)
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             
-            // Forzamos el reseteo absoluto de la variable global para eliminar el bug de arrastrar cantidades antiguas
-            window.consumosActualesGlobal = {}; 
-            productosValidos.forEach(p => window.consumosActualesGlobal[p] = 0);
+            // Usamos un objeto mapeado exclusivo por apertura para que no arrastre datos de otros socios
+            let consumosSocio = {};
+            productosValidos.forEach(p => consumosSocio[p] = 0);
             
             const stringOriginal = String(s.consumiciones || '').trim();
             
@@ -391,14 +391,14 @@
                 stringOriginal.split(',').forEach(item => {
                     const [prod, cant] = item.split(':');
                     if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                        window.consumosActualesGlobal[prod.trim().toUpperCase()] = parseInt(cant) || 0;
+                        consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
                     }
                 });
             } else if (stringOriginal && !isNaN(stringOriginal) && parseInt(stringOriginal) > 0) {
-                window.consumosActualesGlobal['COPA'] = parseInt(stringOriginal);
+                consumosSocio['COPA'] = parseInt(stringOriginal);
             }
 
-            // Renderizado estricto del disparador de gestión (sin textos fantasma fuera)
+            // Renderizado del disparador de gestión (limpio en tarjeta)
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
                     <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -409,7 +409,7 @@
             
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Instanciamos el contenedor flotante directo sobre el Modal para evitar el borrado o recortes
+            // Ventanilla flotante externa para evitar recortes de tarjeta
             let burbujaExterna = document.getElementById('ventanilla-consumos');
             if (!burbujaExterna) {
                 burbujaExterna = document.createElement('div');
@@ -427,7 +427,7 @@
             `;
 
             productosValidos.forEach(prod => {
-                const cantidad = window.consumosActualesGlobal[prod];
+                const cantidad = consumosSocio[prod];
                 
                 htmlBurbuja += `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
@@ -449,20 +449,21 @@
             burbujaExterna.innerHTML = htmlBurbuja;
             // =========================================================================
 
-            // FILTRO DE VISIBILIDAD DE BOTONES DEL MODAL (FIX BOTÓN PAGAR CAMARERO 2222)
+            // CONTROL ESTRICTO DE VISIBILIDAD DE BOTONES DE ACCIÓN
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
                 if (nivel === 'camarero') {
-                    // Quitamos la palabra PAGAR de aquí para que el camarero sí conserve visible su botón de cobro obligatorio
-                    if (texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                    // El camarero NO ve el botón PAGAR, ni enviar, ni descargar, ni estatutos. Queda bloqueado.
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     } else {
                         btn.style.display = '';
                     }
                 } else {
+                    // Jefe y Puerta ven sus correspondientes botones habilitados
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = ''; 
                     }
@@ -497,26 +498,47 @@
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             
-            let cantActual = window.consumosActualesGlobal[prodKey] || 0;
+            // Extraemos los consumos reales y limpios del socio directamente desde el array local 'db'
+            let socioActivo = (typeof db !== 'undefined') ? db.find(x => x.dni === dni) : socioActual;
+            if (!socioActivo) socioActivo = socioActual;
+
+            const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
+            let consumos = {};
+            productosValidos.forEach(p => consumos[p] = 0);
+
+            const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
+            if (stringOriginal.includes(':')) {
+                stringOriginal.split(',').forEach(item => {
+                    const [p, c] = item.split(':');
+                    if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                });
+            } else if (stringOriginal && !isNaN(stringOriginal) && parseInt(stringOriginal) > 0) {
+                consumos['COPA'] = parseInt(stringOriginal);
+            }
+
+            // Realizamos la operación matemática individual en caliente
+            let cantActual = consumos[prodKey] || 0;
             let nuevaCant = cantActual + cambio;
             if (nuevaCant < 0) nuevaCant = 0;
-            window.consumosActualesGlobal[prodKey] = nuevaCant;
+            consumos[prodKey] = nuevaCant;
 
+            // Actualización visual inmediata en el contador de la ventanilla
             const elementoContador = document.getElementById(`v-cant-${producto}`);
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
 
-            let resultadoString = Object.keys(window.consumosActualesGlobal)
-                .filter(p => window.consumosActualesGlobal[p] > 0)
-                .map(p => `${p}:${window.consumosActualesGlobal[p]}`)
+            // Mapeamos el resultado de vuelta a un string limpio de base de datos
+            let resultadoString = Object.keys(consumos)
+                .filter(p => consumos[p] > 0)
+                .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Sincronización en tiempo real con Supabase
+            // Subimos la actualización directamente a Supabase
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // Sincronización forzada con los arrays locales db y memoria RAM para mutación entre pantallas
+            // Sincronizamos las variables en la memoria RAM de la app para que todos los roles lean lo mismo inmediatamente
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) db[idx].consumiciones = resultadoString;
