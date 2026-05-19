@@ -283,15 +283,19 @@
                 document.getElementById('panelAdmin').style.display='grid'; 
                 document.getElementById('adminExtra').style.display='flex';
                 document.getElementById('configClaves').style.display = 'block';
+                document.getElementById('btnCam').style.display = 'block';
             }
             if(nivel === 'camarero') {
-            document.getElementById('cajaRegistro').style.display = 'none';
-            document.getElementById('btnReset').style.display = 'none';
-            document.getElementById('panelAdmin').style.display = 'none';
-            document.getElementById('btnCam').style.display = 'none';
-            if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-            if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-            if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+                document.getElementById('cajaRegistro').style.display = 'none';
+                document.getElementById('btnReset').style.display = 'none';
+                document.getElementById('panelAdmin').style.display = 'none';
+                document.getElementById('btnCam').style.display = 'block';
+                if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+                if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+            }
+            if(nivel === 'personal') {
+                document.getElementById('btnCam').style.display = 'block';
             }
 
             refrescarDatos();
@@ -334,44 +338,18 @@
             let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA\n";
             db.forEach(s => csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora}\n`);
             const blob = new Blob([csv], {type: "text/csv"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "SOCIOS_EL6.csv"; a.click();
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "EXCEL_EL6.csv"; a.click();
         }
 
-        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
-        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
-        
-        async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            const e = document.getElementById('mail').value;
-            const c = document.getElementById('cumple').value;
-            const cat = document.getElementById('cat').value;
-            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            
-            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-                hora: new Date().toLocaleTimeString(), cat: cat 
-            }).select();
-            
-            if(e) {
-                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                    to_name: n, to_email: e, dni: d, categoria: cat
-                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-            }
-
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
-
-            refrescarDatos(); if(data) abrirTarjeta(data[0]);
-        }
-
-      function abrirTarjeta(s) {
+        function abrirTarjeta(s) {
             socioActual = s;
-            const card = document.getElementById('cardMain');
-            const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
-            card.className = `card-vip cat-${catLimpia}`;
             
+            // Reasignación dinámica de colores según la categoría actual
+            const claseCat = "cat-" + (s.cat || "estándar").toLowerCase().trim().replace(" ", "-");
+            const mainCard = document.getElementById('cardMain');
+            mainCard.className = "card-vip " + claseCat;
+
+            document.getElementById('card-categoria-texto').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             document.getElementById('card-id').innerText = "Nº " + s.id;
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni;
