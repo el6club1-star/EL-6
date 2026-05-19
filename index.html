@@ -365,7 +365,7 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
-        function abrirTarjeta(s) {
+       function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -376,8 +376,8 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-           // =========================================================================
-            // NUEVO SISTEMA DE CONSUMICIONES PREMIUM & INTERACTIVO
+            // =========================================================================
+            // NUEVO SISTEMA DE CONSUMICIONES INTEGRADO PREMIUM (SOLUCIÓN DE DISEÑO Y BARRA)
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             let consumosActuales = {};
@@ -400,13 +400,13 @@
                 consumosActuales['COPA'] = parseInt(stringOriginal);
             }
 
-            // Diseño del contenedor principal de consumiciones (Fine Dining / Club Estilo)
+            // Diseño del contenedor principal adaptado para encajar DENTRO de la tarjeta VIP
             let htmlConsumos = `
-                <div style="margin: 20px auto; max-width: 280px; text-align: left; font-family: 'Inter', sans-serif;">
-                    <p style="font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; text-align: center;">
-                        ⚜️ Consumiciones Disponibles ⚜️
+                <div style="margin: 12px auto; width: 100%; max-width: 240px; text-align: left; font-family: 'Inter', sans-serif;">
+                    <p style="font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; font-weight: 700; text-align: center;">
+                        ✨ CONSUMICIONES DISPONIBLES ✨
                     </p>
-                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                    <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
             `;
 
             let tieneConsumos = false;
@@ -415,36 +415,35 @@
                 const cantidad = consumosActuales[prod];
                 
                 if (nivel === 'camarero') {
-                    // VISTA CAMARERO (2222): Fina, elegante, solo lectura para evitar fraudes en barra
+                    // VISTA CAMARERO (2222): Muestra el nombre exacto del producto y las unidades sin botones
                     if (cantidad > 0) {
                         tieneConsumos = true;
                         htmlConsumos += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; border-bottom: 1px dashed rgba(255,255,255,0.15);">
-                                <span style="font-size: 13px; font-weight: 500; color: #ffffff; letter-spacing: 0.5px;">${prod}</span>
-                                <span style="font-size: 13px; font-weight: 700; color: var(--gold); background: rgba(214, 175, 55, 0.1); border: 1px solid rgba(214, 175, 55, 0.3); padding: 2px 10px; border-radius: 20px;">${cantidad} Uds</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; border-bottom: 1px dashed rgba(255,255,255,0.15);">
+                                <span style="font-size: 11px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">${prod}</span>
+                                <span style="font-size: 11px; font-weight: 700; color: #fff; background: rgba(214, 175, 55, 0.2); border: 1px solid rgba(214, 175, 55, 0.4); padding: 2px 8px; border-radius: 6px;">${cantidad} Uds</span>
                             </div>
                         `;
                     }
                 } else {
-                    // VISTA JEFE / PUERTA: Botonera integrada premium para añadir al vuelo
-                    tieneConsumos = true; // Forzamos mostrar la lista con selectores en gestión
+                    // VISTA JEFE / PUERTA: Botonera integrada premium compacta para no romper la tarjeta
+                    tieneConsumos = true; 
                     htmlConsumos += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
-                            <span style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85);">${prod}</span>
-                            <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 2px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 24px; height: 24px; border-radius: 6px; border: none; background: rgba(255,255,255,0.1); color: #fff; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 12px;">-</button>
-                                <span style="font-size: 13px; font-weight: 700; color: #fff; min-width: 18px; text-align: center; color: ${cantidad > 0 ? 'var(--gold)' : '#fff'}">${cantidad}</span>
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 24px; height: 24px; border-radius: 6px; border: none; background: var(--gold); color: #000; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 12px;">+</button>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1px 0;">
+                            <span style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.3px;">${prod}</span>
+                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); padding: 2px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 22px; height: 22px; border-radius: 5px; border: none; background: rgba(255,255,255,0.15); color: #fff; font-weight: bold; cursor: pointer; font-size: 11px;">-</button>
+                                <span style="font-size: 12px; font-weight: 700; min-width: 16px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 22px; height: 22px; border-radius: 5px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 11px;">+</button>
                             </div>
                         </div>
                     `;
                 }
             });
 
-            // Si el camarero abre una tarjeta sin consumiciones cargadas
             if (nivel === 'camarero' && !tieneConsumos) {
                 htmlConsumos += `
-                    <div style="text-align: center; padding: 15px 0; color: rgba(255,255,255,0.4); font-size: 12px; font-style: italic;">
+                    <div style="text-align: center; padding: 10px 0; color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic;">
                         Sin consumiciones pendientes
                     </div>
                 `;
