@@ -377,14 +377,15 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // LECTURA DIRECTA DE LA BASE DE DATOS (EVITA EL ERROR DE LAS 12 COPAS FANTASMA)
+            // ELIMINACIÓN DE CACHÉ Y LECTURA LIMPIA POR APERTURA
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             
-            // Usamos un objeto mapeado exclusivo por apertura para que no arrastre datos de otros socios
+            // Forzamos que la variable de consumo empiece a cero absoluto en cada click
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
             
+            // Leemos el dato real que viene de la base de datos de este socio único
             const stringOriginal = String(s.consumiciones || '').trim();
             
             if (stringOriginal.includes(':')) {
@@ -398,7 +399,7 @@
                 consumosSocio['COPA'] = parseInt(stringOriginal);
             }
 
-            // Renderizado del disparador de gestión (limpio en tarjeta)
+            // Inyectamos el botón de control en la tarjeta sin textos duplicados
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
                     <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -409,7 +410,7 @@
             
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Ventanilla flotante externa para evitar recortes de tarjeta
+            // Control y limpieza radical de la burbuja externa fija para evitar duplicados antiguos
             let burbujaExterna = document.getElementById('ventanilla-consumos');
             if (!burbujaExterna) {
                 burbujaExterna = document.createElement('div');
@@ -417,6 +418,9 @@
                 burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
                 document.getElementById('modalTarjeta').appendChild(burbujaExterna);
             }
+            
+            // Vaciamos por completo el HTML residual que tuviera la burbuja antes de pintar el nuevo socio
+            burbujaExterna.innerHTML = "";
 
             let htmlBurbuja = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
@@ -449,21 +453,19 @@
             burbujaExterna.innerHTML = htmlBurbuja;
             // =========================================================================
 
-            // CONTROL ESTRICTO DE VISIBILIDAD DE BOTONES DE ACCIÓN
+            // OCULTACIÓN ESTRICTA DE BOTONES DE ACCIÓN PARA EL CAMARERO
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
                 if (nivel === 'camarero') {
-                    // El camarero NO ve el botón PAGAR, ni enviar, ni descargar, ni estatutos. Queda bloqueado.
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     } else {
                         btn.style.display = '';
                     }
                 } else {
-                    // Jefe y Puerta ven sus correspondientes botones habilitados
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = ''; 
                     }
@@ -498,8 +500,10 @@
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             
-            // Extraemos los consumos reales y limpios del socio directamente desde el array local 'db'
-            let socioActivo = (typeof db !== 'undefined') ? db.find(x => x.dni === dni) : socioActual;
+            // Buscamos la referencia exacta del socio dentro de la base de datos local RAM (db o datos)
+            let socioActivo = null;
+            if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
+            if (!socioActivo && typeof datos !== 'undefined') socioActivo = datos.find(x => x.dni === dni);
             if (!socioActivo) socioActivo = socioActual;
 
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
@@ -516,32 +520,36 @@
                 consumos['COPA'] = parseInt(stringOriginal);
             }
 
-            // Realizamos la operación matemática individual en caliente
+            // Realizamos el cambio numérico directo
             let cantActual = consumos[prodKey] || 0;
             let nuevaCant = cantActual + cambio;
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[prodKey] = nuevaCant;
 
-            // Actualización visual inmediata en el contador de la ventanilla
+            // Actualizamos el contador en la pantalla inmediatamente
             const elementoContador = document.getElementById(`v-cant-${producto}`);
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
 
-            // Mapeamos el resultado de vuelta a un string limpio de base de datos
+            // Construimos la cadena formateada limpia
             let resultadoString = Object.keys(consumos)
                 .filter(p => consumos[p] > 0)
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Subimos la actualización directamente a Supabase
+            // SINCRONIZACIÓN PERSISTENTE TOTAL (Supabase + Memoria RAM de la App)
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // Sincronizamos las variables en la memoria RAM de la app para que todos los roles lean lo mismo inmediatamente
+            // Sincronizamos todas las posibles colecciones para que al entrar y salir no se borre el dato
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) db[idx].consumiciones = resultadoString;
+            }
+            if (typeof datos !== 'undefined') {
+                let idx = datos.findIndex(x => x.dni === dni);
+                if (idx !== -1) datos[idx].consumiciones = resultadoString;
             }
             if (socioActual && socioActual.dni === dni) {
                 socioActual.consumiciones = resultadoString;
