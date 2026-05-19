@@ -482,7 +482,7 @@
             const elementosBasura = document.querySelectorAll('.btn-cant, [onclick*="cambiarCant"]');
             elementosBasura.forEach(el => el.remove());
 
-            // CONTROL ESTRICTO DE VISIBILIDAD DE BOTONES INFERIORES (Conserva el PAGAR intacto)
+            // CONTROL ESTRICTO DE VISIBILIDAD DE BOTONES INFERIORES
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
@@ -499,10 +499,10 @@
                 }
             });
 
-            // FUERZA QUE EL BOTÓN DE LA CÁMARA (LEER QR) ESTÉ VISIBLE SIEMPRE PARA EL CAMARERO
-            const botonCamaraQR = document.getElementById('btnCam');
-            if (botonCamaraQR) {
-                botonCamaraQR.style.display = ''; 
+            // FUERZA ENTRADA CAMARERO (2222): Asegura que el botón de escanear QR esté visible
+            const botonCamaraPrincipal = document.getElementById('btnCam');
+            if (botonCamaraPrincipal) {
+                botonCamaraPrincipal.style.display = 'block';
             }
             
             // Preview de la Firma
