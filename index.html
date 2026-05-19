@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v6.1 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v5.8 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -36,9 +36,9 @@
         .fila-vetada { background-color: #fee2e2 !important; color: #b91c1c !important; }
         .btn-acc { background: transparent; border: 1px solid currentColor; border-radius: 8px; cursor: pointer; font-weight: bold; color: inherit; font-size: 11px; margin-right: 8px; text-transform: uppercase; padding: 6px 10px; }
         
-        /* DISEÑOS DE TARJETAS LIMPIAS */
-        #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); z-index: 5000; justify-content: flex-start; align-items: center; overflow-y: auto; padding: 40px 0; flex-direction: column; }
-        .card-vip { width: 320px; height: auto; border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); box-sizing: border-box; }
+        /* DISEÑOS DE TARJETAS POR CATEGORÍA */
+        #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; flex-direction: column; overflow-y: auto; padding: 20px 0; }
+        .card-vip { width: 320px; border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); transition: 0.3s; }
         
         .cat-estándar { background: linear-gradient(135deg, #2c3e50, #000000); border-color: #7f8c8d; }
         .cat-socio-plus { background: linear-gradient(135deg, #1e3a8a, #000000); border-color: #3b82f6; }
@@ -46,37 +46,17 @@
         .cat-vip-gold { background: linear-gradient(135deg, #d4af37, #000000); border-color: #f1c40f; }
         .cat-elite { background: linear-gradient(135deg, #000000, #434343); border: 2px solid var(--gold); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
 
-        #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; z-index: 10; }
-        
-        /* ESPACIO PARA EL QR FIJO Y CORRECTO */
-        #qr-space { background: white; padding: 10px; margin: 20px auto; display: block; border-radius: 10px; width: 140px; height: 140px; box-sizing: border-box; }
-        #qr-canvas { width: 120px !important; height: 120px !important; display: block; margin: 0 auto; }
-        
-        /* PANEL DE GESTIÓN INTERNA (INVISIBLES EN LA TARJETA DEL SOCIO) */
-        .panel-gestion-interna { width: 320px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; }
-        
-        /* CUADRÍCULA DE CONSUMICIONES MINIMALISTA */
-        .grid-consumos-elite { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .item-consumo-elite { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 12px; color: #fff; font-weight: 500; letter-spacing: 1px; }
-        .item-consumo-elite span.cantidad-pura { font-weight: bold; color: var(--gold); margin-left: auto; margin-right: 10px; font-size: 14px; }
-        .btn-restar-fino { background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; box-sizing: border-box; padding: 0; line-height: 1; }
-        .btn-restar-fino:hover { background: var(--danger); color: white; }
-        .sin-consumos-msg { grid-column: span 2; text-align: center; color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 5px 0; }
-
-        /* AGREGADOR DE CONSUMOS FLOTANTE SATINADO */
-        .caja-agregar-flotante { background: rgba(0, 0, 0, 0.85); border: 1px solid var(--gold); border-radius: 12px; padding: 12px; display: none; gap: 8px; flex-direction: column; }
-        .btn-trigger-agregar { background: transparent; border: 1px dashed var(--gold); color: var(--gold); padding: 10px; border-radius: 8px; font-size: 11px; font-weight: bold; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; }
-        .fila-botones-productos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .btn-producto-fino { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-producto-fino:hover { background: var(--gold); color: black; border-color: var(--gold); }
-
-        .card-actions { display: flex; gap: 10px; width: 100%; }
-        .btn-card { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; }
+        #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
+        .box-consumiciones { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .btn-cant { background: rgba(255,255,255,0.2); color: white; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .card-actions { display: flex; gap: 10px; margin-top: 15px; width: 320px; }
+        .btn-card { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
         .btn-pay { background: var(--success); color: white; }
         .btn-send { background: var(--gold); color: black; }
         .btn-rules { background: #3b82f6; color: white; }
         
-        #box-firma { display: none; background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 500px; color: #000; box-sizing: border-box; z-index: 6000; position: relative; margin: 20px 0; }
+        #box-firma { display: none; background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 500px; color: #000; box-sizing: border-box; z-index: 6000; position: relative; }
         #previewFirmaSocio { width: 80px; height: 40px; background: white; border: 1px solid #ccc; margin-top: 5px; display: none; margin-left: auto; margin-right: auto; }
         .texto-legal { font-size: 11px; text-align: justify; height: 380px; overflow-y: scroll; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #ffffff !important; color: #000000 !important; line-height: 1.6; }
         canvas#canvasFirma { border: 1px dashed #000; background: #fff; cursor: crosshair; touch-action: none; width: 100%; height: 120px; }
@@ -146,48 +126,22 @@
     <div id="modalTarjeta">
         <div class="card-vip" id="cardMain">
             <div id="selloPagado">PAGADO ✅</div>
-            <h2 style="font-size:14px; margin:0; font-weight:300; letter-spacing:4px;">CLUB PRIVADO EL 6</h2>
-            <div id="card-id" style="font-size:36px; font-weight:900; margin:15px 0; letter-spacing:1px;"></div>
-            <div id="card-categoria-texto" style="font-size:11px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; opacity:0.9;"></div>
-            
-            <div id="qr-space">
-                <canvas id="qr-canvas"></canvas>
-            </div>
-            
-            <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.15); padding-top:10px; line-height: 1.8;">
-                <p style="margin:4px 0;">SOCIO: <span id="card-nom" style="float:right; font-weight:bold;">---</span></p>
-                <p style="margin:4px 0;">DNI: <span id="card-dni" style="float:right; font-weight:bold;">---</span></p>
-                <p style="margin:4px 0;">CATEGORÍA: <span id="card-cat-abajo" style="float:right; font-weight:bold;">---</span></p>
+            <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
+            <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
+            <div id="card-categoria-texto" style="font-size:12px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; opacity:0.9;"></div>
+            <div id="qr-space"></div>
+            <div id="card-consumos"></div>
+            <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
+                <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
+                <p>DNI: <span id="card-dni" style="float:right;">---</span></p>
+                <p>CATEGORÍA: <span id="card-cat-abajo" style="float:right;">---</span></p>
                 <img id="previewFirmaSocio" src="" alt="Firma">
             </div>
         </div>
-
-        <div class="panel-gestion-interna" id="panelGestionInterna">
-            
-            <div class="grid-consumos-elite" id="contenedorGridConsumos">
-                </div>
-
-            <div id="zonaAgregarConsumo" style="display:none; flex-direction:column; gap:8px;">
-                <button class="btn-trigger-agregar" id="btnTriggerAgregar" onclick="toggleSelectorProductos()">+ Añadir Consumición</button>
-                <div class="caja-agregar-flotante" id="cajaAgregarFlotante">
-                    <div class="fila-botones-productos">
-                        <button class="btn-producto-fino" onclick="agregarProductoDirecto('COPA')">Copa</button>
-                        <button class="btn-producto-fino" onclick="agregarProductoDirecto('CHUPITO')">Chupito</button>
-                        <button class="btn-producto-fino" onclick="agregarProductoDirecto('CERVEZA')">Cerveza</button>
-                    </div>
-                    <div class="fila-botones-productos">
-                        <button class="btn-producto-fino" onclick="agregarProductoDirecto('REFRESCO')">Refresco</button>
-                        <button class="btn-producto-fino" onclick="agregarProductoDirecto('AGUA')">Agua</button>
-                        <button class="btn-producto-fino" onclick="agregarProductoDirecto('BOTELLA')">Botella</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-actions" id="accionesTarjeta">
-                <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
-                <button class="btn-card btn-send" id="btnEnviarTarjeta" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
-                <button class="btn-card btn-rules" id="btnFirmarTarjeta" onclick="gestionarEstatutos('tarjeta')">FIRMAR ESTATUTOS</button>
-            </div>
+        <div class="card-actions" id="accionesTarjeta">
+            <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
+            <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
+            <button class="btn-card btn-rules" onclick="gestionarEstatutos('tarjeta')">FIRMAR ESTATUTOS</button>
         </div>
         
         <div id="box-firma">
@@ -197,10 +151,10 @@
                 <p><strong>1. NATURALEZA DEL CLUB Y CONDICIÓN DE SOCIO:</strong> El Club Privado El 6 es una asociación de carácter estrictamente restringido y privado. El acceso a las instalaciones y el uso de sus servicios están reservados única y exclusivamente a personas mayores de 18 años que hayan completado este registro, hayan sido expresamente admitidas por la Dirección y acepten sin reserva alguna el presente reglamento. La condición de socio es absolutamente personal, nominativa e intransferible.</p>
                 <p><strong>2. RESPONSABLE DEL TRATAMIENTO Y TRATAMIENTO DE DATOS (RGPD):</strong> En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y de la Ley Orgánica 3/2018 (LOPDGDD), se informa al solicitante de que todos los datos facilitados en este formulario (Nombre, DNI/NIE/Pasaporte, Fecha de Nacimiento, Email), así como su firma biométrica/digitalizada y el registro cronológico de sus accesos, serán incorporados a un tratamiento de datos responsabilidad del Club. La finalidad exclusiva es la gestión del control de acceso, el mantenimiento de la seguridad interna, la prevención del fraude y la autoorganización del club.</p>
                 <p><strong>3. LEGITIMACIÓN Y PLAZOS DE CONSERVACIÓN:</strong> La base legal que legitima este tratamiento es la ejecución del presente contrato de adhesión y el consentimiento expreso e inequívoco que el socio otorga al firmar. Los datos serán conservados de forma segura mientras el interesado mantenga su condición de alta en el club, o durante los plazos legales exigidos por la normativa administrativa, civil o penal española para la atención de posibles responsabilidades. El socio puede ejercitar sus derechos de acceso, rectificación, supresión ("olvido"), limitación y oposición dirigiendo una comunicación por escrito a la Dirección a través del correo electrónico <strong>el6club1@gmail.com</strong>, aportando copia de su documento de identidad.</p>
-                <p><strong>4. CONFIDENCIALIDAD ABSOLUTA Y CESIÓN LEGAL A AUTORIDADES:</strong> El Club garantiza el secreto y la confidencialidad de los datos de sus socios, adoptando las medidas de seguridad técnicas y organizativas necesarias para evitar su alteración o acceso no autorizado. Para cualquier consulta o incidencia relativa a la privacidad, el Club pone a disposición de los usuarios la dirección de correo electrónico <strong>el6club1@gmail.com</strong>. Los datos no serán vendidos, cedidos ni compartidos con terceros ajenos a la organización, salvo en cumplimiento de una obligación legal estricta o requerimiento formal y expreso de las Fuerzas y Cuerpos de Seguridad del Estado (Policía Nacional, Guardia Civil) o autoridades judiciales competentes en el marco de una investigación.</p>
+                <p><strong>4. CONFIDENCIALIDAD ABSOLUTA Y CESIÓN LEGAL A AUTORIDADES:</strong> El Club garantiza el secreto y la confidencialidad de los datos de sus socios, adoptando las medidas de seguridad técnicas y organizativas necesarias para evitar su alteración o acceso no autorizado. Para cualquier consulta o incidencia relativa a la privacidad, el Club puts a disposición de los usuarios la dirección de correo electrónico <strong>el6club1@gmail.com</strong>. Los datos no serán vendidos, cedidos ni compartidos con terceros ajenos a la organización, salvo en cumplimiento de una obligación legal estricta o requerimiento formal y expreso de las Fuerzas y Cuerpos de Seguridad del Estado (Policía Nacional, Guardia Civil) o autoridades judiciales competentes en el marco de una investigación.</p>
                 <p><strong>5. EJERCICIO RIGUROSO DEL DERECHO DE ADMISIÓN:</strong> El Club ejerce de forma permanente el Derecho de Admisión amparado por la legislación vigente applicable a establecimientos privados y de espectáculos públicos. La Dirección y su personal de control se reservan el derecho unilateral de denegar el acceso o suspender la entrada a cualquier socio, aun estando registrado, por razones de aforo, seguridad, alteración del orden o por no superar los filtros de verificación de la puerta de acceso.</p>
                 <p><strong>6. CÓDIGO DE VESTIMENTA Y DECORO EXIGIBLE (DRESS CODE):</strong> Para acceder y permanecer en el Club se exige el cumplimiento estricto del código de indumentaria elegante y sofisticado determinado por la empresa. Queda terminantemente prohibido el acceso portando ropa o calzado deportivo, prendas de baño, ropa de trabajo, prendas con mensajes de carácter ofensivo o cualquier vestuario que, a criterio exclusivo del personal de admisión, no cumpla con los estándares estéticos del local.</p>
-                <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestations racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
+                <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestaciones racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
                 <p><strong>8. POLÍTICA DE TOLERANCIA CERO CON SUSTANCIAS ILEGALES:</strong> El Club mantiene una política de tolerancia cero absoluta respecto al consumo, tenencia, introducción, facilitación o tráfico de cualquier tipo de sustancia estupefaciente, droga ilegal o psicotrópica dentro de todo el perímetro de las instalaciones (incluyendo zonas comunes y aseos). La mera detección o sospecha fundada por parte del personal facultará al Club para la retirada permanente de la condición de socio, expulsión inmediata y, en su caso, la correspondiente notificación a las autoridades policiales españolas.</p>
                 <p><strong>9. CONSUMO RESPONSABLE DE ALCOHOL Y SEGURIDAD:</strong> El socio se compromete a mantener un comportamiento cívico y controlado. De acuerdo con la normativa vigente de protección al menor y seguridad pública, el personal del local se reserva el derecho legítimo de negar el servicio de bebidas alcohólicas a cualquier persona que muestre síntomas evidentes de embriaguez o alteración psicológica, procediendo a su desalojo si compromete la tranquilidad del establecimiento.</p>
                 <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda estrictamente prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
@@ -208,11 +162,12 @@
                 <p><strong>12. RESPONSABILIDAD POR DAÑOS MATERIALES, VETO Y JURISDICCIÓN COMPETENTE:</strong> Cualquier daño, rotura o desperfecto causado de forma intencionada o por negligencia en el mobiliario, equipos, decoración o estructura del local generará la obligación de indemnizar económicamente al Club por el coste total de su reparación o sustitución. El incumplimiento de cualquiera de las cláusulas de este documento otorgará a la Dirección la facultad de aplicar el régimen sancionador de veto definitivo. Asimismo, para la resolución de cualquier controversia, litigio, discrepancia o reclamación judicial derivada de la interpretación o ejecución de este contrato y reglamento, <strong>tanto el Club como el socio se someten expresamente, con renuncia formal a cualquier otro fuero o jurisdicción que pudiera corresponderles, a la competencia exclusiva de los Juzgados y Tribunales de Madrid capital.</strong></p>
                 <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN Y COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
             </div>
+            
             <canvas id="canvasFirma" width="440" height="120"></canvas>
             <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
             <button onclick="cerrarFirma()" style="width:100%; padding:5px; background:#ccc; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">VOLVER</button>
         </div>
-        <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; border-radius:8px; border:1px solid rgba(255,255,255,0.3); background:black; color:white; font-weight:bold; cursor: pointer;" onclick="cerrar()">CERRAR PANEL</button>
+        <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
     </div>
 
     <script>
@@ -249,94 +204,10 @@
             } catch (err) { actualizarAntena(false); }
         }
 
-        // PARSEO DE CONSUMICIONES ("PRODUCTO:CANTIDAD")
-        function parsearConsumiciones(stringConsumos) {
-            const mapa = {};
-            if (!stringConsumos || stringConsumos.trim() === "" || stringConsumos === "0") return mapa;
-            
-            if (!isNaN(stringConsumos)) {
-                const totalCopas = parseInt(stringConsumos, 10);
-                if (totalCopas > 0) mapa["COPA"] = totalCopas;
-                return mapa;
-            }
-
-            const partes = stringConsumos.split(',');
-            partes.forEach(p => {
-                const [prod, cant] = p.split(':');
-                if (prod && cant) {
-                    mapa[prod.toUpperCase().trim()] = parseInt(cant, 10);
-                }
-            });
-            return mapa;
-        }
-
-        function serializarConsumiciones(mapa) {
-            const filtro = [];
-            for (const key in mapa) {
-                if (mapa[key] > 0) {
-                    filtro.push(`${key}:${mapa[key]}`);
-                }
-            }
-            return filtro.join(',');
-        }
-
-        function renderGridConsumiciones() {
-            const contenedor = document.getElementById('contenedorGridConsumos');
-            if (!socioActual) return;
-
-            const mapaConsumos = parsearConsumiciones(socioActual.consumiciones);
-            const productosActivos = Object.keys(mapaConsumos).filter(p => mapaConsumos[p] > 0);
-
-            if (productosActivos.length === 0) {
-                contenedor.innerHTML = `<div class="sin-consumos-msg">Sin consumos activos en tarjeta</div>`;
-                return;
-            }
-
-            contenedor.innerHTML = productosActivos.map(prod => `
-                <div class="item-consumo-elite">
-                    <div>${prod}</div>
-                    <span class="cantidad-pura">${mapaConsumos[prod]}</span>
-                    <button class="btn-restar-fino" onclick="restarProductoIndividual('${prod}')">—</button>
-                </div>
-            `).join('');
-        }
-
-        async function restarProductoIndividual(producto) {
-            if (!socioActual) return;
-            const mapaConsumos = parsearConsumiciones(socioActual.consumiciones);
-            
-            if (mapaConsumos[producto] && mapaConsumos[producto] > 0) {
-                mapaConsumos[producto]--;
-                if (mapaConsumos[producto] === 0) delete mapaConsumos[producto];
-                
-                const nuevoString = serializarConsumiciones(mapaConsumos);
-                
-                await _supabase.from(NOMBRE_TABLA).update({ consumiciones: nuevoString }).eq('dni', socioActual.dni);
-                socioActual.consumiciones = nuevoString;
-                
-                renderGridConsumiciones();
-                refrescarDatos();
-            }
-        }
-
-        function toggleSelectorProductos() {
-            const div = document.getElementById('cajaAgregarFlotante');
-            div.style.display = (div.style.display === 'flex') ? 'none' : 'flex';
-        }
-
-        async function agregarProductoDirecto(producto) {
-            if (!socioActual) return;
-            const mapaConsumos = parsearConsumiciones(socioActual.consumiciones);
-            
-            mapaConsumos[producto] = (mapaConsumos[producto] || 0) + 1;
-            const nuevoString = serializarConsumiciones(mapaConsumos);
-
-            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: nuevoString }).eq('dni', socioActual.dni);
-            socioActual.consumiciones = nuevoString;
-            
-            renderGridConsumiciones();
-            document.getElementById('cajaAgregarFlotante').style.display = 'none';
-            refrescarDatos();
+        async function modificarConsumos(v) {
+            if(!socioActual) return;
+            const n = (socioActual.consumiciones || 0) + v;
+            if(n >= 0) { await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni); socioActual.consumiciones = n; refrescarDatos(); document.getElementById('card-consumos').innerText = n; }
         }
 
         async function marcarPago() {
@@ -407,23 +278,20 @@
                 document.getElementById('panelAdmin').style.display='grid'; 
                 document.getElementById('adminExtra').style.display='flex';
                 document.getElementById('configClaves').style.display = 'block';
-                document.getElementById('btnCam').style.display = 'block';
             }
             if(nivel === 'camarero') {
                 document.getElementById('cajaRegistro').style.display = 'none';
                 document.getElementById('btnReset').style.display = 'none';
                 document.getElementById('panelAdmin').style.display = 'none';
-                document.getElementById('btnCam').style.display = 'block';
+                document.getElementById('btnCam').style.display = 'none';
                 if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
                 if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
                 if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
             }
-            if(nivel === 'personal') {
-                document.getElementById('btnCam').style.display = 'block';
-            }
+
             refrescarDatos();
         }
-
+        
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
@@ -456,232 +324,384 @@
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
         }
 
-        // CONTROL DE CORRECCIÓN DE TARJETA CON EL CANVAS FIX
-        function reAbrir(dni) {
-            const s = db.find(x => x.dni === dni);
-            if(!s) return;
-            socioActual = s;
+        function exportarExcel() {
+            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA\n";
+            db.forEach(s => csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora}\n`);
+            const blob = new Blob([csv], {type: "text/csv"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "SOCIOS_EL6.csv"; a.click();
+        }
 
-            const card = document.getElementById('cardMain');
-            card.className = "card-vip";
-            const cStr = (s.cat || 'estándar').toLowerCase();
-            card.classList.add('cat-' + cStr);
-
-            document.getElementById('card-id').innerText = "Nº " + String(s.id).padStart(3, '0');
-            document.getElementById('card-categoria-texto').innerText = cStr;
-            document.getElementById('card-nom').innerText = s.nombre.toUpperCase();
-            document.getElementById('card-dni').innerText = formatearDNI(s.dni);
-            document.getElementById('card-cat-abajo').innerText = cStr.toUpperCase();
-
-            const imgFirma = document.getElementById('previewFirmaSocio');
-            if(s.firma) { imgFirma.src = s.firma; imgFirma.style.display = 'block'; } else { imgFirma.style.display = 'none'; }
-
-            // CORRECCIÓN DIRECTA DEL CANVAS DEL QR SIN DEFORMARSE
-            new QRious({
-                element: document.getElementById('qr-canvas'),
-                value: s.dni,
-                size: 120,
-                background: 'white',
-                foreground: 'black'
-            });
-
-            actualizarVisualPago();
-            renderGridConsumiciones();
-
-            const divAgregar = document.getElementById('zonaAgregarConsumo');
-            const btnPagar = document.getElementById('btnPagarTarjeta');
-            const btnEnviar = document.getElementById('btnEnviarTarjeta');
-            const btnFirmar = document.getElementById('btnFirmarTarjeta');
-
-            divAgregar.style.display = "none";
-            btnPagar.style.display = "block";
-            btnEnviar.style.display = "block";
-            btnFirmar.style.display = "block";
-
-            if (nivel === 'camarero') {
-                divAgregar.style.display = "none";
-                btnPagar.style.display = "none";
-                btnEnviar.style.display = "none";
-                btnFirmar.style.display = "none";
-            } else if (nivel === 'jefe' || nivel === 'personal') {
-                divAgregar.style.display = "flex";
+        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
+        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
+        
+        async function registrar() {
+            const d = document.getElementById('dni').value.toUpperCase();
+            const n = document.getElementById('nom').value;
+            const e = document.getElementById('mail').value;
+            const c = document.getElementById('cumple').value;
+            const cat = document.getElementById('cat').value;
+            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+            
+            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+                hora: new Date().toLocaleTimeString(), cat: cat 
+            }).select();
+            
+            if(e) {
+                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+                    to_name: n, to_email: e, dni: d, categoria: cat
+                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
             }
 
-            document.getElementById('cajaAgregarFlotante').style.display = 'none';
+            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
+
+            refrescarDatos(); if(data) abrirTarjeta(data[0]);
+        }
+
+        function abrirTarjeta(s) {
+            socioActual = s;
+            const card = document.getElementById('cardMain');
+            const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
+            card.className = `card-vip cat-${catLimpia}`;
+            
+            document.getElementById('card-id').innerText = "Nº " + s.id;
+            document.getElementById('card-nom').innerText = s.nombre; 
+            document.getElementById('card-dni').innerText = s.dni;
+            document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
+            
+            // Configuración de productos válidos y parseo ultra-flexible (Detecta números puros de Supabase)
+            const productosValidos = ['COPA', 'CERVEZA', 'AGUA', 'REFRESCO', 'ENERGÉTICO', 'CHUPITO'];
+            let consumosActuales = {};
+            let esNumeroPuro = false;
+            let totalConsumosPuros = 0;
+            
+            const stringOriginal = String(s.consumiciones || '').trim();
+            
+            if (stringOriginal.includes(':')) {
+                stringOriginal.split(',').forEach(item => {
+                    const [prod, cant] = item.split(':');
+                    if(prod) consumosActuales[prod.trim().toUpperCase()] = parseInt(cant) || 0;
+                });
+            } else if (stringOriginal && stringOriginal !== 'ENTRADA' && !isNaN(stringOriginal)) {
+                esNumeroPuro = true;
+                totalConsumosPuros = parseInt(stringOriginal) || 0;
+            } else if (stringOriginal && stringOriginal !== 'ENTRADA') {
+                consumosActuales[stringOriginal.toUpperCase()] = 1;
+            }
+
+            // CONTENEDOR PRINCIPAL TOTALMENTE CENTRADO
+            let htmlConsumos = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; box-sizing: border-box; margin: 0 auto;">`;
+
+            if (nivel === 'camarero') {
+                // VISTA DEL CAMARERO: Corregida para mostrar números puros de consumiciones
+                if (esNumeroPuro) {
+                    if (totalConsumosPuros > 0) {
+                        htmlConsumos += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 240px; padding: 12px 16px; background: rgba(255,255,255,0.06); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                                <span style="font-size: 13px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px;">CONSUMICIONES TOTALES</span>
+                                <span style="font-size: 13px; font-weight: 700; color: #ffffff; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 6px;">${totalConsumosPuros} Uds</span>
+                            </div>`;
+                    } else {
+                        htmlConsumos += `<div style="font-size: 12px; color: #a1a1aa; text-align: center; padding: 15px 0; font-style: italic;">Sin consumiciones activas</div>`;
+                    }
+                } else {
+                    // Vista desglosada si cambia el formato en Supabase
+                    let tieneAlgo = false;
+                    productosValidos.forEach(prod => {
+                        const cantidad = consumosActuales[prod] || 0;
+                        if (cantidad > 0) {
+                            tieneAlgo = true;
+                            htmlConsumos += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 240px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); box-sizing: border-box;">
+                                    <span style="font-size: 13px; font-weight: 500; color: #ffffff; letter-spacing: 0.3px;">${prod}</span>
+                                    <span style="font-size: 12px; font-weight: 600; color: #ffffff; background: rgba(255,255,255,0.12); padding: 3px 10px; border-radius: 6px;">${cantidad} Uds</span>
+                                </div>`;
+                        }
+                    });
+                    if (!tieneAlgo) {
+                        htmlConsumos += `<div style="font-size: 12px; color: #a1a1aa; text-align: center; padding: 15px 0; font-style: italic;">Sin consumiciones activas</div>`;
+                    }
+                }
+            } else {
+                // MODO ADMIN / JEFE: Desplegable VIP Centrado y elegante (Gris oscuro y blanco)
+                htmlConsumos += `
+                    <div style="position: relative; width: 100%; max-width: 240px; display: flex; justify-content: center; box-sizing: border-box;">
+                        <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; padding: 11px 35px 11px 14px; background: #1e1e1e; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; letter-spacing: 0.5px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); box-sizing: border-box;">
+                            <option value="" style="color: #888;">+ AÑADIR CONSUMICIÓN...</option>
+                            ${productosValidos.map(p => `<option value="${p}" style="background: #1e1e1e; color: #ffffff; text-align: left;">${p}</option>`).join('')}
+                        </select>
+                        <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #ffffff; opacity: 0.6; pointer-events: none; font-size: 10px;">▼</div>
+                    </div>`;
+
+                if (esNumeroPuro) {
+                    // Si en la BD hay un número, dejamos un editor rápido para ese contador global
+                    htmlConsumos += `
+                        <div id="lista-consumos-editor" style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 240px; box-sizing: border-box;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); box-sizing: border-box;">
+                                <span style="font-size: 12px; font-weight: 500; color: #e4e4e7;">CONSUMICIONES</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', 'NUMERICO_PURO', -1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">-</button>
+                                    <span style="font-size: 12px; font-weight: 700; color: #ffffff; min-width: 20px; text-align: center;">${totalConsumosPuros}</span>
+                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', 'NUMERICO_PURO', 1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">+</button>
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    // Si es formato de texto desglosado
+                    htmlConsumos += `<div id="lista-consumos-editor" style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 240px; max-height: 150px; overflow-y: auto; box-sizing: border-box;">`;
+                    productosValidos.forEach(prod => {
+                        const cantidad = consumosActuales[prod] || 0;
+                        if (cantidad > 0) {
+                            htmlConsumos += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); box-sizing: border-box;">
+                                    <span style="font-size: 12px; font-weight: 500; color: #e4e4e7;">${prod}</span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">-</button>
+                                        <span style="font-size: 12px; font-weight: 700; color: #ffffff; min-width: 20px; text-align: center;">${cantidad}</span>
+                                        <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">+</button>
+                                    </div>
+                                </div>`;
+                        }
+                    });
+                    htmlConsumos += `</div>`;
+                }
+            }
+
+            htmlConsumos += `</div>`;
+            document.getElementById('card-consumos').innerHTML = htmlConsumos;
+
+            // Limpieza absoluta de residuos y botones fantasma antiguos
+            const elementosBasura = document.querySelectorAll('.btn-cant, [onclick*="cambiarCant"]');
+            elementosBasura.forEach(el => el.remove());
+
+            // CONTROL ESTRICTO DE VISIBILIDAD DE BOTONES INFERIORES
+            const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
+            btnsTarjeta.forEach(btn => {
+                const texto = btn.innerText.toUpperCase();
+                if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
+                
+                if (nivel === 'camarero') {
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                        btn.style.display = 'none';
+                    }
+                } else {
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                        btn.style.display = ''; 
+                    }
+                }
+            });
+
+            // FUERZA ENTRADA CAMARERO (2222): Asegura que el botón de escanear QR esté visible
+            const botonCamaraPrincipal = document.getElementById('btnCam');
+            if (botonCamaraPrincipal) {
+                botonCamaraPrincipal.style.display = 'block';
+            }
+            
+            // Preview de la Firma
+            const firmaPrev = document.getElementById('previewFirmaSocio');
+            if(s.firma_b64) {
+                firmaPrev.src = s.firma_b64;
+                firmaPrev.style.display = 'block';
+            } else {
+                firmaPrev.style.display = 'none';
+            }
+
+            // Generador del código QR
+            document.getElementById('qr-space').innerHTML = ""; 
+            const qr = new QRious({value: s.dni, size: 140}); 
+            document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
+            
+            actualizarVisualPago();
+            document.getElementById('cardMain').style.display = 'block';
+            document.getElementById('box-firma').style.display = 'none';
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
 
-        function cerrar() {
-            document.getElementById('modalTarjeta').style.display = 'none';
-            socioActual = null;
+        async function añadirProductoDesplegable(dni, producto) {
+            if (!producto) return;
+            await modificarCantidadDirecta(dni, producto, 1);
+            const select = document.getElementById('select-add-consumo');
+            if (select) select.value = ""; 
+        }
+        
+        async function modificarCantidadDirecta(dni, producto, cambio) {
+            let consumos = {};
+            let esNumerico = false;
+            let valorNumericoActual = 0;
+            
+            let socioActivo = (typeof db !== 'undefined') ? db.find(x => x.dni === dni) : socioActual;
+            if (!socioActivo) socioActivo = socioActual;
+            
+            const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
+            
+            if (stringOriginal.includes(':')) {
+                stringOriginal.split(',').forEach(item => {
+                    const [p, c] = item.split(':');
+                    if(p) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                });
+            } else if (stringOriginal && stringOriginal !== 'ENTRADA' && !isNaN(stringOriginal)) {
+                esNumerico = true;
+                valorNumericoActual = parseInt(stringOriginal) || 0;
+            } else if (stringOriginal && stringOriginal !== 'ENTRADA') {
+                consumos[stringOriginal.toUpperCase()] = 1;
+            }
+
+            let resultadoString = "";
+
+            if (esNumerico || producto === 'NUMERICO_PURO') {
+                // Lógica de cálculo si vuestra base de datos usa un número entero simple
+                let nuevaCant = (producto === 'NUMERICO_PURO' ? valorNumericoActual : valorNumericoActual) + cambio;
+                if (nuevaCant < 0) nuevaCant = 0;
+                resultadoString = String(nuevaCant);
+            } else {
+                // Lógica si usa formato desglosado por comas
+                let cantActual = consumos[producto] || 0;
+                let nuevaCant = cantActual + cambio;
+                if (nuevaCant < 0) nuevaCant = 0;
+                consumos[producto] = nuevaCant;
+
+                resultadoString = Object.keys(consumos)
+                    .filter(p => consumos[p] > 0)
+                    .map(p => `${p}:${consumos[p]}`)
+                    .join(','); 
+            }
+
+            // Guardar directo a Supabase de forma segura
+            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+            
+            // Sincronizar memoria interna al instante
+            if (socioActivo) socioActivo.consumiciones = resultadoString;
+            if (socioActual && socioActual.dni === dni) socioActual.consumiciones = resultadoString;
+            
+            // Redibuja la tarjeta sin llamadas agresivas que alteren las visibilidades inferiores
+            abrirTarjeta(socioActivo);
         }
 
-        function cerrarSesion() {
-            document.getElementById('principal').style.display = 'none';
-            document.getElementById('btnLogout').style.display = 'none';
-            document.getElementById('pantallaLogin').style.display = 'flex';
-            document.getElementById('passApp').value = '';
-            nivel = 'personal';
-        }
-
-        function gestionarEstatutos(origen) {
+        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
+        function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
+        function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function cerrarSesion() { location.reload(); }
+        
+        function gestionarEstatutos(origen) { 
             origenFirma = origen;
-            document.getElementById('box-firma').style.display = 'block';
-            if(origen === 'tarjeta') {
-                document.getElementById('cardMain').style.display = 'none';
-                document.getElementById('panelGestionInterna').style.display = 'none';
-                document.getElementById('btnCerrarModal').style.display = 'none';
-            }
+            document.getElementById('modalTarjeta').style.display='flex'; 
+            document.getElementById('box-firma').style.display='block'; 
+            document.getElementById('cardMain').style.display='none'; 
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            
+            const btnAceptarFirma = document.querySelector('#box-firma button[onclick="guardarFirmaSocio()"]');
+            
+            if (origenFirma === 'tarjeta' && socioActual && socioActual.firma_b64) {
+                const imgFirma = new Image();
+                imgFirma.src = socioActual.firma_b64;
+                imgFirma.onload = function() {
+                    ctx.drawImage(imgFirma, 0, 0, canvas.width, canvas.height);
+                };
+                if(btnAceptarFirma) btnAceptarFirma.style.display = 'none';
+            } else {
+                if(btnAceptarFirma) btnAceptarFirma.style.display = 'block';
+            }
         }
-
-        function cerrarFirma() {
-            document.getElementById('box-firma').style.display = 'none';
+        
+        function cerrarFirma() { 
+            document.getElementById('box-firma').style.display='none'; 
             if(origenFirma === 'tarjeta') {
-                document.getElementById('cardMain').style.display = 'block';
-                document.getElementById('panelGestionInterna').style.display = 'flex';
-                document.getElementById('btnCerrarModal').style.display = 'block';
-            }
-        }
-
-        async function guardarFirmaSocio() {
-            const dataUrl = canvas.toDataURL();
-            if(origenFirma === 'registro') {
-                alert("Firma guardada en formulario temporal.");
-                cerrarFirma();
+                document.getElementById('cardMain').style.display='block'; 
             } else {
-                if(!socioActual) return;
-                await _supabase.from(NOMBRE_TABLA).update({ firma: dataUrl }).eq('dni', socioActual.dni);
-                socioActual.firma = dataUrl;
-                document.getElementById('previewFirmaSocio').src = dataUrl;
-                document.getElementById('previewFirmaSocio').style.display = 'block';
-                alert("Estatutos firmados correctamente.");
-                cerrarFirma();
-                refrescarDatos();
+                document.getElementById('modalTarjeta').style.display='none';
             }
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            ctx.beginPath();
         }
-
-        canvas.addEventListener('mousedown', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
-        canvas.addEventListener('mousemove', (e) => { if(dibujando) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
-        canvas.addEventListener('mouseup', () => dibujando = false);
-        canvas.addEventListener('touchstart', (e) => {
-            dibujando = true; ctx.beginPath();
-            const r = canvas.getBoundingClientRect();
-            ctx.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
-        });
-        canvas.addEventListener('touchmove', (e) => {
-            if(!dibujando) return;
-            const r = canvas.getBoundingClientRect();
-            ctx.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
-            ctx.stroke();
-        });
-        canvas.addEventListener('touchend', () => dibujando = false);
-
-        async function registrar() {
-            const d = document.getElementById('dni').value.trim().toUpperCase();
-            const n = document.getElementById('nom').value.trim();
-            const m = document.getElementById('mail').value.trim();
-            const c = document.getElementById('cat').value;
-            const cu = document.getElementById('cumple').value;
-            const rgpd = document.getElementById('checkRGPD').checked;
-
-            if(!d || !n) { alert("DNI y Nombre obligatorios"); return; }
-            if(!rgpd) { alert("Debe aceptar los términos Legales y RGPD para registrar."); return; }
-
-            const ex = db.find(x => x.dni === d);
-            if(ex) {
-                await _supabase.from(NOMBRE_TABLA).update({ nombre: n, email: m, cat: c, cumple: cu }).eq('dni', d);
+        
+        async function guardarFirmaSocio() { 
+            const firmaB64 = canvas.toDataURL();
+            if(origenFirma === 'tarjeta' && socioActual) {
+                await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
+                socioActual.firma_b64 = firmaB64;
+                if(typeof refrescarDatos === 'function') refrescarDatos();
+                alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
+                cerrarFirma(); 
+                abrirTarjeta(socioActual);
             } else {
-                const nuevoId = db.length > 0 ? Math.max(...db.map(x => x.id || 0)) + 1 : 1;
-                await _supabase.from(NOMBRE_TABLA).insert([{ id: nuevoId, dni: d, nombre: n, email: m, cat: c, cumple: cu, consumiciones: "" }]);
-            }
-            document.getElementById('dni').value = ""; autocompletarSocio();
-            refrescarDatos();
-        }
-
-        async function toggleEntrada(dni) {
-            const s = db.find(x => x.dni === dni); if(!s || s.vetado) return;
-            const nuevoEstado = !s.dentro;
-            const h = nuevoEstado ? new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) : null;
-            await _supabase.from(NOMBRE_TABLA).update({ dentro: nuevoEstado, hora: h }).eq('dni', dni);
-            refrescarDatos();
-        }
-
-        async function tVeto(dni) {
-            const s = db.find(x => x.dni === dni); if(!s) return;
-            const m = s.vetado ? null : prompt("Motivo del veto:");
-            if(!s.vetado && m === null) return;
-            await _supabase.from(NOMBRE_TABLA).update({ vetado: !s.vetado, motivo: m, dentro: false }).eq('dni', dni);
-            refrescarDatos();
-        }
-
-        async function resetJornada() {
-            if(confirm("¿Vaciar aforo por completo?")) {
-                await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null });
-                refrescarDatos();
+                socioActual = socioActual || {};
+                socioActual.firma_b64 = firmaB64;
+                document.getElementById('checkRGPD').checked = true; 
+                alert("Estatutos aceptados para el nuevo registro.");
+                cerrarFirma();
             }
         }
-
-        async function actualizarClave() {
-            const tipo = document.getElementById('tipoClave').value;
-            const nueva = document.getElementById('nuevaClaveInput').value.trim();
-            if(!nueva) return;
-            CLACES[tipo] = nueva;
-            localStorage.setItem('claves_el6', JSON.stringify(CLAVES));
-            alert("Clave actualizada.");
-            document.getElementById('nuevaClaveInput').value = "";
+        
+        function actualizarClave() {
+            const t = document.getElementById('tipoClave').value; const n = document.getElementById('nuevaClaveInput').value;
+            if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
+
+        async function resetJornada() { if(confirm("¿Reset?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); if(typeof refrescarDatos === 'function') refrescarDatos(); } }
 
         function toggleCamara() {
-            const r = document.getElementById('reader');
             if(!camActiva) {
-                r.style.display = 'block';
+                document.getElementById('reader').style.display = 'block';
+                document.getElementById('btnCam').innerText = "❌ APAGAR CÁMARA";
                 html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
-                    (text) => { html5QrCode.stop(); camActiva = false; r.style.display = 'none'; reAbrir(text.trim().toUpperCase()); },
-                    () => {}
-                );
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
+                    document.getElementById('buscador').value = t; 
+                    render(); 
+                    pararCamara(); 
+                });
                 camActiva = true;
-            } else {
-                html5QrCode.stop(); camActiva = false; r.style.display = 'none';
+            } else { pararCamara(); }
+        }
+        function pararCamara() { 
+            if(html5QrCode) {
+                html5QrCode.stop().then(()=> {
+                    document.getElementById('reader').style.display='none';
+                    document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
+                    camActiva = false;
+                }).catch(() => {
+                    document.getElementById('reader').style.display='none';
+                    document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
+                    camActiva = false;
+                });
             }
         }
 
-        function descargarTarjeta() {
-            const element = document.getElementById('cardMain');
-            html2canvas(element, { scale: 3, useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `TARJETA_${socioActual.nombre.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            });
+        // Firma y control de trazo en Canvas
+        function obtenerPosicion(e) {
+            const r = canvas.getBoundingClientRect();
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clienteX - r.left, y: clienteY - r.top };
         }
 
-        function importarBaseDatos(event) {
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader(); reader.onload = async function(e) {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    if(Array.isArray(json)) {
-                        for(const s of json) {
-                            await _supabase.from(NOMBRE_TABLA).upsert({ id: s.id, dni: s.dni, nombre: s.nombre, email: s.email, cat: s.cat, dentro: s.dentro, motivo: s.motivo, hora: s.hora, firma: s.firma, consumiciones: s.consumiciones });
-                        }
-                        alert("Copia restaurada correctamente."); refrescarDatos();
-                    }
-                } catch(err) { alert("Error al importar el archivo."); }
-            }; reader.readAsText(file);
+        function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
+        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
+        function pautarDibujo(e) {
+            if (!dibujando) return;
+            e.preventDefault();
+            const pos = obtenerPosicion(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
         }
 
-        function exportarExcel() {
-            let csv = "ID,DNI,NOMBRE,CATEGORIA,DENTRO,MOTIVO,HORA\n";
-            db.forEach(x => {
-                csv += `${x.id},${x.dni},${x.nombre},${x.cat},${x.dentro?'SI':'NO'},${x.motivo||'-'},${x.hora||'-'}\n`;
-            });
-            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "SOCIOS_EL6.csv"; link.click();
-        }
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        window.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mousemove', pautarDibujo);
 
-        window.onload = () => { refrescarDatos(); setInterval(refrescarDatos, 25000); };
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        window.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchmove', pautarDibujo);
+
+        // Actualizaciones en segundo plano sin pisar la vista del modal activo
+        setInterval(() => {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
+                refrescarDatos();
+            }
+        }, 10000);
     </script>
 </body>
 </html>
