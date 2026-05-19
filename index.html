@@ -377,18 +377,15 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // CONFIGURACIÓN DE CONSUMICIONES: ULTRA-SINCRONIZACIÓN Y FIX DE FORMATO
+            // CONFIGURACIÓN DE CONSUMICIONES: SINCRONIZACIÓN REAL ENTRE PANTALLAS
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             
-            // Forzamos el vaciado absoluto del objeto en cada apertura
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
             
-            // Convertimos a string limpio lo que viene de Supabase
             const stringOriginal = String(s.consumiciones || '').trim();
             
-            // SI ES UN NÚMERO SUELTO VIEJO (Ej: el "12" que fallaba), lo ignoramos o reseteamos para que no ensucie
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
                     const [prod, cant] = item.split(':');
@@ -396,13 +393,9 @@
                         consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
                     }
                 });
-            } else {
-                // Si entra aquí es que era un número suelto antiguo (como el 12). 
-                // Lo ponemos todo a 0 para que quede limpio y use el nuevo formato sincronizado.
-                productosValidos.forEach(p => consumosSocio[p] = 0);
             }
 
-            // Inyectamos el botón de la tarjeta (completamente limpio por fuera)
+            // Inyectamos el botón de gestionar consumiciones limpio en la tarjeta
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
                     <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -413,7 +406,7 @@
             
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Comprobación y limpieza radical de la burbuja flotante externa
+            // Instanciamos y limpiamos por completo la burbuja flotante
             let burbujaExterna = document.getElementById('ventanilla-consumos');
             if (!burbujaExterna) {
                 burbujaExterna = document.createElement('div');
@@ -422,7 +415,6 @@
                 document.getElementById('modalTarjeta').appendChild(burbujaExterna);
             }
             
-            // Vaciamos el HTML para que no pinte datos del socio anterior
             burbujaExterna.innerHTML = "";
 
             let htmlBurbuja = `
@@ -456,7 +448,7 @@
             burbujaExterna.innerHTML = htmlBurbuja;
             // =========================================================================
 
-            // CONTROL EXCLUSIVO DE VISIBILIDAD DE BOTONES
+            // FILTRO DE VISIBILIDAD DE BOTONES SEGURO Y FIJO
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
@@ -470,6 +462,7 @@
                         btn.style.display = '';
                     }
                 } else {
+                    // Jefe y Puerta ven SIEMPRE el botón PAGAR y el resto de botones de acción
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = ''; 
                     }
@@ -504,7 +497,6 @@
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             
-            // Localizamos al socio en los arrays locales de la app
             let socioActivo = null;
             if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
             if (!socioActivo && typeof datos !== 'undefined') socioActivo = datos.find(x => x.dni === dni);
@@ -522,29 +514,26 @@
                 });
             }
 
-            // Aplicamos la suma o resta en local
             let cantActual = consumos[prodKey] || 0;
             let nuevaCant = cantActual + cambio;
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[prodKey] = nuevaCant;
 
-            // Actualizamos la pantalla de forma reactiva instantánea
             const elementoContador = document.getElementById(`v-cant-${producto}`);
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
 
-            // Mapeamos al formato estricto texto -> PROD:CANT,PROD:CANT
             let resultadoString = Object.keys(consumos)
                 .filter(p => consumos[p] > 0)
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Subida síncrona limpia a Supabase
+            // Guardamos directamente en Supabase
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // Guardamos el string en todas las listas de memoria RAM globales para que persista al cerrar y abrir
+            // SINCRONIZACIÓN COACTIVA: Seteamos el cambio en las listas RAM locales para que al salir y entrar no se borre
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) db[idx].consumiciones = resultadoString;
@@ -560,12 +549,17 @@
 
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
+        
         function cerrar() { 
             document.getElementById('modalTarjeta').style.display='none'; 
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) ventanilla.style.display = 'none';
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            
+            // Al cerrar la tarjeta, si la lista general existe, forzamos un repintado para mantener los datos sincronizados
+            if (typeof render === 'function') render();
         }
+        
         function cerrarSesion() { location.reload(); }
         
         function gestionarEstatutos(origen) { 
@@ -679,7 +673,6 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        // Cada 10 segundos el sistema refresca la base de datos para que el camarero reciba lo que envías desde Puerta/Jefe
         setInterval(() => {
             if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
                 refrescarDatos();
