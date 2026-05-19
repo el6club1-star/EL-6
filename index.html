@@ -377,10 +377,10 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // CONFIGURACIÓN DE CONSUMICIONES (SOLO EN VENTANILLA FLOTANTE)
+            // NUEVO SISTEMA CORREGIDO: BURBUJA EXTERNA SIN RECORTES & FIX DE BOTONES
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-            window.consumosActualesGlobal = {}; // Lo hacemos global para que los botones no fallen nunca
+            window.consumosActualesGlobal = {}; 
             
             productosValidos.forEach(p => window.consumosActualesGlobal[p] = 0);
             const stringOriginal = String(s.consumiciones || '').trim();
@@ -396,12 +396,13 @@
                 window.consumosActualesGlobal['COPA'] = parseInt(stringOriginal);
             }
 
+            // 1. Eliminamos la burbuja del interior de la tarjeta para que no se recorte jamás
             let htmlConsumos = `
-                <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif; position: relative;">
+                <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
             `;
 
             if (nivel === 'camarero') {
-                // VISTA CAMARERO (2222): Se queda la lista limpia fija en la tarjeta, sin botones ni palabras raras
+                // VISTA CAMARERO (2222): Lista limpia integrada, sin botones y sin la palabra "Uds"
                 htmlConsumos += `
                     <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
                         <p style="font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.5); margin: 0 0 4px 0; text-align: center; font-weight: bold;">CONSUMICIONES</p>
@@ -424,42 +425,48 @@
                 }
                 htmlConsumos += `</div>`;
             } else {
-                // VISTA JEFE/GESTIÓN: Únicamente el botón. No se escribe NADA de texto fuera de la burbuja.
+                // VISTA JEFE/GESTIÓN: Únicamente dejamos el botón dorado estilizado en la tarjeta
                 htmlConsumos += `
-                    <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='block'" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                    <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                         ⚡ GESTIONAR CONSUMICIONES ▾
                     </button>
                 `;
 
-                // LA BURBUJA FLOTANTE (Ventanilla chiquitita independiente por encima de la tarjeta)
-                htmlConsumos += `
-                    <div id="ventanilla-consumos" style="display: none; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 235px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 12px 30px rgba(0,0,0,0.9); z-index: 99999; padding: 12px; box-sizing: border-box;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
-                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
-                            <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 7px;">
+                // Creamos o actualizamos la burbuja de manera externa, inyectada directamente al modal principal
+                let burbujaExterna = document.getElementById('ventanilla-consumos');
+                if (!burbujaExterna) {
+                    burbujaExterna = document.createElement('div');
+                    burbujaExterna.id = 'ventanilla-consumos';
+                    // Posicionamiento absoluto flotante real indexado por encima de todo el modal
+                    burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
+                    document.getElementById('modalTarjeta').appendChild(burbujaExterna);
+                }
+
+                let htmlBurbuja = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
+                        <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
+                        <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
                 `;
 
-                // Renderizado interno de la burbuja con ids dinámicos únicos para que no fallen jamás al pulsar
+                // Inyección segura de los botones independientes de más y menos
                 productosValidos.forEach(prod => {
                     const cantidad = window.consumosActualesGlobal[prod];
-                    htmlConsumos += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);">
-                            <span style="font-size: 10px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 24px; height: 24px; border-radius: 5px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
-                                <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 16px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 24px; height: 24px; border-radius: 5px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+                    htmlBurbuja += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
+                            <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                                <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
                             </div>
                         </div>
                     `;
                 });
 
-                htmlConsumos += `
-                        </div>
-                    </div>
-                `;
+                htmlBurbuja += `</div>`;
+                burbujaExterna.innerHTML = htmlBurbuja;
             }
 
             htmlConsumos += `</div>`;
@@ -500,29 +507,36 @@
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
 
+        function abrirBurbujaFlotante() {
+            const ventanilla = document.getElementById('ventanilla-consumos');
+            if (ventanilla) {
+                ventanilla.style.display = 'block';
+            }
+        }
+
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             
-            // 1. Modificación en caliente instantánea en el objeto global
+            // 1. Modificar el objeto de datos global de forma síncrona inmediata
             let cantActual = window.consumosActualesGlobal[prodKey] || 0;
             let nuevaCant = cantActual + cambio;
             if (nuevaCant < 0) nuevaCant = 0;
             window.consumosActualesGlobal[prodKey] = nuevaCant;
 
-            // 2. Actualizar visualmente la burbuja en tiempo real en la pantalla sin esperar a la base de datos
+            // 2. Modificación visual instantánea en la burbuja sin retrasos de red
             const elementoContador = document.getElementById(`v-cant-${producto}`);
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
 
-            // 3. Preparar el string para sincronizar con la base de datos de Supabase
+            // 3. Crear la cadena de texto mapeada
             let resultadoString = Object.keys(window.consumosActualesGlobal)
                 .filter(p => window.consumosActualesGlobal[p] > 0)
                 .map(p => `${p}:${window.consumosActualesGlobal[p]}`)
                 .join(','); 
 
-            // 4. Guardar los datos de manera asíncrona
+            // 4. Guardar los datos en la base de datos de Supabase en segundo plano
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
             let socioActivo = (typeof db !== 'undefined') ? db.find(x => x.dni === dni) : socioActual;
@@ -534,7 +548,12 @@
 
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
-        function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function cerrar() { 
+            document.getElementById('modalTarjeta').style.display='none'; 
+            const ventanilla = document.getElementById('ventanilla-consumos');
+            if (ventanilla) ventanilla.style.display = 'none';
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+        }
         function cerrarSesion() { location.reload(); }
         
         function gestionarEstatutos(origen) { 
