@@ -377,7 +377,7 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-            // Configuración de productos válidos y parseo
+            // Configuración de productos válidos y parseo seguro
             const productosValidos = ['COPA', 'CERVEZA', 'AGUA', 'REFRESCO', 'ENERGÉTICO', 'CHUPITO'];
             let consumosActuales = {};
             const stringOriginal = s.consumiciones || '';
@@ -391,8 +391,8 @@
                 consumosActuales[stringOriginal.toUpperCase()] = 1;
             }
 
-            // Contenedor principal centrado para las consumiciones
-            let htmlConsumos = `<div style="width: 100%; max-width: 250px; margin: 0 auto; font-family: system-ui, sans-serif; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">`;
+            // CONTENEDOR PRINCIPAL FORZADO AL CENTRO
+            let htmlConsumos = `<div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; box-sizing: border-box; margin: 0 auto;">`;
 
             if (nivel === 'camarero') {
                 // Vista del camarero (Solo lectura)
@@ -402,7 +402,7 @@
                     if (cantidad > 0) {
                         tieneAlgo = true;
                         htmlConsumos += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 240px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); box-sizing: border-box;">
                                 <span style="font-size: 13px; font-weight: 500; color: #ffffff; letter-spacing: 0.3px;">${prod}</span>
                                 <span style="font-size: 12px; font-weight: 600; color: #ffffff; background: rgba(255,255,255,0.12); padding: 3px 10px; border-radius: 6px;">${cantidad} Uds</span>
                             </div>`;
@@ -412,28 +412,28 @@
                     htmlConsumos += `<div style="font-size: 12px; color: #888; text-align: center; padding: 15px 0; font-style: italic;">Sin consumiciones activas</div>`;
                 }
             } else {
-                // MENÚ DESPLEGABLE PREMIUM VIP (Elegante en tonos oscuros neutros, sin verdes)
+                // DESPLEGABLE TOTALMENTE CENTRADO Y PREMIUM (Sin colores verdes feos)
                 htmlConsumos += `
-                    <div style="position: relative; width: 100%;">
-                        <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; padding: 11px 14px; background: rgba(25, 25, 25, 0.95); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.2s;">
+                    <div style="position: relative; width: 100%; max-width: 240px; display: flex; justify-content: center;">
+                        <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; padding: 11px 35px 11px 14px; background: #1e1e1e; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; letter-spacing: 0.5px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); box-sizing: border-box;">
                             <option value="" style="color: #888;">+ AÑADIR CONSUMICIÓN...</option>
-                            ${productosValidos.map(p => `<option value="${p}" style="background: #1c1c1e; color: #ffffff;">${p}</option>`).join('')}
+                            ${productosValidos.map(p => `<option value="${p}" style="background: #1e1e1e; color: #ffffff; text-align: left;">${p}</option>`).join('')}
                         </select>
                         <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #ffffff; opacity: 0.6; pointer-events: none; font-size: 10px;">▼</div>
                     </div>
-                    <div id="lista-consumos-editor" style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding-right: 2px;">`;
+                    <div id="lista-consumos-editor" style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 240px; max-height: 150px; overflow-y: auto; box-sizing: border-box;">`;
                 
-                // Lista de productos con botones oscuros perfectamente balanceados
+                // Lista de productos con botones elegantes neutros
                 productosValidos.forEach(prod => {
                     const cantidad = consumosActuales[prod] || 0;
                     if (cantidad > 0) {
                         htmlConsumos += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); box-sizing: border-box;">
                                 <span style="font-size: 12px; font-weight: 500; color: #e4e4e7;">${prod}</span>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">-</button>
-                                    <span style="font-size: 12px; font-weight: 700; color: #ffffff; min-width: 24px; text-align: center;">${cantidad}</span>
-                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">+</button>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">-</button>
+                                    <span style="font-size: 12px; font-weight: 700; color: #ffffff; min-width: 20px; text-align: center;">${cantidad}</span>
+                                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">+</button>
                                 </div>
                             </div>`;
                     }
@@ -444,15 +444,11 @@
             htmlConsumos += `</div>`;
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // ELIMINACIÓN DE BOTONES FANTASMA EXTRAVADOS (< y > de los lados)
-            const botonesViejosIzquierdaDerecha = document.querySelectorAll('.btn-cant, [onclick*="cambiarCant"], #cardMain > button:not([id])');
-            botonesViejosIzquierdaDerecha.forEach(btn => {
-                if (btn && !btn.closest('#lista-consumos-editor')) {
-                    btn.remove(); // Los borramos del DOM por completo para que no floten
-                }
-            });
+            // ELIMINACIÓN TOTAL DE FLECHAS Y BOTONES FANTASMA
+            const elementosBasura = document.querySelectorAll('.btn-cant, [onclick*="cambiarCant"]');
+            elementosBasura.forEach(el => el.remove());
 
-            // CONTROL DE VISIBILIDAD DE LOS BOTONES DE ACCIÓN (Mantiene intacta la estructura original)
+            // APLICACIÓN DE ESTADOS DE VISIBILIDAD DE BOTONES INFERIORES
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
@@ -464,7 +460,7 @@
                     }
                 } else {
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                        btn.style.display = ''; // Conserva el flex/block nativo sin romper el centrado
+                        btn.style.display = ''; // Conserva el flex nativo intacto sin desalinear nada
                     }
                 }
             });
@@ -499,7 +495,7 @@
         async function modificarCantidadDirecta(dni, producto, cambio) {
             let consumos = {};
             
-            // Sincronizar directo con los datos en memoria 'db' para evitar retrasos de lectura
+            // Trabajamos sobre la memoria interna para evitar refrescos globales agresivos que cierran botones
             let socioActivo = (typeof db !== 'undefined') ? db.find(x => x.dni === dni) : socioActual;
             if (!socioActivo) socioActivo = socioActual;
             
@@ -519,24 +515,20 @@
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[producto] = nuevaCant;
 
-            // Cadena unificada limpia separada por comas para Supabase
+            // Cadena limpia formateada por comas para Supabase
             let resultadoString = Object.keys(consumos)
                 .filter(p => consumos[p] > 0)
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Guardado en la base de datos
+            // Guardado inmediato en base de datos sin alterar vistas secundarias
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // Actualizar referencias activas
+            // Sincronizar estados locales inmediatamente
             if (socioActivo) socioActivo.consumiciones = resultadoString;
             if (socioActual && socioActual.dni === dni) socioActual.consumiciones = resultadoString;
             
-            if (typeof refrescarDatos === 'function') {
-                await refrescarDatos();
-            }
-            
-            // Pintar de nuevo la tarjeta manteniendo toda la estructura intacta
+            // ACTUALIZACIÓN DE TARJETA AISLADA: Redibujamos la tarjeta directamente sin llamar a refrescos que oculten el botón PAGAR
             abrirTarjeta(socioActivo);
         }
 
@@ -584,7 +576,7 @@
             if(origenFirma === 'tarjeta' && socioActual) {
                 await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
                 socioActual.firma_b64 = firmaB64;
-                refrescarDatos();
+                if(typeof refrescarDatos === 'function') refrescarDatos();
                 alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
                 cerrarFirma(); 
                 abrirTarjeta(socioActual);
@@ -602,7 +594,7 @@
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-        async function resetJornada() { if(confirm("¿Reset?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); refrescarDatos(); } }
+        async function resetJornada() { if(confirm("¿Reset?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); if(typeof refrescarDatos === 'function') refrescarDatos(); } }
 
         function toggleCamara() {
             if(!camActiva) {
@@ -656,7 +648,12 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        setInterval(refrescarDatos, 10000);
+        // Intervalo de refresco pasivo en segundo plano sin pisar la tarjeta activa
+        setInterval(() => {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
+                refrescarDatos();
+            }
+        }, 10000);
     </script>
 </body>
 </html>
