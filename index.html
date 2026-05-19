@@ -377,7 +377,7 @@
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
             // =========================================================================
-            // NUEVO SISTEMA DE CONSUMICIONES INTEGRADO PREMIUM (SOLUCIÓN DE DISEÑO Y BARRA)
+            // NUEVO SISTEMA DE CONSUMICIONES INTEGRADO PREMIUM (CON DESPLEGABLE)
             // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             let consumosActuales = {};
@@ -396,17 +396,29 @@
                     }
                 });
             } else if (stringOriginal && !isNaN(stringOriginal) && parseInt(stringOriginal) > 0) {
-                // Por si quedaba algún registro antiguo con número puro, se lo asignamos a COPAS por defecto
                 consumosActuales['COPA'] = parseInt(stringOriginal);
             }
 
-            // Diseño del contenedor principal adaptado para encajar DENTRO de la tarjeta VIP
+            // Contenedor principal de consumiciones
             let htmlConsumos = `
                 <div style="margin: 12px auto; width: 100%; max-width: 240px; text-align: left; font-family: 'Inter', sans-serif;">
                     <p style="font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; font-weight: 700; text-align: center;">
                         ✨ CONSUMICIONES DISPONIBLES ✨
                     </p>
-                    <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
+            `;
+
+            // SI ES JEFE / PUERTA: Añadimos el menú desplegable premium para agregar productos al vuelo
+            if (nivel !== 'camarero') {
+                htmlConsumos += `
+                    <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px; font-size: 11px; font-weight: 600; margin-bottom: 8px; outline: none; cursor: pointer;">
+                        <option value="" style="background:#222; color:#fff;">➕ Añadir consumición...</option>
+                        ${productosValidos.map(p => `<option value="${p}" style="background:#222; color:#fff;">${p}</option>`).join('')}
+                    </select>
+                `;
+            }
+
+            htmlConsumos += `
+                <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
             `;
 
             let tieneConsumos = false;
@@ -415,18 +427,18 @@
                 const cantidad = consumosActuales[prod];
                 
                 if (nivel === 'camarero') {
-                    // VISTA CAMARERO (2222): Muestra el nombre exacto del producto y las unidades sin botones
+                    // VISTA CAMARERO (2222): Solo lectura, limpio y SIN la palabra "Uds"
                     if (cantidad > 0) {
                         tieneConsumos = true;
                         htmlConsumos += `
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; border-bottom: 1px dashed rgba(255,255,255,0.15);">
                                 <span style="font-size: 11px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px; text-transform: uppercase;">${prod}</span>
-                                <span style="font-size: 11px; font-weight: 700; color: #fff; background: rgba(214, 175, 55, 0.2); border: 1px solid rgba(214, 175, 55, 0.4); padding: 2px 8px; border-radius: 6px;">${cantidad} Uds</span>
+                                <span style="font-size: 11px; font-weight: 700; color: #fff; background: rgba(214, 175, 55, 0.2); border: 1px solid rgba(214, 175, 55, 0.4); padding: 2px 8px; border-radius: 6px;">${cantidad}</span>
                             </div>
                         `;
                     }
                 } else {
-                    // VISTA JEFE / PUERTA: Botonera integrada premium compacta para no romper la tarjeta
+                    // VISTA JEFE / PUERTA: Botoneras individuales independientes que funcionan en TODOS los productos
                     tieneConsumos = true; 
                     htmlConsumos += `
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 1px 0;">
