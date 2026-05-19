@@ -376,6 +376,7 @@
             document.getElementById('card-nom').innerText = s.nombre; 
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
+            
             // Formateo estético del menú de consumiciones
             const productosValidos = ['COPA', 'CERVEZA', 'AGUA', 'REFRESCO', 'ENERGÉTICO', 'CHUPITO'];
             let consumosActuales = {};
@@ -413,7 +414,7 @@
             } else {
                 // Jefe o Puerta ven un selector desplegable elegante para añadir producto rápido
                 htmlConsumos += `
-                    <select id="select-add-consumo" onchange="modificarCantidadDirecta('${s.dni}', this.value, 1)" style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; margin-bottom: 12px;">
+                    <select id="select-add-consumo" onchange="añadirProductoDesplegable('${s.dni}', this.value)" style="width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; margin-bottom: 12px;">
                         <option value="">+ AÑADIR CONSUMICIÓN...</option>
                         ${productosValidos.map(p => `<option value="${p}">${p}</option>`).join('')}
                     </select>
@@ -480,12 +481,13 @@
             document.getElementById('box-firma').style.display = 'none';
             document.getElementById('modalTarjeta').style.display = 'flex';
         }
+
         async function añadirProductoDesplegable(dni, producto) {
             if (!producto) return;
             await modificarCantidadDirecta(dni, producto, 1);
-            document.getElementById('select-add-consumo').value = "";
+            const el = document.getElementById('select-add-consumo');
+            if (el) el.value = "";
         }
-        
 
         async function modificarCantidadDirecta(dni, producto, cambio) {
             let consumos = {};
@@ -519,6 +521,7 @@
                 abrirTarjeta(socioActual);
             }
         }
+
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         function cerrar() { document.getElementById('modalTarjeta').style.display='none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
