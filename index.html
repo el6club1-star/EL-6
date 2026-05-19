@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v6.0 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v6.1 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -36,7 +36,7 @@
         .fila-vetada { background-color: #fee2e2 !important; color: #b91c1c !important; }
         .btn-acc { background: transparent; border: 1px solid currentColor; border-radius: 8px; cursor: pointer; font-weight: bold; color: inherit; font-size: 11px; margin-right: 8px; text-transform: uppercase; padding: 6px 10px; }
         
-        /* DISEÑOS DE TARJETAS LIMPIAS (SÓLO SOCIO) */
+        /* DISEÑOS DE TARJETAS LIMPIAS */
         #modalTarjeta { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); z-index: 5000; justify-content: flex-start; align-items: center; overflow-y: auto; padding: 40px 0; flex-direction: column; }
         .card-vip { width: 320px; height: auto; border-radius: 20px; padding: 25px; text-align: center; color: white; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); box-sizing: border-box; }
         
@@ -46,17 +46,20 @@
         .cat-vip-gold { background: linear-gradient(135deg, #d4af37, #000000); border-color: #f1c40f; }
         .cat-elite { background: linear-gradient(135deg, #000000, #434343); border: 2px solid var(--gold); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
 
-        #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; }
-        #qr-space { background: white; padding: 10px; margin: 20px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
+        #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; z-index: 10; }
         
-        /* PANEL DE GESTIÓN TÉCNICA (INVISIBLES EN LA TARJETA DEL SOCIO) */
+        /* ESPACIO PARA EL QR FIJO Y CORRECTO */
+        #qr-space { background: white; padding: 10px; margin: 20px auto; display: block; border-radius: 10px; width: 140px; height: 140px; box-sizing: border-box; }
+        #qr-canvas { width: 120px !important; height: 120px !important; display: block; margin: 0 auto; }
+        
+        /* PANEL DE GESTIÓN INTERNA (INVISIBLES EN LA TARJETA DEL SOCIO) */
         .panel-gestion-interna { width: 320px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; }
         
         /* CUADRÍCULA DE CONSUMICIONES MINIMALISTA */
         .grid-consumos-elite { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
         .item-consumo-elite { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 12px; color: #fff; font-weight: 500; letter-spacing: 1px; }
         .item-consumo-elite span.cantidad-pura { font-weight: bold; color: var(--gold); margin-left: auto; margin-right: 10px; font-size: 14px; }
-        .btn-restar-fino { background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        .btn-restar-fino { background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; box-sizing: border-box; padding: 0; line-height: 1; }
         .btn-restar-fino:hover { background: var(--danger); color: white; }
         .sin-consumos-msg { grid-column: span 2; text-align: center; color: rgba(255,255,255,0.4); font-size: 11px; font-style: italic; padding: 5px 0; }
 
@@ -147,7 +150,9 @@
             <div id="card-id" style="font-size:36px; font-weight:900; margin:15px 0; letter-spacing:1px;"></div>
             <div id="card-categoria-texto" style="font-size:11px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; opacity:0.9;"></div>
             
-            <div id="qr-space"></div>
+            <div id="qr-space">
+                <canvas id="qr-canvas"></canvas>
+            </div>
             
             <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.15); padding-top:10px; line-height: 1.8;">
                 <p style="margin:4px 0;">SOCIO: <span id="card-nom" style="float:right; font-weight:bold;">---</span></p>
@@ -195,7 +200,7 @@
                 <p><strong>4. CONFIDENCIALIDAD ABSOLUTA Y CESIÓN LEGAL A AUTORIDADES:</strong> El Club garantiza el secreto y la confidencialidad de los datos de sus socios, adoptando las medidas de seguridad técnicas y organizativas necesarias para evitar su alteración o acceso no autorizado. Para cualquier consulta o incidencia relativa a la privacidad, el Club pone a disposición de los usuarios la dirección de correo electrónico <strong>el6club1@gmail.com</strong>. Los datos no serán vendidos, cedidos ni compartidos con terceros ajenos a la organización, salvo en cumplimiento de una obligación legal estricta o requerimiento formal y expreso de las Fuerzas y Cuerpos de Seguridad del Estado (Policía Nacional, Guardia Civil) o autoridades judiciales competentes en el marco de una investigación.</p>
                 <p><strong>5. EJERCICIO RIGUROSO DEL DERECHO DE ADMISIÓN:</strong> El Club ejerce de forma permanente el Derecho de Admisión amparado por la legislación vigente applicable a establecimientos privados y de espectáculos públicos. La Dirección y su personal de control se reservan el derecho unilateral de denegar el acceso o suspender la entrada a cualquier socio, aun estando registrado, por razones de aforo, seguridad, alteración del orden o por no superar los filtros de verificación de la puerta de acceso.</p>
                 <p><strong>6. CÓDIGO DE VESTIMENTA Y DECORO EXIGIBLE (DRESS CODE):</strong> Para acceder y permanecer en el Club se exige el cumplimiento estricto del código de indumentaria elegante y sofisticado determinado por la empresa. Queda terminantemente prohibido el acceso portando ropa o calzado deportivo, prendas de baño, ropa de trabajo, prendas con mensajes de carácter ofensivo o cualquier vestuario que, a criterio exclusivo del personal de admisión, no cumpla con los estándares estéticos del local.</p>
-                <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestaciones racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
+                <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestations racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
                 <p><strong>8. POLÍTICA DE TOLERANCIA CERO CON SUSTANCIAS ILEGALES:</strong> El Club mantiene una política de tolerancia cero absoluta respecto al consumo, tenencia, introducción, facilitación o tráfico de cualquier tipo de sustancia estupefaciente, droga ilegal o psicotrópica dentro de todo el perímetro de las instalaciones (incluyendo zonas comunes y aseos). La mera detección o sospecha fundada por parte del personal facultará al Club para la retirada permanente de la condición de socio, expulsión inmediata y, en su caso, la correspondiente notificación a las autoridades policiales españolas.</p>
                 <p><strong>9. CONSUMO RESPONSABLE DE ALCOHOL Y SEGURIDAD:</strong> El socio se compromete a mantener un comportamiento cívico y controlado. De acuerdo con la normativa vigente de protección al menor y seguridad pública, el personal del local se reserva el derecho legítimo de negar el servicio de bebidas alcohólicas a cualquier persona que muestre síntomas evidentes de embriaguez o alteración psicológica, procediendo a su desalojo si compromete la tranquilidad del establecimiento.</p>
                 <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda estrictamente prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
@@ -244,12 +249,11 @@
             } catch (err) { actualizarAntena(false); }
         }
 
-        // PARSEO INTELIGENTE DE CONSUMICIONES ("PRODUCTO:CANTIDAD,PRODUCTO:CANTIDAD")
+        // PARSEO DE CONSUMICIONES ("PRODUCTO:CANTIDAD")
         function parsearConsumiciones(stringConsumos) {
             const mapa = {};
             if (!stringConsumos || stringConsumos.trim() === "" || stringConsumos === "0") return mapa;
             
-            // Soporte para compatibilidad si antes había un número puro guardado
             if (!isNaN(stringConsumos)) {
                 const totalCopas = parseInt(stringConsumos, 10);
                 if (totalCopas > 0) mapa["COPA"] = totalCopas;
@@ -276,7 +280,6 @@
             return filtro.join(',');
         }
 
-        // CONTROL DE RENDERIZADO DEL ENTORNO DE CONSUMICIONES SEGÚN ROL
         function renderGridConsumiciones() {
             const contenedor = document.getElementById('contenedorGridConsumos');
             if (!socioActual) return;
@@ -289,7 +292,6 @@
                 return;
             }
 
-            // Generamos las cajitas elegantes del Grid sin textos toscos, sólo Producto y Cantidad Pura
             contenedor.innerHTML = productosActivos.map(prod => `
                 <div class="item-consumo-elite">
                     <div>${prod}</div>
@@ -299,7 +301,6 @@
             `).join('');
         }
 
-        // ACCIÓN DEL CAMARERO / ADMIN: RESTAR INDIVIDUALMENTE CON UN SUTIL BOTÓN "—"
         async function restarProductoIndividual(producto) {
             if (!socioActual) return;
             const mapaConsumos = parsearConsumiciones(socioActual.consumiciones);
@@ -318,7 +319,6 @@
             }
         }
 
-        // ACCIÓN DEL ADMIN / PUERTA: AÑADIR CONSUMOS CON DISEÑO SATINADO DESPLEGABLE
         function toggleSelectorProductos() {
             const div = document.getElementById('cajaAgregarFlotante');
             div.style.display = (div.style.display === 'flex') ? 'none' : 'flex';
@@ -456,41 +456,36 @@
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
         }
 
-        // CONTROL DE APERTURA DE MODAL CON COMPORTAMIENTO INTELIGENTE DE PANELES
+        // CONTROL DE CORRECCIÓN DE TARJETA CON EL CANVAS FIX
         function reAbrir(dni) {
             const s = db.find(x => x.dni === dni);
             if(!s) return;
             socioActual = s;
 
-            // 1. Limpieza de Clases de Categoría de Tarjeta
             const card = document.getElementById('cardMain');
             card.className = "card-vip";
             const cStr = (s.cat || 'estándar').toLowerCase();
             card.classList.add('cat-' + cStr);
 
-            // 2. Inyección de Información Limpia en Tarjeta
             document.getElementById('card-id').innerText = "Nº " + String(s.id).padStart(3, '0');
             document.getElementById('card-categoria-texto').innerText = cStr;
             document.getElementById('card-nom').innerText = s.nombre.toUpperCase();
             document.getElementById('card-dni').innerText = formatearDNI(s.dni);
             document.getElementById('card-cat-abajo').innerText = cStr.toUpperCase();
 
-            // Sello de Firma
             const imgFirma = document.getElementById('previewFirmaSocio');
             if(s.firma) { imgFirma.src = s.firma; imgFirma.style.display = 'block'; } else { imgFirma.style.display = 'none'; }
 
-            // Generador QR
-            document.getElementById('qr-space').innerHTML = "";
-            new QRious({ element: document.createElement('canvas'), value: s.dni, size: 140 });
-            const canvasQr = document.querySelector('#qr-space canvas');
-            if(canvasQr) {
-                const img = document.createElement('img'); img.src = canvasQr.toDataURL();
-                document.getElementById('qr-space').appendChild(img);
-            }
+            // CORRECCIÓN DIRECTA DEL CANVAS DEL QR SIN DEFORMARSE
+            new QRious({
+                element: document.getElementById('qr-canvas'),
+                value: s.dni,
+                size: 120,
+                background: 'white',
+                foreground: 'black'
+            });
 
             actualizarVisualPago();
-
-            // 3. Adaptación del Panel de Control Inferior según Rol
             renderGridConsumiciones();
 
             const divAgregar = document.getElementById('zonaAgregarConsumo');
@@ -498,20 +493,17 @@
             const btnEnviar = document.getElementById('btnEnviarTarjeta');
             const btnFirmar = document.getElementById('btnFirmarTarjeta');
 
-            // Reset de visibilidad inicial de herramientas
             divAgregar.style.display = "none";
             btnPagar.style.display = "block";
             btnEnviar.style.display = "block";
             btnFirmar.style.display = "block";
 
             if (nivel === 'camarero') {
-                // El camarero solo ve la Rejilla de consumos para pulsar "—" y restar. Nada de añadir o gestionar pagos.
                 divAgregar.style.display = "none";
                 btnPagar.style.display = "none";
                 btnEnviar.style.display = "none";
                 btnFirmar.style.display = "none";
             } else if (nivel === 'jefe' || nivel === 'personal') {
-                // Jefes y Control de Puerta pueden ver el agregador satinado y los botones técnicos completos
                 divAgregar.style.display = "flex";
             }
 
@@ -532,7 +524,6 @@
             nivel = 'personal';
         }
 
-        // --- MANIPULADORES DE FIRMAS Y OTROS EVENTOS EXISTENTES ---
         function gestionarEstatutos(origen) {
             origenFirma = origen;
             document.getElementById('box-firma').style.display = 'block';
@@ -570,7 +561,6 @@
             }
         }
 
-        // Lógica de dibujo del canvas firma
         canvas.addEventListener('mousedown', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
         canvas.addEventListener('mousemove', (e) => { if(dibujando) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
         canvas.addEventListener('mouseup', () => dibujando = false);
@@ -636,7 +626,7 @@
             const tipo = document.getElementById('tipoClave').value;
             const nueva = document.getElementById('nuevaClaveInput').value.trim();
             if(!nueva) return;
-            CLAVES[tipo] = nueva;
+            CLACES[tipo] = nueva;
             localStorage.setItem('claves_el6', JSON.stringify(CLAVES));
             alert("Clave actualizada.");
             document.getElementById('nuevaClaveInput').value = "";
@@ -665,6 +655,21 @@
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
+        }
+
+        function importarBaseDatos(event) {
+            const file = event.target.files[0]; if(!file) return;
+            const reader = new FileReader(); reader.onload = async function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if(Array.isArray(json)) {
+                        for(const s of json) {
+                            await _supabase.from(NOMBRE_TABLA).upsert({ id: s.id, dni: s.dni, nombre: s.nombre, email: s.email, cat: s.cat, dentro: s.dentro, motivo: s.motivo, hora: s.hora, firma: s.firma, consumiciones: s.consumiciones });
+                        }
+                        alert("Copia restaurada correctamente."); refrescarDatos();
+                    }
+                } catch(err) { alert("Error al importar el archivo."); }
+            }; reader.readAsText(file);
         }
 
         function exportarExcel() {
