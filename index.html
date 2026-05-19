@@ -263,7 +263,7 @@
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
             if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLACES || p === CLAVES.puerta) { nivel="personal"; entrar(); } 
+            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
             else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
             else alert("CÓDIGO INCORRECTO");
         }
