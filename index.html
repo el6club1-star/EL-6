@@ -498,6 +498,12 @@
                     }
                 }
             });
+
+            // FUERZA QUE EL BOTÓN DE LA CÁMARA (LEER QR) ESTÉ VISIBLE SIEMPRE PARA EL CAMARERO
+            const botonCamaraQR = document.getElementById('btnCam');
+            if (botonCamaraQR) {
+                botonCamaraQR.style.display = ''; 
+            }
             
             // Preview de la Firma
             const firmaPrev = document.getElementById('previewFirmaSocio');
