@@ -444,6 +444,14 @@
             htmlConsumos += `</div>`;
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
+            // ELIMINACIÓN DE BOTONES FANTASMA EXTRAVADOS (< y > de los lados)
+            const botonesViejosIzquierdaDerecha = document.querySelectorAll('.btn-cant, [onclick*="cambiarCant"], #cardMain > button:not([id])');
+            botonesViejosIzquierdaDerecha.forEach(btn => {
+                if (btn && !btn.closest('#lista-consumos-editor')) {
+                    btn.remove(); // Los borramos del DOM por completo para que no floten
+                }
+            });
+
             // CONTROL DE VISIBILIDAD DE LOS BOTONES DE ACCIÓN (Mantiene intacta la estructura original)
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
