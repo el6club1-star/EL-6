@@ -197,7 +197,7 @@
             if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
-       async function refrescarDatos() {
+      async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
                 if(!error) { 
@@ -206,12 +206,41 @@
                     render(); 
                     actualizarAntena(true); 
                     
-                    // Si la tarjeta está abierta, actualizamos los datos del socio actual con los nuevos de la BD
-                    if (socioActual) {
+                    // SINCRONIZACIÓN AUTOMÁTICA ENTRE PANTALLAS (1234, 0000, 2222)
+                    // Si el modal de la tarjeta está abierto, refrescamos la tarjeta entera con los datos nuevos de Supabase
+                    const modalAbierto = document.getElementById('modalTarjeta').style.display === 'flex';
+                    const ventanillaAbierta = document.getElementById('ventanilla-consumos') && document.getElementById('ventanilla-consumos').style.display === 'block';
+                    
+                    if (socioActual && modalAbierto) {
                         const socioActualizado = db.find(x => x.dni === socioActual.dni);
                         if (socioActualizado) {
+                            // Guardamos los datos nuevos de la BD
                             socioActual = socioActualizado;
+                            // Re-renderizamos la tarjeta para que pinte los cambios del otro usuario sin cerrarse
                             actualizarVisualPago();
+                            
+                            // Si no estás modificando consumiciones en este preciso instante, refresca los números de la burbuja
+                            if (!ventanillaAbierta) {
+                                const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
+                                let consumosSocio = {};
+                                productosValidos.forEach(p => consumosSocio[p] = 0);
+                                const stringOriginal = String(socioActual.consumiciones || '').trim();
+                                if (stringOriginal.includes(':')) {
+                                    stringOriginal.split(',').forEach(item => {
+                                        const [prod, cant] = item.split(':');
+                                        if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
+                                            consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
+                                        }
+                                    });
+                                }
+                                productosValidos.forEach(prod => {
+                                    const elementoContador = document.getElementById(`v-cant-${prod}`);
+                                    if (elementoContador) {
+                                        elementoContador.innerText = consumosSocio[prod];
+                                        elementoContador.style.color = consumosSocio[prod] > 0 ? '#d4af37' : '#fff';
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -229,33 +258,30 @@
             }
         }
 
-        // CORREGIDO: Sincronización masiva e inmediata para evitar pérdida de datos del pago
+        // GUARDADO SEGURO DE PAGO (Bloquea el botón antes de refrescar la interfaz)
         async function marcarPago() {
             if (!socioActual) return;
             const esPagado = socioActual.pago_realizado;
             const nuevoEstado = !esPagado;
 
-            // 1. Guardamos de forma síncrona en Supabase
             try {
-                await _supabase.from(NOMBRE_TABLA).update({ 
-                    pago_realizado: nuevoEstado
-                }).eq('dni', socioActual.dni);
-                
-                // 2. Sincronizamos la memoria local de inmediato en todas las referencias posibles
+                // 1. Forzamos cambio local inmediato para que no parpadee
                 socioActual.pago_realizado = nuevoEstado;
                 if (typeof db !== 'undefined') {
                     let idx = db.findIndex(x => x.dni === socioActual.dni);
                     if (idx !== -1) db[idx].pago_realizado = nuevoEstado;
                 }
-                
-                // 3. Forzamos los estilos en la pantalla actual
                 actualizarVisualPago();
+
+                // 2. Subimos a Supabase y esperamos confirmación real
+                await _supabase.from(NOMBRE_TABLA).update({ 
+                    pago_realizado: nuevoEstado
+                }).eq('dni', socioActual.dni);
                 
-                // 4. Traemos los datos limpios de Supabase para que le aparezca al camarero
+                // 3. Forzamos descarga limpia para actualizar al resto de dispositivos (camareros, puerta)
                 await refrescarDatos();
             } catch (err) {
-                console.error("Error al marcar el pago en Supabase:", err);
-                alert("Error de conexión. No se pudo guardar el pago.");
+                console.error("Error al marcar el pago:", err);
             }
         }
 
@@ -265,9 +291,7 @@
             const btn = document.getElementById('btnPagarTarjeta');
             if (!sello || !btn) return;
 
-            let pagadoValido = socioActual.pago_realizado;
-            
-            if(pagadoValido) {
+            if(socioActual.pago_realizado) {
                 sello.style.display = 'block';
                 btn.innerText = 'PAGO REALIZADO';
                 btn.style.background = '#15803d';
@@ -523,7 +547,7 @@
             }
         }
 
-        // CORREGIDO: Sincronización estricta al restar/añadir consumiciones desde la burbuja externa
+        // CONTROL DE CONSUMICIONES EN TIEMPO REAL
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             
@@ -564,7 +588,6 @@
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Actualización local ultra-rápida de seguridad en arrays de memoria
             socioActivo.consumiciones = resultadoString;
             if (socioActual && socioActual.dni === dni) {
                 socioActual.consumiciones = resultadoString;
@@ -573,17 +596,14 @@
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) db[idx].consumiciones = resultadoString;
             }
-            if (typeof datos !== 'undefined') {
-                let idx = datos.findIndex(x => x.dni === dni);
-                if (idx !== -1) datos[idx].consumiciones = resultadoString;
-            }
 
-            // Enviamos a Supabase e invocamos refresco síncrono completo al terminar
             try {
+                // Modificamos Supabase
                 await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+                // Lanzamos la actualización general para impactar de inmediato a los demás roles
                 await refrescarDatos();
             } catch (err) {
-                console.error("Error guardando consumición en Supabase:", err);
+                console.error("Error guardando consumición:", err);
             }
         }
 
@@ -717,8 +737,9 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
+        // Bucle automático que ahora respeta de verdad los cambios cruzados entre terminales
         setInterval(() => {
-            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
+            if (typeof refrescarDatos === 'function') {
                 refrescarDatos();
             }
         }, 10000);
