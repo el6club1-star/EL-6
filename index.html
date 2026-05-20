@@ -197,7 +197,7 @@
             if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
- // BLINDAJE DE ROL: Recuperamos el nivel guardado para que no se borre al hacer render
+ // Recuperamos el nivel guardado si existe
         if (localStorage.getItem('user_nivel_el6')) {
             window.nivel = localStorage.getItem('user_nivel_el6');
         }
@@ -213,7 +213,6 @@
                     if (!modalAbierto) {
                         render(); 
                     } else {
-                        // Sincronización silenciosa en memoria sin romper los contadores de la burbuja
                         const socioActualizado = db.find(x => x.dni === socioActual.dni);
                         if (socioActualizado) {
                             socioActual = socioActualizado;
@@ -316,10 +315,10 @@
             }
             if(window.nivel === 'camarero') {
                 document.getElementById('cajaRegistro').style.display = 'none';
-                document.getElementById('btnReset').style.none = 'none';
+                document.getElementById('btnReset').style.display = 'none';
                 document.getElementById('panelAdmin').style.display = 'none';
                 if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.none = 'block';
+                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
                 if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
             }
 
@@ -521,7 +520,6 @@
             }
         }
 
-        // CORRECCIÓN RADICAL: Sincronización inmediata de base de datos + memoria local
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             let socioActivo = null;
@@ -559,7 +557,6 @@
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // BLINDAJE LOCAL: Forzamos la actualización inmediata del estado en el móvil antes de subir a Supabase
             socioActivo.consumiciones = resultadoString;
             if (socioActual && socioActual.dni === dni) {
                 socioActual.consumiciones = resultadoString;
@@ -570,7 +567,10 @@
             }
 
             try {
-                await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+                const { error } = await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+                if (error) {
+                    console.error("ERROR DE SUPABASE. Revisa que la columna 'consumiciones' sea de tipo TEXTO:", error.message);
+                }
             } catch (err) {
                 console.error("Error guardando consumición:", err);
             }
@@ -708,9 +708,8 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        if (localStorage.getItem('user_nivel_el6')) {
-            setTimeout(() => { entrar(); }, 500);
-        }
+        // Se quita el inicio automático para que fuerce la pantalla de login siempre
+        refrescarDatos();
 
         setInterval(() => {
             if (typeof refrescarDatos === 'function') {
