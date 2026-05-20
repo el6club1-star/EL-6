@@ -197,7 +197,7 @@
             if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
-   // BLINDAJE DE ROL: Recuperamos el nivel guardado para que no se borre al hacer render
+ // BLINDAJE DE ROL: Recuperamos el nivel guardado para que no se borre al hacer render
         if (localStorage.getItem('user_nivel_el6')) {
             window.nivel = localStorage.getItem('user_nivel_el6');
         }
@@ -213,6 +213,7 @@
                     if (!modalAbierto) {
                         render(); 
                     } else {
+                        // Sincronización silenciosa en memoria sin romper los contadores de la burbuja
                         const socioActualizado = db.find(x => x.dni === socioActual.dni);
                         if (socioActualizado) {
                             socioActual = socioActualizado;
@@ -296,13 +297,11 @@
             else if(p === CLAVES.camarero) { window.nivel="camarero"; } 
             else { alert("CÓDIGO INCORRECTO"); return; }
             
-            // Guardamos el rol en el navegador para que no se borre nunca al salir o hacer render
             localStorage.setItem('user_nivel_el6', window.nivel);
             entrar();
         }
 
         function entrar() { 
-            // Si venimos de un refresco de página, aseguramos el nivel
             if(!window.nivel) window.nivel = localStorage.getItem('user_nivel_el6') || 'camarero';
 
             document.getElementById('pantallaLogin').style.display='none'; 
@@ -317,7 +316,7 @@
             }
             if(window.nivel === 'camarero') {
                 document.getElementById('cajaRegistro').style.display = 'none';
-                document.getElementById('btnReset').style.display = 'none';
+                document.getElementById('btnReset').style.none = 'none';
                 document.getElementById('panelAdmin').style.display = 'none';
                 if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
                 if(document.getElementById('configClaves')) document.getElementById('configClaves').style.none = 'block';
@@ -338,7 +337,6 @@
         }
 
         function render() {
-            // Asegurar que el nivel no esté vacío en el render masivo
             if(!window.nivel) window.nivel = localStorage.getItem('user_nivel_el6') || 'camarero';
 
             const b = document.getElementById('buscador').value.toLowerCase();
@@ -523,6 +521,7 @@
             }
         }
 
+        // CORRECCIÓN RADICAL: Sincronización inmediata de base de datos + memoria local
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             let socioActivo = null;
@@ -560,6 +559,7 @@
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
+            // BLINDAJE LOCAL: Forzamos la actualización inmediata del estado en el móvil antes de subir a Supabase
             socioActivo.consumiciones = resultadoString;
             if (socioActual && socioActual.dni === dni) {
                 socioActual.consumiciones = resultadoString;
@@ -587,7 +587,6 @@
             render(); 
         }
         
-        // CORREGIDO: Al cerrar sesión limpiamos la memoria de verdad
         function cerrarSesion() { 
             localStorage.removeItem('user_nivel_el6'); 
             location.reload(); 
@@ -709,7 +708,6 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        // Si el usuario ya estaba logueado antes de un refresco de pantalla, forzamos la entrada automática sin pedir clave otra vez
         if (localStorage.getItem('user_nivel_el6')) {
             setTimeout(() => { entrar(); }, 500);
         }
