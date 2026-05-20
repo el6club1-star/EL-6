@@ -619,7 +619,7 @@
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-       async function resetJornada() { 
+      async function resetJornada() { 
     if(confirm("¿Deseas cerrar el día? Se guardará el resumen de la caja en el histórico y los estados volverán a cero.")) { 
         
         // ==========================================
@@ -641,6 +641,7 @@
             }
         });
 
+        // Guardar el histórico en Supabase
         const { error: errorCaja } = await _supabase
             .from('cajas_diarias')
             .insert([{ 
@@ -653,9 +654,10 @@
         if (errorCaja) {
             console.error("Error al guardar el histórico de caja:", errorCaja.message);
             alert("⚠️ No se pudo guardar la caja del día. Verifica si creaste la tabla 'cajas_diarias' en Supabase.");
-            return;
+            return; 
         }
 
+        // Reiniciar los socios para el día siguiente
         await _supabase.from(NOMBRE_TABLA).update({ 
             dentro: false, 
             hora: null, 
@@ -665,36 +667,6 @@
         
         refrescarDatos(); 
         
-        alert(`💾 ¡Caja guardada con éxito!\n\n📊 RESUMEN FINAL:\n• Asistentes: ${totalAsistentes}\n• Consumiciones: ${totalConsumiciones}\n• CAJA: ${cajaTotalDinero}€`);
-    } 
-}
-        // 4. GUARDAR EL HISTÓRICO EN SUPABASE (Tabla: cajas_diarias)
-        const { error: errorCaja } = await _supabase
-            .from('cajas_diarias')
-            .insert([{ 
-                fecha: new Date().toISOString().split('T')[0], // Guarda la fecha de hoy: Año-Mes-Día
-                total_asistentes: totalAsistentes, 
-                total_consumiciones: totalConsumiciones,
-                recaudacion_estimada: cajaTotalDinero // Guarda el dinero real de los que pagaron
-            }]);
-
-        if (errorCaja) {
-            console.error("Error al guardar el histórico de caja:", errorCaja.message);
-            alert("⚠️ No se pudo guardar la caja del día. Verifica si creaste la tabla 'cajas_diarias' en Supabase.");
-            return; // Paramos el proceso para que no se borren los datos de los socios si falla Supabase
-        }
-
-        // 5. REINICIAR LOS SOCIOS PARA EL DÍA SIGUIENTE (Tu código original)
-        await _supabase.from(NOMBRE_TABLA).update({ 
-            dentro: false, 
-            hora: null, 
-            consumiciones: null, 
-            pago_realizado: false 
-        }).gt('id', 0); 
-        
-        refrescarDatos(); 
-        
-        // Mensaje de éxito con el desglose de lo que ha pasado
         alert(`💾 ¡Caja guardada con éxito en el histórico!\n\n` +
               `📊 RESUMEN FINAL DE LA JORNADA:\n` +
               `• Personas que han asistido: ${totalAsistentes}\n` +
@@ -703,36 +675,70 @@
     } 
 }
 
-        function obtenerPosicion(e) {
-            const r = canvas.getBoundingClientRect();
-            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clienteX - r.left, y: clienteY - r.top };
-        }
+function toggleCamara() {
+    if(!camActiva) {
+        document.getElementById('reader').style.display = 'block';
+        document.getElementById('btnCam').innerText = "❌ APAGAR CÁMARA";
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
+            document.getElementById('buscador').value = t; 
+            render(); 
+            pararCamara(); 
+        }).catch(err => {
+            console.error("Error al arrancar la cámara:", err);
+        });
+        camActiva = true;
+    } else { pararCamara(); }
+}
 
-        function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
-        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
-        function pautarDibujo(e) {
-            if (!dibujando) return;
-            e.preventDefault();
-            const pos = obtenerPosicion(e);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
+function pararCamara() { 
+    if(html5QrCode) {
+        html5QrCode.stop().then(()=> {
+            document.getElementById('reader').style.display='none';
+            document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
+            camActiva = false;
+        }).catch(() => {
+            document.getElementById('reader').style.display='none';
+            document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
+            camActiva = false;
+        });
+    }
+}
 
-        canvas.addEventListener('mousedown', iniciarDibujo);
-        window.addEventListener('mouseup', terminarDibujo);
-        canvas.addEventListener('mousemove', pautarDibujo);
+function obtenerPosicion(e) {
+    const r = canvas.getBoundingClientRect();
+    const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clienteX - r.left, y: clienteY - r.top };
+}
 
-        canvas.addEventListener('touchstart', iniciarDibujo);
-        window.addEventListener('touchend', terminarDibujo);
-        canvas.addEventListener('touchmove', pautarDibujo);
+function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
+function terminarDibujo() { dibujando = false; ctx.beginPath(); }
+function pautarDibujo(e) {
+    if (!dibujando) return;
+    e.preventDefault();
+    const pos = obtenerPosicion(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
 
-        setInterval(() => {
-            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
-                refrescarDatos();
-            }
-        }, 10000);
-    </script>
+canvas.addEventListener('mousedown', iniciarDibujo);
+window.addEventListener('mouseup', terminarDibujo);
+canvas.addEventListener('mousemove', pautarDibujo);
+
+canvas.addEventListener('touchstart', iniciarDibujo);
+window.addEventListener('touchend', terminarDibujo);
+canvas.addEventListener('touchmove', pautarDibujo);
+
+// Arrancar datos iniciales al cargar la web
+refrescarDatos();
+
+// Temporizador automático de refresco
+setInterval(() => {
+    if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
+        refrescarDatos();
+    }
+}, 10000);
+</script>
 </body>
 </html>
