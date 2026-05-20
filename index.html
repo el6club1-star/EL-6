@@ -365,7 +365,7 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
-  function abrirTarjeta(s) {
+ function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -455,14 +455,12 @@
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
                 if (nivel === 'camarero') {
-                    // El camarero NO ve el botón de Pagar, ni enviar, ni descargar, ni estatutos.
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     } else {
                         btn.style.display = '';
                     }
                 } else {
-                    // Jefe y Puerta ven SIEMPRE el botón PAGAR y el resto de botones de acción
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = ''; 
                     }
@@ -497,43 +495,53 @@
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             
+            // 1. Buscamos el objeto de socio en la memoria RAM local actual
             let socioActivo = null;
             if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
             if (!socioActivo && typeof datos !== 'undefined') socioActivo = datos.find(x => x.dni === dni);
             if (!socioActivo) socioActivo = socioActual;
 
+            if (!socioActivo) return;
+
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             let consumos = {};
             productosValidos.forEach(p => consumos[p] = 0);
 
-            const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
+            // 2. Mapeamos lo que tiene actualmente en su registro
+            const stringOriginal = String(socioActivo.consumiciones || '').trim();
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
                     const [p, c] = item.split(':');
-                    if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    if(p && productosValidos.includes(p.trim().toUpperCase())) {
+                        consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    }
                 });
             }
 
+            // 3. Modificamos el valor matemático
             let cantActual = consumos[prodKey] || 0;
             let nuevaCant = cantActual + cambio;
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[prodKey] = nuevaCant;
 
+            // 4. Actualizamos el número visual de la burbuja al instante
             const elementoContador = document.getElementById(`v-cant-${producto}`);
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
 
+            // 5. Generamos la cadena formateada limpia
             let resultadoString = Object.keys(consumos)
                 .filter(p => consumos[p] > 0)
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Guardamos directamente en Supabase
-            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
-            
-            // SINCRONIZACIÓN COACTIVA: Seteamos el cambio en las listas RAM locales para que al salir y entrar no se borre
+            // 6. ACTUALIZACIÓN CRÍTICA SÍNCRONA: Modificamos todas las listas de memoria antes de enviar
+            socioActivo.consumiciones = resultadoString;
+            if (socioActual && socioActual.dni === dni) {
+                socioActual.consumiciones = resultadoString;
+            }
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) db[idx].consumiciones = resultadoString;
@@ -542,8 +550,12 @@
                 let idx = datos.findIndex(x => x.dni === dni);
                 if (idx !== -1) datos[idx].consumiciones = resultadoString;
             }
-            if (socioActual && socioActual.dni === dni) {
-                socioActual.consumiciones = resultadoString;
+
+            // 7. Subida forzada y directa a Supabase esperando confirmación del servidor
+            try {
+                await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+            } catch (err) {
+                console.error("Error guardando consumición en Supabase:", err);
             }
         }
 
@@ -555,8 +567,6 @@
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) ventanilla.style.display = 'none';
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            
-            // Al cerrar la tarjeta, si la lista general existe, forzamos un repintado para mantener los datos sincronizados
             if (typeof render === 'function') render();
         }
         
