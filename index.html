@@ -197,66 +197,26 @@
             if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
-    async function refrescarDatos() {
+    // REPARADO: El refresco automático de fondo ya no destruye el modal abierto
+        async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
                 if(!error) { 
                     db = data; 
                     aforo = db.filter(x => x.dentro).length; 
-                    render(); 
-                    actualizarAntena(true); 
                     
-                    // Sincronización exacta de consumiciones y pagos en tiempo real
+                    // Si el modal está abierto, NO ejecutamos render() para que no parpadee ni se borren los botones
                     const modalAbierto = document.getElementById('modalTarjeta').style.display === 'flex';
-                    
-                    if (socioActual && modalAbierto) {
+                    if (!modalAbierto) {
+                        render(); 
+                    } else {
+                        // Si está abierto, solo actualizamos los datos del socio en memoria silenciosamente
                         const socioActualizado = db.find(x => x.dni === socioActual.dni);
                         if (socioActualizado) {
                             socioActual = socioActualizado;
-                            actualizarVisualPago();
-                            
-                            const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-                            let consumosSocio = {};
-                            productosValidos.forEach(p => consumosSocio[p] = 0);
-                            
-                            const stringOriginal = String(socioActual.consumiciones || '').trim();
-                            if (stringOriginal.includes(':')) {
-                                stringOriginal.split(',').forEach(item => {
-                                    const [prod, cant] = item.split(':');
-                                    if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                                        consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
-                                    }
-                                });
-                            }
-                            
-                            productosValidos.forEach(prod => {
-                                const elementoContador = document.getElementById(`v-cant-${prod}`);
-                                if (elementoContador) {
-                                    elementoContador.innerText = consumosSocio[prod];
-                                    elementoContador.style.color = consumosSocio[prod] > 0 ? '#d4af37' : '#fff';
-                                }
-                            });
-
-                            // Aplicar control de botones de manera persistente
-                            const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
-                            btnsTarjeta.forEach(btn => {
-                                const texto = btn.innerText.toUpperCase();
-                                if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
-                                
-                                if (window.nivel === 'camarero') {
-                                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                                        btn.style.display = 'none';
-                                    } else {
-                                        btn.style.display = '';
-                                    }
-                                } else {
-                                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                                        btn.style.display = ''; 
-                                    }
-                                }
-                            });
                         }
                     }
+                    actualizarAntena(true); 
                 }
             } catch (err) { actualizarAntena(false); }
         }
@@ -267,17 +227,18 @@
             if(n >= 0) { 
                 await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni); 
                 socioActual.consumiciones = n; 
-                await refrescarDatos(); 
                 document.getElementById('card-consumos').innerText = n; 
             }
         }
 
+        // REPARADO: Cambia el pago al instante en la pantalla sin destruir el HTML
         async function marcarPago() {
             if (!socioActual) return;
             const esPagado = socioActual.pago_realizado;
             const nuevoEstado = !esPagado;
 
             try {
+                // 1. Cambiamos de inmediato en la pantalla local
                 socioActual.pago_realizado = nuevoEstado;
                 if (typeof db !== 'undefined') {
                     let idx = db.findIndex(x => x.dni === socioActual.dni);
@@ -285,11 +246,11 @@
                 }
                 actualizarVisualPago();
 
+                // 2. Subimos a la base de datos
                 await _supabase.from(NOMBRE_TABLA).update({ 
                     pago_realizado: nuevoEstado
                 }).eq('dni', socioActual.dni);
                 
-                await refrescarDatos();
             } catch (err) {
                 console.error("Error al marcar el pago:", err);
             }
@@ -370,7 +331,6 @@
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
         }
 
-        // CORREGIDO: El render ahora respeta de forma fija tu nivel de acceso global
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
@@ -553,6 +513,7 @@
             }
         }
 
+        // REPARADO: Actualiza la burbuja externa de inmediato y la sincroniza sin romper el HTML
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
             let socioActivo = null;
@@ -600,8 +561,8 @@
             }
 
             try {
+                // Guarda de forma segura
                 await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
-                await refrescarDatos();
             } catch (err) {
                 console.error("Error guardando consumición:", err);
             }
@@ -615,7 +576,7 @@
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) ventanilla.style.display = 'none';
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            if (typeof render === 'function') render();
+            render(); // Aquí sí actualizamos la lista general al cerrar la tarjeta
         }
         
         function cerrarSesion() { location.reload(); }
@@ -659,7 +620,6 @@
             if(origenFirma === 'tarjeta' && socioActual) {
                 await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
                 socioActual.firma_b64 = firmaB64;
-                if(typeof refrescarDatos === 'function') refrescarDatos();
                 alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
                 cerrarFirma(); 
                 abrirTarjeta(socioActual);
@@ -680,7 +640,7 @@
         async function resetJornada() { 
             if(confirm("¿Deseas cerrar el día? Se resetearán los estados y las consumiciones volverán a cero.")) { 
                 await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null, consumiciones: null, pago_realizado: false }).gt('id', 0); 
-                if(typeof refrescarDatos === 'function') refrescarDatos(); 
+                refrescarDatos(); 
                 alert("Jornada cerrada con éxito. Todo reseteado.");
             } 
         }
