@@ -197,7 +197,7 @@
             if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
-      async function refrescarDatos() {
+     async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
                 if(!error) { 
@@ -206,41 +206,59 @@
                     render(); 
                     actualizarAntena(true); 
                     
-                    // SINCRONIZACIÓN AUTOMÁTICA ENTRE PANTALLAS (1234, 0000, 2222)
-                    // Si el modal de la tarjeta está abierto, refrescamos la tarjeta entera con los datos nuevos de Supabase
+                    // CORRECCIÓN REAL: Mantener la tarjeta sincronizada respetando el rol (1234, 0000, 2222)
                     const modalAbierto = document.getElementById('modalTarjeta').style.display === 'flex';
-                    const ventanillaAbierta = document.getElementById('ventanilla-consumos') && document.getElementById('ventanilla-consumos').style.display === 'block';
                     
                     if (socioActual && modalAbierto) {
                         const socioActualizado = db.find(x => x.dni === socioActual.dni);
                         if (socioActualizado) {
-                            // Guardamos los datos nuevos de la BD
                             socioActual = socioActualizado;
-                            // Re-renderizamos la tarjeta para que pinte los cambios del otro usuario sin cerrarse
+                            
+                            // 1. Forzar el refresco visual del botón de pago según los datos nuevos
                             actualizarVisualPago();
                             
-                            // Si no estás modificando consumiciones en este preciso instante, refresca los números de la burbuja
-                            if (!ventanillaAbierta) {
-                                const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-                                let consumosSocio = {};
-                                productosValidos.forEach(p => consumosSocio[p] = 0);
-                                const stringOriginal = String(socioActual.consumiciones || '').trim();
-                                if (stringOriginal.includes(':')) {
-                                    stringOriginal.split(',').forEach(item => {
-                                        const [prod, cant] = item.split(':');
-                                        if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                                            consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
-                                        }
-                                    });
-                                }
-                                productosValidos.forEach(prod => {
-                                    const elementoContador = document.getElementById(`v-cant-${prod}`);
-                                    if (elementoContador) {
-                                        elementoContador.innerText = consumosSocio[prod];
-                                        elementoContador.style.color = consumosSocio[prod] > 0 ? '#d4af37' : '#fff';
+                            // 2. Actualizar los números de la burbuja flotante de consumiciones para que coincidan entre pantallas
+                            const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
+                            let consumosSocio = {};
+                            productosValidos.forEach(p => consumosSocio[p] = 0);
+                            
+                            const stringOriginal = String(socioActual.consumiciones || '').trim();
+                            if (stringOriginal.includes(':')) {
+                                stringOriginal.split(',').forEach(item => {
+                                    const [prod, cant] = item.split(':');
+                                    if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
+                                        consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
                                     }
                                 });
                             }
+                            
+                            productosValidos.forEach(prod => {
+                                const elementoContador = document.getElementById(`v-cant-${prod}`);
+                                if (elementoContador) {
+                                    elementoContador.innerText = consumosSocio[prod];
+                                    elementoContador.style.color = consumosSocio[prod] > 0 ? '#d4af37' : '#fff';
+                                }
+                            });
+
+                            // 3. BLINDAJE DE BOTONES: Bloquear que el sistema borre botones de pago a los jefes/puerta
+                            const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
+                            btnsTarjeta.forEach(btn => {
+                                const texto = btn.innerText.toUpperCase();
+                                if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
+                                
+                                if (nivel === 'camarero') {
+                                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                                        btn.style.display = 'none';
+                                    } else {
+                                        btn.style.display = '';
+                                    }
+                                } else {
+                                    // Si eres Jefe (1234) o Puerta (0000), el botón de PAGAR SE QUEDA FIJO y no desaparece
+                                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                                        btn.style.display = ''; 
+                                    }
+                                }
+                            });
                         }
                     }
                 }
@@ -258,14 +276,13 @@
             }
         }
 
-        // GUARDADO SEGURO DE PAGO (Bloquea el botón antes de refrescar la interfaz)
+        // GUARDADO INMEDIATO SIN PARPADEOS
         async function marcarPago() {
             if (!socioActual) return;
             const esPagado = socioActual.pago_realizado;
             const nuevoEstado = !esPagado;
 
             try {
-                // 1. Forzamos cambio local inmediato para que no parpadee
                 socioActual.pago_realizado = nuevoEstado;
                 if (typeof db !== 'undefined') {
                     let idx = db.findIndex(x => x.dni === socioActual.dni);
@@ -273,12 +290,10 @@
                 }
                 actualizarVisualPago();
 
-                // 2. Subimos a Supabase y esperamos confirmación real
                 await _supabase.from(NOMBRE_TABLA).update({ 
                     pago_realizado: nuevoEstado
                 }).eq('dni', socioActual.dni);
                 
-                // 3. Forzamos descarga limpia para actualizar al resto de dispositivos (camareros, puerta)
                 await refrescarDatos();
             } catch (err) {
                 console.error("Error al marcar el pago:", err);
@@ -434,16 +449,12 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-            // =========================================================================
-            // CONFIGURACIÓN DE CONSUMICIONES Y SINCRONIZACIÓN
-            // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
             
             const stringOriginal = String(s.consumiciones || '').trim();
-            
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
                     const [prod, cant] = item.split(':');
@@ -502,7 +513,6 @@
 
             htmlBurbuja += `</div>`;
             burbujaExterna.innerHTML = htmlBurbuja;
-            // =========================================================================
 
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
@@ -547,15 +557,11 @@
             }
         }
 
-        // CONTROL DE CONSUMICIONES EN TIEMPO REAL
         async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
-            
             let socioActivo = null;
             if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
-            if (!socioActivo && typeof datos !== 'undefined') socioActivo = datos.find(x => x.dni === dni);
             if (!socioActivo) socioActivo = socioActual;
-
             if (!socioActivo) return;
 
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
@@ -598,9 +604,7 @@
             }
 
             try {
-                // Modificamos Supabase
                 await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
-                // Lanzamos la actualización general para impactar de inmediato a los demás roles
                 await refrescarDatos();
             } catch (err) {
                 console.error("Error guardando consumición:", err);
@@ -737,7 +741,6 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        // Bucle automático que ahora respeta de verdad los cambios cruzados entre terminales
         setInterval(() => {
             if (typeof refrescarDatos === 'function') {
                 refrescarDatos();
