@@ -197,7 +197,7 @@
             if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
-     async function refrescarDatos() {
+    async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
                 if(!error) { 
@@ -206,18 +206,15 @@
                     render(); 
                     actualizarAntena(true); 
                     
-                    // CORRECCIÓN REAL: Mantener la tarjeta sincronizada respetando el rol (1234, 0000, 2222)
+                    // Sincronización exacta de consumiciones y pagos en tiempo real
                     const modalAbierto = document.getElementById('modalTarjeta').style.display === 'flex';
                     
                     if (socioActual && modalAbierto) {
                         const socioActualizado = db.find(x => x.dni === socioActual.dni);
                         if (socioActualizado) {
                             socioActual = socioActualizado;
-                            
-                            // 1. Forzar el refresco visual del botón de pago según los datos nuevos
                             actualizarVisualPago();
                             
-                            // 2. Actualizar los números de la burbuja flotante de consumiciones para que coincidan entre pantallas
                             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
                             let consumosSocio = {};
                             productosValidos.forEach(p => consumosSocio[p] = 0);
@@ -240,20 +237,19 @@
                                 }
                             });
 
-                            // 3. BLINDAJE DE BOTONES: Bloquear que el sistema borre botones de pago a los jefes/puerta
+                            // Aplicar control de botones de manera persistente
                             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
                             btnsTarjeta.forEach(btn => {
                                 const texto = btn.innerText.toUpperCase();
                                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                                 
-                                if (nivel === 'camarero') {
+                                if (window.nivel === 'camarero') {
                                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                                         btn.style.display = 'none';
                                     } else {
                                         btn.style.display = '';
                                     }
                                 } else {
-                                    // Si eres Jefe (1234) o Puerta (0000), el botón de PAGAR SE QUEDA FIJO y no desaparece
                                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                                         btn.style.display = ''; 
                                     }
@@ -276,7 +272,6 @@
             }
         }
 
-        // GUARDADO INMEDIATO SIN PARPADEOS
         async function marcarPago() {
             if (!socioActual) return;
             const esPagado = socioActual.pago_realizado;
@@ -336,9 +331,9 @@
 
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
-            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
+            if(p === CLAVES.jefe) { window.nivel="jefe"; entrar(); } 
+            else if(p === CLAVES.puerta) { window.nivel="personal"; entrar(); } 
+            else if(p === CLAVES.camarero) { window.nivel="camarero"; entrar(); } 
             else alert("CÓDIGO INCORRECTO");
         }
 
@@ -346,14 +341,14 @@
             document.getElementById('pantallaLogin').style.display='none'; 
             document.getElementById('principal').style.display='block'; 
             document.getElementById('btnLogout').style.display='block'; 
-            if(nivel === 'jefe') { 
+            if(window.nivel === 'jefe') { 
                 document.getElementById('btnExport').style.display='block'; 
                 document.getElementById('btnReset').style.display='block'; 
                 document.getElementById('panelAdmin').style.display='grid'; 
                 document.getElementById('adminExtra').style.display='flex';
                 document.getElementById('configClaves').style.display = 'block';
             }
-            if(nivel === 'camarero') {
+            if(window.nivel === 'camarero') {
                 document.getElementById('cajaRegistro').style.display = 'none';
                 document.getElementById('btnReset').style.display = 'none';
                 document.getElementById('panelAdmin').style.display = 'none';
@@ -375,10 +370,11 @@
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
         }
 
+        // CORREGIDO: El render ahora respeta de forma fija tu nivel de acceso global
         function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
+            if((window.nivel === "personal" || window.nivel === "camarero") && b === "") f = [];
             document.getElementById('st-total').innerText = db.length; 
             document.getElementById('st-aforo').innerText = aforo; 
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
@@ -387,10 +383,10 @@
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
+                        <button class="btn-acc" style="${window.nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                        <button class="btn-acc" style="${window.nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+                        <button class="btn-acc" style="color:red; ${window.nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
                     </td>
                 </tr>`).join('');
         }
@@ -503,7 +499,7 @@
                             
                             <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
                             
-                            ${nivel !== 'camarero' ? `
+                            ${window.nivel !== 'camarero' ? `
                                 <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
                             ` : ''}
                         </div>
@@ -519,7 +515,7 @@
                 const texto = btn.innerText.toUpperCase();
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
-                if (nivel === 'camarero') {
+                if (window.nivel === 'camarero') {
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     } else {
