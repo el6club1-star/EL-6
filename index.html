@@ -197,7 +197,7 @@
             if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
-        async function refrescarDatos() {
+       async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
                 if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); actualizarAntena(true); }
@@ -210,28 +210,25 @@
             if(n >= 0) { await _supabase.from(NOMBRE_TABLA).update({ consumiciones: n }).eq('dni', socioActual.dni); socioActual.consumiciones = n; refrescarDatos(); document.getElementById('card-consumos').innerText = n; }
         }
 
+        // Modificado para guardar el estado directamente en Supabase de forma fija
         async function marcarPago() {
-            const ahora = new Date().toISOString();
             const esPagado = socioActual.pago_realizado;
             await _supabase.from(NOMBRE_TABLA).update({ 
-                pago_realizado: !esPagado, 
-                hora_pago: !esPagado ? ahora : null 
+                pago_realizado: !esPagado
             }).eq('dni', socioActual.dni);
+            
             socioActual.pago_realizado = !esPagado;
-            socioActual.hora_pago = !esPagado ? ahora : null;
             actualizarVisualPago();
         }
 
+        // Modificado: Eliminada la restricción de las 5 horas. Ahora es fijo.
         function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
+            if (!sello || !btn) return;
+
             let pagadoValido = socioActual.pago_realizado;
-            if(socioActual.hora_pago) {
-                const hPago = new Date(socioActual.hora_pago);
-                const hAhora = new Date();
-                const diff = (hAhora - hPago) / (1000 * 60 * 60);
-                if(diff > 5) pagadoValido = false; 
-            }
+            
             if(pagadoValido) {
                 sello.style.display = 'block';
                 btn.innerText = 'PAGO REALIZADO';
@@ -288,7 +285,6 @@
                 if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
             }
 
-            // El botón de la cámara se mantiene siempre visible y quieto para que el camarero pulse manualmente
             const botonCamaraPrincipal = document.getElementById('btnCam');
             if (botonCamaraPrincipal) {
                 botonCamaraPrincipal.style.display = 'block';
@@ -364,7 +360,8 @@
 
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
-function abrirTarjeta(s) {
+
+        function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -394,7 +391,6 @@ function abrirTarjeta(s) {
                 });
             }
 
-            // Inyectamos el botón de gestionar consumiciones limpio en la tarjeta
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
                     <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -405,7 +401,6 @@ function abrirTarjeta(s) {
             
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Instanciamos y limpiamos la burbuja flotante
             let burbujaExterna = document.getElementById('ventanilla-consumos');
             if (!burbujaExterna) {
                 burbujaExterna = document.createElement('div');
@@ -416,19 +411,10 @@ function abrirTarjeta(s) {
             
             burbujaExterna.innerHTML = "";
 
-            // DETECTOR DE ESTADO DE PAGO PARA EL CAMARERO
-            // Si el cliente tiene consumiciones asignadas por el Jefe/Puerta se calcula si está pendiente o no
-            let tieneConsumosActivos = Object.values(consumosSocio).some(c => c > 0);
-            let estadoPagoHTML = tieneConsumosActivos 
-                ? `<span style="font-size: 10px; background: #ff4a4a; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;">PENDIENTE</span>`
-                : `<span style="font-size: 10px; background: #2ecc71; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;">PAGADO / SIN CARGOS</span>`;
-
+            // BURBUJA COMPLETAMENTE LIMPIA (Se quitó el bloque superior molesto)
             let htmlBurbuja = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 9px; font-weight: bold; color: #aaa; letter-spacing: 0.5px;">ESTADO DEL CLIENTE:</span>
-                        ${estadoPagoHTML}
-                    </div>
+                    <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
                     <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -457,21 +443,18 @@ function abrirTarjeta(s) {
             burbujaExterna.innerHTML = htmlBurbuja;
             // =========================================================================
 
-            // FILTRO DE VISIBILIDAD DE BOTONES SEGURO Y FIJO EN BASE AL ROL GUARDADO
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
                 if (nivel === 'camarero') {
-                    // El camarero NO ve el botón de Pagar, ni enviar, ni descargar, ni estatutos.
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     } else {
                         btn.style.display = '';
                     }
                 } else {
-                    // Jefe (1234) y Puerta (0000) mantienen el botón de Pagar visible SIEMPRE, incluso tras re-loguear
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = ''; 
                     }
@@ -633,13 +616,9 @@ function abrirTarjeta(s) {
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-        // =========================================================================
-        // CIERRE DEL DÍA: VUELVE ABSOLUTAMENTE TODO A CERO EN SUPABASE
-        // =========================================================================
         async function resetJornada() { 
             if(confirm("¿Deseas cerrar el día? Se resetearán los estados y las consumiciones volverán a cero.")) { 
-                // Cambia el estado a fuera de la sala ("dentro: false") y limpia el string de consumiciones ("consumiciones: null")
-                await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null, consumiciones: null }).gt('id', 0); 
+                await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null, consumiciones: null, pago_realizado: false }).gt('id', 0); 
                 if(typeof refrescarDatos === 'function') refrescarDatos(); 
                 alert("Jornada cerrada con éxito. Todo reseteado.");
             } 
