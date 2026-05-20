@@ -619,34 +619,71 @@
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-        async function resetJornada() { if(confirm("¿Reset?")) { await _supabase.from(NOMBRE_TABLA).update({ dentro: false, hora: null }).gt('id', 0); if(typeof refrescarDatos === 'function') refrescarDatos(); } }
+        async function resetJornada() { 
+    if(confirm("¿Deseas cerrar el día? Se guardará el resumen de la caja en el histórico y los estados volverán a cero.")) { 
+        
+        // ==========================================
+        //  CONFIGURA AQUÍ TUS PRECIOS (MODIFÍCALOS CUANDO QUIERAS)
+        // ==========================================
+        const PRECIO_CONSUMICION = 8;  // Lo que cuesta cada consumición (cambia el 8 por tu precio)
+        const PRECIO_ENTRADA = 10;     // Lo que cuesta la entrada (cambia el 10 por tu precio, pon 0 si es gratis)
+        // ==========================================
 
-        function toggleCamara() {
-            if(!camActiva) {
-                document.getElementById('reader').style.display = 'block';
-                document.getElementById('btnCam').innerText = "❌ APAGAR CÁMARA";
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (t) => { 
-                    document.getElementById('buscador').value = t; 
-                    render(); 
-                    pararCamara(); 
-                });
-                camActiva = true;
-            } else { pararCamara(); }
-        }
-        function pararCamara() { 
-            if(html5QrCode) {
-                html5QrCode.stop().then(()=> {
-                    document.getElementById('reader').style.display='none';
-                    document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
-                    camActiva = false;
-                }).catch(() => {
-                    document.getElementById('reader').style.display='none';
-                    document.getElementById('btnCam').innerText = "📷 ENCENDER CÁMARA QR";
-                    camActiva = false;
-                });
+        // 1. ASISTENTES TOTALES: Contamos todos los que entraron hoy (estén dentro o ya hayan salido)
+        const totalAsistentes = db.filter(x => x.dentro || x.hora).length;
+        
+        // 2. CONSUMICIONES TOTALES: Sumamos las consumiciones de ABSOLUTAMENTE TODOS para el inventario de barra
+        const totalConsumiciones = db.reduce((acc, s) => acc + (parseInt(s.consumiciones) || 0), 0);
+        
+        // 3. CÁLCULO DE LA CAJA REAL (SOLO DE LOS QUE TIENEN LA PEGATINA DE PAGADO ✅)
+        let cajaTotalDinero = 0;
+
+        db.forEach(s => {
+            // Solo sumamos si el socio tiene el pago_realizado como true (la pegatina puesta)
+            if (s.pago_realizado) {
+                // Sumamos sus consumiciones cobradas
+                const cantConsumos = parseInt(s.consumiciones) || 0;
+                cajaTotalDinero += (cantConsumos * PRECIO_CONSUMICION);
+                
+                // Sumamos su entrada cobrada (si es que habéis puesto un precio de entrada mayor que 0)
+                cajaTotalDinero += PRECIO_ENTRADA;
             }
+        });
+
+        // 4. GUARDAR EL HISTÓRICO EN SUPABASE (Tabla: cajas_diarias)
+        const { error: errorCaja } = await _supabase
+            .from('cajas_diarias')
+            .insert([{ 
+                fecha: new Date().toISOString().split('T')[0], // Guarda la fecha de hoy: Año-Mes-Día
+                total_asistentes: totalAsistentes, 
+                total_consumiciones: totalConsumiciones,
+                recaudacion_estimada: cajaTotalDinero // Guarda el dinero real de los que pagaron
+            }]);
+
+        if (errorCaja) {
+            console.error("Error al guardar el histórico de caja:", errorCaja.message);
+            alert("⚠️ No se pudo guardar la caja del día. Verifica si creaste la tabla 'cajas_diarias' en Supabase.");
+            return; // Paramos el proceso para que no se borren los datos de los socios si falla Supabase
         }
+
+        // 5. REINICIAR LOS SOCIOS PARA EL DÍA SIGUIENTE (Tu código original)
+        await _supabase.from(NOMBRE_TABLA).update({ 
+            dentro: false, 
+            hora: null, 
+            consumiciones: null, 
+            pago_realizado: false 
+        }).gt('id', 0); 
+        
+        refrescarDatos(); 
+        
+        // Mensaje de éxito con el desglose de lo que ha pasado
+        alert(`💾 ¡Caja guardada con éxito en el histórico!\n\n` +
+              `📊 RESUMEN FINAL DE LA JORNADA:\n` +
+              `• Personas que han asistido: ${totalAsistentes}\n` +
+              `• Consumiciones totales en barra: ${totalConsumiciones}\n` +
+              `• TOTAL CAJA RECAUDADA: ${cajaTotalDinero}€ (Solo socios con pago confirmado)`);
+    } 
+}
 
         function obtenerPosicion(e) {
             const r = canvas.getBoundingClientRect();
