@@ -234,24 +234,18 @@
 
         async function marcarPago() {
             if (!socioActual) return;
-            const esPagado = socioActual.pago_realizado;
-            const nuevoEstado = !esPagado;
+            const nuevoEstado = !socioActual.pago_realizado;
 
-            try {
-                socioActual.pago_realizado = nuevoEstado;
-                if (typeof db !== 'undefined') {
-                    let idx = db.findIndex(x => x.dni === socioActual.dni);
-                    if (idx !== -1) db[idx].pago_realizado = nuevoEstado;
-                }
-                actualizarVisualPago();
-
-                await _supabase.from(NOMBRE_TABLA).update({ 
-                    pago_realizado: nuevoEstado
-                }).eq('dni', socioActual.dni);
-                
-            } catch (err) {
-                console.error("Error al marcar el pago:", err);
+            socioActual.pago_realizado = nuevoEstado;
+            if (typeof db !== 'undefined') {
+                let idx = db.findIndex(x => x.dni === socioActual.dni);
+                if (idx !== -1) db[idx].pago_realizado = nuevoEstado;
             }
+            actualizarVisualPago();
+
+            await _supabase.from(NOMBRE_TABLA).update({ 
+                pago_realizado: nuevoEstado
+            }).eq('dni', socioActual.dni);
         }
 
         function actualizarVisualPago() {
@@ -351,7 +345,7 @@
                         <button class="btn-acc" style="${window.nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
                         <button class="btn-acc" style="${window.nivel!=='jefe'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" style="${window.nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">ELIMINAR</button>
+                        <button class="btn-acc" style="${window.nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">❌ BORRAR</button>
                     </td>
                 </tr>
             `).join('');
@@ -412,20 +406,7 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-            const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-            
-            let consumosSocio = {};
-            productosValidos.forEach(p => consumosSocio[p] = 0);
-            
-            const stringOriginal = String(s.consumiciones || '').trim();
-            if (stringOriginal.includes(':')) {
-                stringOriginal.split(',').forEach(item => {
-                    const [prod, cant] = item.split(':');
-                    if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                        consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
-                    }
-                });
-            }
+            const totalConsumos = parseInt(s.consumiciones) || 0;
 
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
@@ -445,35 +426,20 @@
                 document.getElementById('modalTarjeta').appendChild(burbujaExterna);
             }
             
-            burbujaExterna.innerHTML = "";
-
-            let htmlBurbuja = `
+            burbujaExterna.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
-                    <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
+                    <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">CONSUMICIONES TOTALES</span>
                     <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-            `;
-
-            productosValidos.forEach(prod => {
-                const cantidad = consumosSocio[prod];
-                
-                htmlBurbuja += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
-                        <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
-                            
-                            <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
-                            
-                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
-                        </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
+                    <span style="font-size: 11px; font-weight: 600; color: #ffffff;">TOTAL:</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="modificarCantidadDirecta('${s.dni}', 'TOTAL', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer;">-</button>
+                        <span id="v-cant-TOTAL" style="font-size: 14px; font-weight: 700; min-width: 18px; text-align: center; color: ${totalConsumos > 0 ? '#d4af37' : '#fff'}">${totalConsumos}</span>
+                        <button type="button" onclick="modificarCantidadDirecta('${s.dni}', 'TOTAL', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer;">+</button>
                     </div>
-                `;
-            });
-
-            htmlBurbuja += `</div>`;
-            burbujaExterna.innerHTML = htmlBurbuja;
+                </div>
+            `;
 
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
@@ -519,59 +485,25 @@
         }
 
         async function modificarCantidadDirecta(dni, producto, cambio) {
-            const prodKey = producto.toUpperCase();
-            let socioActivo = null;
-            if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
-            if (!socioActivo) socioActivo = socioActual;
+            let socioActivo = db.find(x => x.dni === dni) || socioActual;
             if (!socioActivo) return;
 
-            const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-            let consumos = {};
-            productosValidos.forEach(p => consumos[p] = 0);
-
-            const stringOriginal = String(socioActivo.consumiciones || '').trim();
-            if (stringOriginal.includes(':')) {
-                stringOriginal.split(',').forEach(item => {
-                    const [p, c] = item.split(':');
-                    if(p && productosValidos.includes(p.trim().toUpperCase())) {
-                        consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
-                    }
-                });
-            }
-
-            let cantActual = consumos[prodKey] || 0;
+            let cantActual = parseInt(socioActivo.consumiciones) || 0;
             let nuevaCant = cantActual + cambio;
             if (nuevaCant < 0) nuevaCant = 0;
-            consumos[prodKey] = nuevaCant;
 
-            const elementoContador = document.getElementById(`v-cant-${producto}`);
+            const elementoContador = document.getElementById('v-cant-TOTAL');
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
 
-            let resultadoString = Object.keys(consumos)
-                .filter(p => consumos[p] > 0)
-                .map(p => `${p}:${consumos[p]}`)
-                .join(','); 
+            socioActivo.consumiciones = nuevaCant;
+            if (socioActual && socioActual.dni === dni) socioActual.consumiciones = nuevaCant;
 
-            socioActivo.consumiciones = resultadoString;
-            if (socioActual && socioActual.dni === dni) {
-                socioActual.consumiciones = resultadoString;
-            }
-            if (typeof db !== 'undefined') {
-                let idx = db.findIndex(x => x.dni === dni);
-                if (idx !== -1) db[idx].consumiciones = resultadoString;
-            }
-
-            try {
-                const { error } = await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
-                if (error) {
-                    console.error("ERROR DE SUPABASE. Revisa que la columna 'consumiciones' sea de tipo TEXTO:", error.message);
-                }
-            } catch (err) {
-                console.error("Error guardando consumición:", err);
-            }
+            await _supabase.from(NOMBRE_TABLA)
+                .update({ consumiciones: nuevaCant })
+                .eq('dni', dni);
         }
 
         async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
