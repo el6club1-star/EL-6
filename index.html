@@ -625,23 +625,32 @@
         // ==========================================
         //  CONFIGURA AQUÍ TUS PRECIOS (MODIFÍCALOS CUANDO QUIERAS)
         // ==========================================
-        const PRECIO_CONSUMICION = 8;  // Lo que cuesta cada consumición
-        const PRECIO_ENTRADA = 10;     // Lo que cuesta la entrada (0 si es gratis)
+        const PRECIO_CONSUMICION = 8;  // Lo que cuesta cada copa/producto (cambia el 8 por tu precio)
+        const PRECIO_ENTRADA = 10;     // Lo que cuesta la entrada (cambia el 10 por tu precio, 0 si es gratis)
         // ==========================================
 
+        // 1. ASISTENTES TOTALES: Todos los que han entrado hoy
         const totalAsistentes = db.filter(x => x.dentro || x.hora).length;
+        
+        // 2. CONSUMICIONES TOTALES: Suma de todas las copas/productos de la noche
         const totalConsumiciones = db.reduce((acc, s) => acc + (parseInt(s.consumiciones) || 0), 0);
+        
+        // 3. CALCULAR DINERO TOTAL DE LA CAJA (De todos los que tienen consumiciones o entrada hoy)
         let cajaTotalDinero = 0;
 
         db.forEach(s => {
-            if (s.pago_realizado) {
+            // Si el socio ha entrado hoy (tiene hora registrada o está dentro)
+            if (s.dentro || s.hora) {
+                // Le cobramos su entrada
+                cajaTotalDinero += PRECIO_ENTRADA;
+                
+                // Le cobramos todas sus consumiciones multiplicadas por el precio
                 const cantConsumos = parseInt(s.consumiciones) || 0;
                 cajaTotalDinero += (cantConsumos * PRECIO_CONSUMICION);
-                cajaTotalDinero += PRECIO_ENTRADA;
             }
         });
 
-        // Guardar el histórico en Supabase
+        // 4. GUARDAR EL HISTÓRICO EN SUPABASE (Tabla: cajas_diarias)
         const { error: errorCaja } = await _supabase
             .from('cajas_diarias')
             .insert([{ 
@@ -653,11 +662,11 @@
 
         if (errorCaja) {
             console.error("Error al guardar el histórico de caja:", errorCaja.message);
-            alert("⚠️ No se pudo guardar la caja del día. Verifica si creaste la tabla 'cajas_diarias' en Supabase.");
+            alert("⚠️ No se pudo guardar la caja del día. Verifica la tabla en Supabase.");
             return; 
         }
 
-        // Reiniciar los socios para el día siguiente
+        // 5. REINICIAR LOS SOCIOS PARA EL DÍA SIGUIENTE
         await _supabase.from(NOMBRE_TABLA).update({ 
             dentro: false, 
             hora: null, 
@@ -667,14 +676,15 @@
         
         refrescarDatos(); 
         
+        // Desglose claro en el mensaje para que veas que los cálculos van perfectos
         alert(`💾 ¡Caja guardada con éxito en el histórico!\n\n` +
               `📊 RESUMEN FINAL DE LA JORNADA:\n` +
-              `• Personas que han asistido: ${totalAsistentes}\n` +
-              `• Consumiciones totales en barra: ${totalConsumiciones}\n` +
-              `• TOTAL CAJA RECAUDADA: ${cajaTotalDinero}€ (Solo socios con pago confirmado)`);
+              `• Total Asistentes: ${totalAsistentes} personas\n` +
+              `• Total Consumiciones: ${totalConsumiciones} productos\n\n` +
+              `💰 TOTAL CAJA RECAUDADA: ${cajaTotalDinero}€\n` +
+              `   (Entradas: ${totalAsistentes * PRECIO_ENTRADA}€ | Barra: ${totalConsumiciones * PRECIO_CONSUMICION}€)`);
     } 
 }
-
 function toggleCamara() {
     if(!camActiva) {
         document.getElementById('reader').style.display = 'block';
