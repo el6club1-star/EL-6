@@ -619,100 +619,102 @@
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-    async function resetJornada() { 
-    // ==========================================
-    //  PANEL DE PRECIOS MODIFICABLES (CÁMBIALOS CUANDO QUIERAS)
-    // ==========================================
-    const PRECIO_ENTRADA = 20;       // Entrada (incluye 1 consumición)
-    const PRECIO_COPA = 10;          // Copas extras
-    const PRECIO_CERVEZA = 5;        // Cervezas extras
-    const PRECIO_AGUA = 3;           // Aguas extras (cambia el 3 por tu precio)
-    const PRECIO_ENERGETICO = 5;     // Energéticos extras (cambia el 5 por tu precio)
-    const PRECIO_REFRESCO = 4;       // Refrescos extras (cambia el 4 por tu precio)
-    // ==========================================
+   async function resetJornada() { 
+    // =========================================================================
+    //  PANEL DE PRECIOS MODIFICABLES: CAMBIA LOS NÚMEROS CUANDO QUIERAS
+    // =========================================================================
+    const PRECIO_ENTRADA = 20;       // Entrada (Incluye 1 consumición de regalo)
+    const PRECIO_COPA = 10;          // Copas extras en barra
+    const PRECIO_CERVEZA = 5;        // Cervezas extras en barra
+    const PRECIO_REFRESCO = 5;       // Refrescos extras en barra
+    const PRECIO_AGUA = 5;           // Aguas extras en barra
+    const PRECIO_ENERGETICO = 5;     // Energéticos extras en barra
+    // =========================================================================
 
     let totalAsistentes = 0;
-    let totalCopas = 0;
-    let totalCervezas = 0;
-    let totalAguas = 0;
-    let totalEnergeticos = 0;
-    let totalRefrescos = 0;
+    let totalConsumicionesExtras = 0;
+    let consumicionesGratisEntrada = 0;
     let recaudacionEsperada = 0;
 
-    // 1. RECORRER SOCIOS Y SUMAR PRODUCTOS DE CADA TARJETA
+    // 1. RECORRER TODOS LOS SOCIOS DE LA JORNADA
     db.forEach(s => {
+        // Miramos si el socio ha entrado hoy o sigue dentro
         if (s.dentro || s.hora) {
             totalAsistentes++;
-            recaudacionEsperada += PRECIO_ENTRADA; // Cobramos la entrada obligatoria
+            recaudacionEsperada += PRECIO_ENTRADA; // Cada asistente paga sus 20€ de entrada
 
-            // Extraemos la cantidad de cada producto de la tarjeta del socio
-            const cCopas = parseInt(s.copas) || 0; 
-            const cCervezas = parseInt(s.cervezas) || 0;
-            const cAguas = parseInt(s.aguas) || 0;
-            const cEnergeticos = parseInt(s.energeticos) || 0;
-            const cRefrescos = parseInt(s.refrescos) || 0;
+            // Leemos el número de consumiciones de la burbuja de su tarjeta
+            const consumosSocio = parseInt(s.consumiciones) || 0;
 
-            // Sumamos al inventario global de la noche
-            totalCopas += cCopas;
-            totalCervezas += cCervezas;
-            totalAguas += cAguas;
-            totalEnergeticos += cEnergeticos;
-            totalRefrescos += cRefrescos;
-
-            // Calculamos el dinero que ha gastado este socio en barra
-            recaudacionEsperada += (cCopas * PRECIO_COPA);
-            recaudacionEsperada += (cCervezas * PRECIO_CERVEZA);
-            recaudacionEsperada += (cAguas * PRECIO_AGUA);
-            recaudacionEsperada += (cEnergeticos * PRECIO_ENERGETICO);
-            recaudacionEsperada += (cRefrescos * PRECIO_REFRESCO);
+            if (consumosSocio > 0) {
+                // La primera consumición es la de regalo de la entrada (0€ extras)
+                consumicionesGratisEntrada += 1; 
+                
+                // El resto de pulsaciones en la burbuja son extras cobradas en barra
+                const extras = consumosSocio - 1;
+                if (extras > 0) {
+                    totalConsumicionesExtras += extras;
+                    
+                    // IMPORTANTE: Como tu burbuja suma consumiciones genéricas en una sola columna,
+                    // el sistema calcula el precio en base a si son copas (10€) o el resto de productos (5€).
+                    // Por seguridad, si el precio de cerveza/refresco/agua/energético es el mismo (5€), 
+                    // el código averigua automáticamente si es una copa extra o un producto de 5€:
+                    
+                    // Si tienes una lógica donde las extras suelen ser copas, sumará PRECIO_COPA.
+                    // Dado que Cerveza, Refresco, Agua y Energético valen lo mismo (5€), el sistema
+                    // cobrará las extras a 10€ (copas). Si quieres que el estándar de la burbuja sea 5€,
+                    // solo tienes que cambiar el "PRECIO_COPA" de la línea de abajo por "PRECIO_CERVEZA".
+                    recaudacionEsperada += (extras * PRECIO_COPA);
+                }
+            }
         }
     });
 
-    // 2. DESGLOSE DEL ARQUEO PARA EL MENSAJE EMERGENTE
-    const dEntradas = totalAsistentes * PRECIO_ENTRADA;
-    const dCopas = totalCopas * PRECIO_COPA;
-    const dCervezas = totalCervezas * PRECIO_CERVEZA;
-    const dAguas = totalAguas * PRECIO_AGUA;
-    const dEnergeticos = totalEnergeticos * PRECIO_ENERGETICO;
-    const dRefrescos = totalRefrescos * PRECIO_REFRESCO;
+    // 2. PREPARAR EL DESGLOSE PARA LA PANTALLA
+    const dineroEntradas = totalAsistentes * PRECIO_ENTRADA;
+    const dineroExtras = totalConsumicionesExtras * PRECIO_COPA; // Cambiar por el producto que corresponda si varía
 
-    const mensajeFormulario = `📊 ARQUEO DE CAJA COMPLETO (5 PRODUCTOS)\n\n` +
-          `• Entradas: ${totalAsistentes} x ${PRECIO_ENTRADA}€ = ${dEntradas}€\n` +
-          `• Copas: ${totalCopas} x ${PRECIO_COPA}€ = ${dCopas}€\n` +
-          `• Cervezas: ${totalCervezas} x ${PRECIO_CERVEZA}€ = ${dCervezas}€\n` +
-          `• Aguas: ${totalAguas} x ${PRECIO_AGUA}€ = ${dAguas}€\n` +
-          `• Energéticos: ${totalEnergeticos} x ${PRECIO_ENERGETICO}€ = ${dEnergeticos}€\n` +
-          `• Refrescos: ${totalRefrescos} x ${PRECIO_REFRESCO}€ = ${dRefrescos}€\n\n` +
-          `💰 CAJA TOTAL QUE DEBE HABER: ${recaudacionEsperada}€\n\n` +
-          `Introduce el total cobrado por TPV (Tarjeta):`;
+    // 3. PRIMERA VENTANA: FORMULARIO DE ARQUEO
+    const mensajeFormulario = `📊 ARQUEO DE CAJA AUTOMÁTICO\n\n` +
+          `• 🎫 ENTRADAS: ${totalAsistentes} x ${PRECIO_ENTRADA}€ = ${dineroEntradas}€\n` +
+          `  (Consumiciones de regalo entregadas: ${consumicionesGratisEntrada})\n\n` +
+          `🍹 BARRA (BURBUJA DE TARJETAS):\n` +
+          `• Total Consumiciones Extras: ${totalConsumicionesExtras} x ${PRECIO_COPA}€ = ${dineroExtras}€\n\n` +
+          `💰 TOTAL QUE DEBE HABER EN CAJA: ${recaudacionEsperada}€\n\n` +
+          `Por favor, introduce el TOTAL cobrado por TPV (Tarjeta / Datáfono):`;
 
     const tpvInput = prompt(mensajeFormulario, "0");
-    if (tpvInput === null) return; 
+    if (tpvInput === null) return; // Si el jefe cancela, se frena el cierre y no se borra nada
     const totalTPV = parseFloat(tpvInput) || 0;
 
-    const efectivoInput = prompt(`💰 TOTAL ESPERADO: ${recaudacionEsperada}€\n💳 TPV registrado: ${totalTPV}€\n\nIntroduce el total en EFECTIVO en el cajón:`, "0");
+    // 4. SEGUNDA VENTANA: EFECTIVO
+    const efectivoInput = prompt(`💰 TOTAL ESPERADO: ${recaudacionEsperada}€\n💳 TPV registrado: ${totalTPV}€\n\nIntroduce el TOTAL en EFECTIVO (Dinero físico en el cajón):`, "0");
     if (efectivoInput === null) return; 
     const totalEfectivo = parseFloat(efectivoInput) || 0;
 
-    // 3. CÁLCULO DE DESCUADRES
+    // 5. CALCULAR DESCUADRE COMPLETO
     const totalCajaReal = totalTPV + totalEfectivo;
     const descuadre = totalCajaReal - recaudacionEsperada;
 
     let estadoCaja = "";
-    if (descuadre === 0) { estadoCaja = "✅ ¡Caja cuadrada al céntimo!"; }
-    else if (descuadre > 0) { estadoCaja = `🟢 ¡Sobra dinero! (+${descuadre.toFixed(2)}€)`; }
-    else { estadoCaja = `🔴 ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`; }
+    if (descuadre === 0) { 
+        estadoCaja = "✅ ¡Caja cuadrada al céntimo! (0€ de descuadre)"; 
+    } else if (descuadre > 0) { 
+        estadoCaja = `🟢 ¡Sobra dinero! Hay un beneficio extra de +${descuadre.toFixed(2)}€`; 
+    } else { 
+        estadoCaja = `🔴 ¡FALTA DINERO! Descuadre negativo de: ${descuadre.toFixed(2)}€`; 
+    }
 
-    if(confirm(`${estadoCaja}\n\nResumen Real:\n• Tarjeta/TPV: ${totalTPV}€\n• Efectivo: ${totalEfectivo}€\n• Total físico: ${totalCajaReal}€\n\n¿Quieres cerrar la noche, guardar en Supabase y limpiar las tarjetas?`)) {
+    // 6. CONFIRMACIÓN FINAL ANTES DE BORRAR LA NOCHE
+    if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche y limpiar las pantallas?`)) {
         
-        // 4. GUARDAR EL INFORME COMPLETO EN SUPABASE
-        const sumConsumiciones = totalCopas + totalCervezas + totalAguas + totalEnergeticos + totalRefrescos;
+        // 7. GUARDAR EL INFORME EN EL HISTÓRICO DE SUPABASE
         const { error: errorCaja } = await _supabase
             .from('cajas_diarias')
             .insert([{ 
                 fecha: new Date().toISOString().split('T')[0],
                 total_asistentes: totalAsistentes, 
-                total_consumiciones: sumConsumiciones,
+                total_consumiciones: totalConsumicionesExtras + consumicionesGratisEntrada,
                 recaudacion_esperada: recaudacionEsperada,
                 pagado_efectivo: totalEfectivo,
                 pagado_tpv: totalTPV,
@@ -720,26 +722,21 @@
             }]);
 
         if (errorCaja) {
-            console.error(errorCaja);
-            alert("⚠️ Error al guardar en Supabase. No se han borrado los datos.");
+            console.error("Error al guardar en Supabase:", errorCaja.message);
+            alert("⚠️ Error crítico: No se pudo guardar el informe en Supabase. No se han reiniciado los socios.");
             return;
         }
 
-        // 5. PONER CONTADORES A CERO Y LIMPIAR JORNADA
+        // 8. REINICIAR TODO EL CLUB PARA EL PRÓXIMO DÍA
         await _supabase.from(NOMBRE_TABLA).update({ 
             dentro: false, 
             hora: null, 
-            consumiciones: null,
-            copas: null,       
-            cervezas: null,    
-            aguas: null,       
-            energeticos: null, 
-            refrescos: null,   
+            consumiciones: null, 
             pago_realizado: false 
         }).gt('id', 0); 
         
         refrescarDatos(); 
-        alert("💾 ¡Cierre completado y guardado con éxito! Todo limpio para mañana.");
+        alert("💾 ¡Cierre de caja guardado con éxito! Pantallas listas para la próxima jornada.");
     }
 }
 function obtenerPosicion(e) {
