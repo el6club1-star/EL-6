@@ -624,67 +624,73 @@
     //  PANEL DE PRECIOS MODIFICABLES: CAMBIA LOS NÚMEROS CUANDO QUIERAS
     // =========================================================================
     const PRECIO_ENTRADA = 20;       // Entrada (Incluye 1 consumición de regalo)
-    const PRECIO_COPA = 10;          // Copas extras en barra
-    const PRECIO_CERVEZA = 5;        // Cervezas extras en barra
-    const PRECIO_REFRESCO = 5;       // Refrescos extras en barra
-    const PRECIO_AGUA = 5;           // Aguas extras en barra
-    const PRECIO_ENERGETICO = 5;     // Energéticos extras en barra
+    const PRECIO_COPA = 10;          // Copas extras
+    const PRECIO_CERVEZA = 5;        // Cervezas extras
+    const PRECIO_REFRESCO = 5;       // Refrescos extras
+    const PRECIO_AGUA = 5;           // Aguas extras
+    const PRECIO_ENERGETICO = 5;     // Energéticos extras
     // =========================================================================
 
     let totalAsistentes = 0;
-    let totalConsumicionesExtras = 0;
-    let consumicionesGratisEntrada = 0;
+    let totalCopas = 0;
+    let totalCervezas = 0;
+    let totalRefrescos = 0;
+    let totalAguas = 0;
+    let totalEnergeticos = 0;
     let recaudacionEsperada = 0;
 
-    // 1. RECORRER TODOS LOS SOCIOS DE LA JORNADA
+    // 1. RECORRER TODOS LOS SOCIOS Y SUMAR SUS PRODUCTOS REALES DE LA BURBUJA
     db.forEach(s => {
-        // Miramos si el socio ha entrado hoy o sigue dentro
         if (s.dentro || s.hora) {
             totalAsistentes++;
             recaudacionEsperada += PRECIO_ENTRADA; // Cada asistente paga sus 20€ de entrada
 
-            // Leemos el número de consumiciones de la burbuja de su tarjeta
-            const consumosSocio = parseInt(s.consumiciones) || 0;
+            // Leemos de la burbuja las cantidades de cada producto que tiene este socio
+            // NOTA: Si en tu código estas variables se llaman diferente (ej: s.cantidad_copas), cámbialas aquí
+            const cCopas = parseInt(s.copas) || 0;
+            const cCervezas = parseInt(s.cervezas) || 0;
+            const cRefrescos = parseInt(s.refrescos) || 0;
+            const cAguas = parseInt(s.aguas) || 0;
+            const cEnergeticos = parseInt(s.energeticos) || 0;
 
-            if (consumosSocio > 0) {
-                // La primera consumición es la de regalo de la entrada (0€ extras)
-                consumicionesGratisEntrada += 1; 
-                
-                // El resto de pulsaciones en la burbuja son extras cobradas en barra
-                const extras = consumosSocio - 1;
-                if (extras > 0) {
-                    totalConsumicionesExtras += extras;
-                    
-                    // IMPORTANTE: Como tu burbuja suma consumiciones genéricas en una sola columna,
-                    // el sistema calcula el precio en base a si son copas (10€) o el resto de productos (5€).
-                    // Por seguridad, si el precio de cerveza/refresco/agua/energético es el mismo (5€), 
-                    // el código averigua automáticamente si es una copa extra o un producto de 5€:
-                    
-                    // Si tienes una lógica donde las extras suelen ser copas, sumará PRECIO_COPA.
-                    // Dado que Cerveza, Refresco, Agua y Energético valen lo mismo (5€), el sistema
-                    // cobrará las extras a 10€ (copas). Si quieres que el estándar de la burbuja sea 5€,
-                    // solo tienes que cambiar el "PRECIO_COPA" de la línea de abajo por "PRECIO_CERVEZA".
-                    recaudacionEsperada += (extras * PRECIO_COPA);
-                }
-            }
+            // Sumamos al total de la noche para el inventario
+            totalCopas += cCopas;
+            totalCervezas += cCervezas;
+            totalRefrescos += cRefrescos;
+            totalAguas += cAguas;
+            totalEnergeticos += cEnergeticos;
+
+            // Calculamos el dinero de lo que se ha tomado este socio en barra
+            recaudacionEsperada += (cCopas * PRECIO_COPA);
+            recaudacionEsperada += (cCervezas * PRECIO_CERVEZA);
+            recaudacionEsperada += (cRefrescos * PRECIO_REFRESCO);
+            recaudacionEsperada += (cAguas * PRECIO_AGUA);
+            recaudacionEsperada += (cEnergeticos * PRECIO_ENERGETICO);
         }
     });
 
-    // 2. PREPARAR EL DESGLOSE PARA LA PANTALLA
+    // 2. PREPARAR EL DESGLOSE DE PRODUCTOS PARA LA PANTALLA
     const dineroEntradas = totalAsistentes * PRECIO_ENTRADA;
-    const dineroExtras = totalConsumicionesExtras * PRECIO_COPA; // Cambiar por el producto que corresponda si varía
+    const dineroCopas = totalCopas * PRECIO_COPA;
+    const dineroCervezas = totalCervezas * PRECIO_CERVEZA;
+    const dineroRefrescos = totalRefrescos * PRECIO_REFRESCO;
+    const dineroAguas = totalAguas * PRECIO_AGUA;
+    const dineroEnergeticos = totalEnergeticos * PRECIO_ENERGETICO;
 
-    // 3. PRIMERA VENTANA: FORMULARIO DE ARQUEO
-    const mensajeFormulario = `📊 ARQUEO DE CAJA AUTOMÁTICO\n\n` +
-          `• 🎫 ENTRADAS: ${totalAsistentes} x ${PRECIO_ENTRADA}€ = ${dineroEntradas}€\n` +
-          `  (Consumiciones de regalo entregadas: ${consumicionesGratisEntrada})\n\n` +
-          `🍹 BARRA (BURBUJA DE TARJETAS):\n` +
-          `• Total Consumiciones Extras: ${totalConsumicionesExtras} x ${PRECIO_COPA}€ = ${dineroExtras}€\n\n` +
+    // 3. PRIMERA VENTANA: FORMULARIO DE ARQUEO CON DESGLOSE REAL
+    const mensajeFormulario = `📊 ARQUEO DE CAJA GENERAL (DETALLADO)\n\n` +
+          `• 🎫 ENTRADAS: ${totalAsistentes} x ${PRECIO_ENTRADA}€ = ${dineroEntradas}€\n\n` +
+          `🍹 INVENTARIO DE BARRA DETECTADO:\n` +
+          `• Copas: ${totalCopas} x ${PRECIO_COPA}€ = ${dineroCopas}€\n` +
+          `• Cervezas: ${totalCervezas} x ${PRECIO_CERVEZA}€ = ${dineroCervezas}€\n` +
+          `• Refrescos: ${totalRefrescos} x ${PRECIO_REFRESCO}€ = ${dineroRefrescos}€\n` +
+          `• Aguas: ${totalAguas} x ${PRECIO_AGUA}€ = ${dineroAguas}€\n` +
+          `• Energéticos: ${totalEnergeticos} x ${PRECIO_ENERGETICO}€ = ${dineroEnergeticos}€\n\n` +
           `💰 TOTAL QUE DEBE HABER EN CAJA: ${recaudacionEsperada}€\n\n` +
           `Por favor, introduce el TOTAL cobrado por TPV (Tarjeta / Datáfono):`;
 
     const tpvInput = prompt(mensajeFormulario, "0");
-    if (tpvInput === null) return; // Si el jefe cancela, se frena el cierre y no se borra nada
+    if (tpvInput === null) return; // Si cancela, frena el cierre
     const totalTPV = parseFloat(tpvInput) || 0;
 
     // 4. SEGUNDA VENTANA: EFECTIVO
@@ -692,51 +698,56 @@
     if (efectivoInput === null) return; 
     const totalEfectivo = parseFloat(efectivoInput) || 0;
 
-    // 5. CALCULAR DESCUADRE COMPLETO
+    // 5. CALCULAR DESCUADRE
     const totalCajaReal = totalTPV + totalEfectivo;
     const descuadre = totalCajaReal - recaudacionEsperada;
 
     let estadoCaja = "";
-    if (descuadre === 0) { 
-        estadoCaja = "✅ ¡Caja cuadrada al céntimo! (0€ de descuadre)"; 
-    } else if (descuadre > 0) { 
-        estadoCaja = `🟢 ¡Sobra dinero! Hay un beneficio extra de +${descuadre.toFixed(2)}€`; 
-    } else { 
-        estadoCaja = `🔴 ¡FALTA DINERO! Descuadre negativo de: ${descuadre.toFixed(2)}€`; 
-    }
+    if (descuadre === 0) { estadoCaja = "✅ ¡Caja cuadrada al céntimo! (0€ de descuadre)"; }
+    else if (descuadre > 0) { estadoCaja = `🟢 ¡Sobra dinero! Beneficio extra de +${descuadre.toFixed(2)}€`; }
+    else { estadoCaja = `🔴 ¡FALTA DINERO! Descuadre negativo de: ${descuadre.toFixed(2)}€`; }
 
     // 6. CONFIRMACIÓN FINAL ANTES DE BORRAR LA NOCHE
-    if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche y limpiar las pantallas?`)) {
+    if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche y reiniciar los datos?`)) {
         
-        // 7. GUARDAR EL INFORME EN EL HISTÓRICO DE SUPABASE
+        // 7. GUARDAR EL INFORME CON LOS PRODUCTOS DESGLOSADOS EN SUPABASE
         const { error: errorCaja } = await _supabase
             .from('cajas_diarias')
             .insert([{ 
                 fecha: new Date().toISOString().split('T')[0],
                 total_asistentes: totalAsistentes, 
-                total_consumiciones: totalConsumicionesExtras + consumicionesGratisEntrada,
                 recaudacion_esperada: recaudacionEsperada,
                 pagado_efectivo: totalEfectivo,
                 pagado_tpv: totalTPV,
-                descuadre: descuadre
+                descuadre: descuadre,
+                copas_vendidas: totalCopas,
+                cervezas_vendidas: totalCervezas,
+                refrescos_vendidas: totalRefrescos,
+                aguas_vendidas: totalAguas,
+                energeticos_vendidas: totalEnergeticos
             }]);
 
         if (errorCaja) {
             console.error("Error al guardar en Supabase:", errorCaja.message);
-            alert("⚠️ Error crítico: No se pudo guardar el informe en Supabase. No se han reiniciado los socios.");
+            alert("⚠️ Error crítico: No se pudo guardar el informe en Supabase.");
             return;
         }
 
-        // 8. REINICIAR TODO EL CLUB PARA EL PRÓXIMO DÍA
+        // 8. REINICIAR TODO EL CLUB PARA EL PRÓXIMO DÍA (Y limpiar las variables de la burbuja)
         await _supabase.from(NOMBRE_TABLA).update({ 
             dentro: false, 
             hora: null, 
             consumiciones: null, 
+            copas: 0,
+            cervezas: 0,
+            refrescos: 0,
+            aguas: 0,
+            energeticos: 0,
             pago_realizado: false 
         }).gt('id', 0); 
         
         refrescarDatos(); 
-        alert("💾 ¡Cierre de caja guardado con éxito! Pantallas listas para la próxima jornada.");
+        alert("💾 ¡Cierre completado! Datos desglosados guardados y pantallas limpias.");
     }
 }
 function obtenerPosicion(e) {
