@@ -228,8 +228,8 @@
             let pagadoValido = socioActual.pago_realizado;
             if(socioActual.hora_pago) {
                 const hPago = new Date(socioActual.hora_pago);
-                const hAhora = new Date();
-                const diff = (hAhora - hPago) / (1000 * 60 * 60);
+                const hAgora = new Date();
+                const diff = (hAgora - hPago) / (1000 * 60 * 60);
                 if(diff > 5) pagadoValido = false; 
             }
             if(pagadoValido) {
@@ -284,11 +284,10 @@
                 document.getElementById('btnReset').style.display = 'none';
                 document.getElementById('panelAdmin').style.display = 'none';
                 if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.none = 'block';
+                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
                 if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
             }
 
-            // El botón de la cámara se mantiene siempre visible y quieto para que el camarero pulse manualmente
             const botonCamaraPrincipal = document.getElementById('btnCam');
             if (botonCamaraPrincipal) {
                 botonCamaraPrincipal.style.display = 'block';
@@ -365,7 +364,7 @@
             refrescarDatos(); if(data) abrirTarjeta(data[0]);
         }
 
-  function abrirTarjeta(s) {
+        function abrirTarjeta(s) {
             socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -376,9 +375,6 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-            // =========================================================================
-            // CONFIGURACIÓN DE CONSUMICIONES: SINCRONIZACIÓN REAL ENTRE PANTALLAS
-            // =========================================================================
             const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             
             let consumosSocio = {};
@@ -395,7 +391,6 @@
                 });
             }
 
-            // Inyectamos el botón de gestionar consumiciones limpio en la tarjeta
             let htmlConsumos = `
                 <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
                     <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -406,7 +401,6 @@
             
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-            // Instanciamos y limpiamos por completo la burbuja flotante
             let burbujaExterna = document.getElementById('ventanilla-consumos');
             if (!burbujaExterna) {
                 burbujaExterna = document.createElement('div');
@@ -446,23 +440,19 @@
 
             htmlBurbuja += `</div>`;
             burbujaExterna.innerHTML = htmlBurbuja;
-            // =========================================================================
 
-            // FILTRO DE VISIBILIDAD DE BOTONES SEGURO Y FIJO
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
                 const texto = btn.innerText.toUpperCase();
                 if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
                 
                 if (nivel === 'camarero') {
-                    // El camarero NO ve el botón de Pagar, ni enviar, ni descargar, ni estatutos.
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = 'none';
                     } else {
                         btn.style.display = '';
                     }
                 } else {
-                    // Jefe y Puerta ven SIEMPRE el botón PAGAR y el resto de botones de acción
                     if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
                         btn.style.display = ''; 
                     }
@@ -530,10 +520,8 @@
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            // Guardamos directamente en Supabase
             await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
             
-            // SINCRONIZACIÓN COACTIVA: Seteamos el cambio en las listas RAM locales para que al salir y entrar no se borre
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) db[idx].consumiciones = resultadoString;
@@ -556,7 +544,6 @@
             if (ventanilla) ventanilla.style.display = 'none';
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             
-            // Al cerrar la tarjeta, si la lista general existe, forzamos un repintado para mantener los datos sincronizados
             if (typeof render === 'function') render();
         }
         
@@ -619,171 +606,159 @@
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-   async function resetJornada() { 
-    // =========================================================================
-    //  PANEL DE PRECIOS MODIFICABLES: CAMBIA LOS NÚMEROS CUANDO QUIERAS
-    // =========================================================================
-    const PRECIO_ENTRADA = 20;       // Entrada (Incluye 1 consumición de regalo)
-    const PRECIO_COPA = 10;          // Copas extras
-    const PRECIO_CERVEZA = 5;        // Cervezas extras
-    const PRECIO_REFRESCO = 5;       // Refrescos extras
-    const PRECIO_AGUA = 5;           // Aguas extras
-    const PRECIO_ENERGETICO = 5;     // Energéticos extras
-    // =========================================================================
+        async function resetJornada() { 
+            const PRECIO_ENTRADA = 20;
+            const PRECIO_COPA = 10;
+            const PRECIO_CERVEZA = 5;
+            const PRECIO_REFRESCO = 5;
+            const PRECIO_AGUA = 5;
+            const PRECIO_ENERGETICO = 5;
 
-    let totalAsistentes = 0;
-    let totalCopas = 0;
-    let totalCervezas = 0;
-    let totalRefrescos = 0;
-    let totalAguas = 0;
-    let totalEnergeticos = 0;
-    let recaudacionEsperada = 0;
+            let totalAsistentes = 0;
+            let totalCopas = 0;
+            let totalCervezas = 0;
+            let totalRefrescos = 0;
+            let totalAguas = 0;
+            let totalEnergeticos = 0;
+            let recaudacionEsperada = 0;
 
-    // 1. RECORRER TODOS LOS SOCIOS Y SUMAR SUS PRODUCTOS REALES DE LA BURBUJA
-    db.forEach(s => {
-        if (s.dentro || s.hora) {
-            totalAsistentes++;
-            recaudacionEsperada += PRECIO_ENTRADA; // Cada asistente paga sus 20€ de entrada
+            db.forEach(s => {
+                if (s.dentro || s.hora) {
+                    totalAsistentes++;
+                    recaudacionEsperada += PRECIO_ENTRADA;
 
-            // Leemos de la burbuja las cantidades de cada producto que tiene este socio
-            // NOTA: Si en tu código estas variables se llaman diferente (ej: s.cantidad_copas), cámbialas aquí
-            const cCopas = parseInt(s.copas) || 0;
-            const cCervezas = parseInt(s.cervezas) || 0;
-            const cRefrescos = parseInt(s.refrescos) || 0;
-            const cAguas = parseInt(s.aguas) || 0;
-            const cEnergeticos = parseInt(s.energeticos) || 0;
+                    let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0 };
+                    const stringConsumos = String(s.consumiciones || '').trim();
+                    if (stringConsumos.includes(':')) {
+                        stringConsumos.split(',').forEach(item => {
+                            const [p, c] = item.split(':');
+                            if (p && typeof consumosMap[p.trim().toUpperCase()] !== 'undefined') {
+                                consumosMap[p.trim().toUpperCase()] = parseInt(c) || 0;
+                            }
+                        });
+                    }
 
-            // Sumamos al total de la noche para el inventario
-            totalCopas += cCopas;
-            totalCervezas += cCervezas;
-            totalRefrescos += cRefrescos;
-            totalAguas += cAguas;
-            totalEnergeticos += cEnergeticos;
+                    totalCopas += consumosMap['COPA'];
+                    totalCervezas += consumosMap['CERVEZA'];
+                    totalRefrescos += consumosMap['REFRESCO'];
+                    totalAguas += consumosMap['AGUA'];
+                    totalEnergeticos += consumosMap['ENERGÉTICO'];
 
-            // Calculamos el dinero de lo que se ha tomado este socio en barra
-            recaudacionEsperada += (cCopas * PRECIO_COPA);
-            recaudacionEsperada += (cCervezas * PRECIO_CERVEZA);
-            recaudacionEsperada += (cRefrescos * PRECIO_REFRESCO);
-            recaudacionEsperada += (cAguas * PRECIO_AGUA);
-            recaudacionEsperada += (cEnergeticos * PRECIO_ENERGETICO);
+                    recaudacionEsperada += (consumosMap['COPA'] * PRECIO_COPA);
+                    recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIO_CERVEZA);
+                    recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
+                    recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
+                    recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
+                }
+            });
+
+            const dineroEntradas = totalAsistentes * PRECIO_ENTRADA;
+            const dineroCopas = totalCopas * PRECIO_COPA;
+            const dineroCervezas = totalCervezas * PRECIO_CERVEZA;
+            const dineroRefrescos = totalRefrescos * PRECIO_REFRESCO;
+            const dineroAguas = totalAguas * PRECIO_AGUA;
+            const dineroEnergeticos = totalEnergeticos * PRECIO_ENERGETICO;
+
+            const mensajeFormulario = `📊 ARQUEO DE CAJA GENERAL (DETALLADO)\n\n` +
+                  `• 🎫 ENTRADAS: ${totalAsistentes} x ${PRECIO_ENTRADA}€ = ${dineroEntradas}€\n\n` +
+                  `🍹 INVENTARIO DE BARRA DETECTADO:\n` +
+                  `• Copas: ${totalCopas} x ${PRECIO_COPA}€ = ${dineroCopas}€\n` +
+                  `• Cervezas: ${totalCervezas} x ${PRECIO_CERVEZA}€ = ${dineroCervezas}€\n` +
+                  `• Refrescos: ${totalRefrescos} x ${PRECIO_REFRESCO}€ = ${dineroRefrescos}€\n` +
+                  `• Aguas: ${totalAguas} x ${PRECIO_AGUA}€ = ${dineroAguas}€\n` +
+                  `• Energéticos: ${totalEnergeticos} x ${PRECIO_ENERGETICO}€ = ${dineroEnergeticos}€\n\n` +
+                  `💰 TOTAL QUE DEBE HABER EN CAJA: ${recaudacionEsperada}€\n\n` +
+                  `Por favor, introduce el TOTAL cobrado por TPV (Tarjeta / Datáfono):`;
+
+            const tpvInput = prompt(mensajeFormulario, "0");
+            if (tpvInput === null) return; 
+            const totalTPV = parseFloat(tpvInput) || 0;
+
+            const efectivoInput = prompt(`💰 TOTAL ESPERADO: ${recaudacionEsperada}€\n💳 TPV registrado: ${totalTPV}€\n\nIntroduce el TOTAL en EFECTIVO (Dinero físico en el cajón):`, "0");
+            if (efectivoInput === null) return; 
+            const totalEfectivo = parseFloat(efectivoInput) || 0;
+
+            const totalCajaReal = totalTPV + totalEfectivo;
+            const descuadre = totalCajaReal - recaudacionEsperada;
+
+            let estadoCaja = "";
+            if (descuadre === 0) { estadoCaja = "✅ ¡Caja cuadrada al céntimo! (0€ de descuadre)"; }
+            else if (descuadre > 0) { estadoCaja = `🟢 ¡Sobra dinero! Beneficio extra de +${descuadre.toFixed(2)}€`; }
+            else { estadoCaja = `🔴 ¡FALTA DINERO! Descuadre negativo de: ${descuadre.toFixed(2)}€`; }
+
+            if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche y reiniciar los datos?`)) {
+                
+                const { error: errorCaja } = await _supabase
+                    .from('cajas_diarias')
+                    .insert([{ 
+                        fecha: new Date().toISOString().split('T')[0],
+                        total_asistentes: totalAsistentes, 
+                        recaudacion_esperada: recaudacionEsperada,
+                        pagado_efectivo: totalEfectivo,
+                        pagado_tpv: totalTPV,
+                        descuadre: descuadre,
+                        copas_vendidas: totalCopas,
+                        cervezas_vendidas: totalCervezas,
+                        refrescos_vendidas: totalRefrescos,
+                        aguas_vendidas: totalAguas,
+                        energeticos_vendidas: totalEnergeticos
+                    }]);
+
+                if (errorCaja) {
+                    console.error("Error al guardar en Supabase:", errorCaja.message);
+                    alert("⚠️ Error crítico: No se pudo guardar el informe en Supabase.");
+                    return;
+                }
+
+                await _supabase.from(NOMBRE_TABLA).update({ 
+                    dentro: false, 
+                    hora: null, 
+                    consumiciones: null, 
+                    pago_realizado: false,
+                    hora_pago: null
+                }).gt('id', 0); 
+                
+                refrescarDatos(); 
+                alert("💾 ¡Cierre completado! Datos desglosados guardados y pantallas limpias.");
+            }
         }
-    });
 
-    // 2. PREPARAR EL DESGLOSE DE PRODUCTOS PARA LA PANTALLA
-    const dineroEntradas = totalAsistentes * PRECIO_ENTRADA;
-    const dineroCopas = totalCopas * PRECIO_COPA;
-    const dineroCervezas = totalCervezas * PRECIO_CERVEZA;
-    const dineroRefrescos = totalRefrescos * PRECIO_REFRESCO;
-    const dineroAguas = totalAguas * PRECIO_AGUA;
-    const dineroEnergeticos = totalEnergeticos * PRECIO_ENERGETICO;
+        // Estas funciones se declaran vacías para evitar errores si no están implementadas
+        function toggleCamara() { alert("Función de cámara QR no vinculada."); }
+        function importarBaseDatos(e) { alert("Función restaurar base de datos no configurada."); }
 
-    // 3. PRIMERA VENTANA: FORMULARIO DE ARQUEO CON DESGLOSE REAL
-    const mensajeFormulario = `📊 ARQUEO DE CAJA GENERAL (DETALLADO)\n\n` +
-          `• 🎫 ENTRADAS: ${totalAsistentes} x ${PRECIO_ENTRADA}€ = ${dineroEntradas}€\n\n` +
-          `🍹 INVENTARIO DE BARRA DETECTADO:\n` +
-          `• Copas: ${totalCopas} x ${PRECIO_COPA}€ = ${dineroCopas}€\n` +
-          `• Cervezas: ${totalCervezas} x ${PRECIO_CERVEZA}€ = ${dineroCervezas}€\n` +
-          `• Refrescos: ${totalRefrescos} x ${PRECIO_REFRESCO}€ = ${dineroRefrescos}€\n` +
-          `• Aguas: ${totalAguas} x ${PRECIO_AGUA}€ = ${dineroAguas}€\n` +
-          `• Energéticos: ${totalEnergeticos} x ${PRECIO_ENERGETICO}€ = ${dineroEnergeticos}€\n\n` +
-          `💰 TOTAL QUE DEBE HABER EN CAJA: ${recaudacionEsperada}€\n\n` +
-          `Por favor, introduce el TOTAL cobrado por TPV (Tarjeta / Datáfono):`;
-
-    const tpvInput = prompt(mensajeFormulario, "0");
-    if (tpvInput === null) return; // Si cancela, frena el cierre
-    const totalTPV = parseFloat(tpvInput) || 0;
-
-    // 4. SEGUNDA VENTANA: EFECTIVO
-    const efectivoInput = prompt(`💰 TOTAL ESPERADO: ${recaudacionEsperada}€\n💳 TPV registrado: ${totalTPV}€\n\nIntroduce el TOTAL en EFECTIVO (Dinero físico en el cajón):`, "0");
-    if (efectivoInput === null) return; 
-    const totalEfectivo = parseFloat(efectivoInput) || 0;
-
-    // 5. CALCULAR DESCUADRE
-    const totalCajaReal = totalTPV + totalEfectivo;
-    const descuadre = totalCajaReal - recaudacionEsperada;
-
-    let estadoCaja = "";
-    if (descuadre === 0) { estadoCaja = "✅ ¡Caja cuadrada al céntimo! (0€ de descuadre)"; }
-    else if (descuadre > 0) { estadoCaja = `🟢 ¡Sobra dinero! Beneficio extra de +${descuadre.toFixed(2)}€`; }
-    else { estadoCaja = `🔴 ¡FALTA DINERO! Descuadre negativo de: ${descuadre.toFixed(2)}€`; }
-
-    // 6. CONFIRMACIÓN FINAL ANTES DE BORRAR LA NOCHE
-    if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche y reiniciar los datos?`)) {
-        
-        // 7. GUARDAR EL INFORME CON LOS PRODUCTOS DESGLOSADOS EN SUPABASE
-        const { error: errorCaja } = await _supabase
-            .from('cajas_diarias')
-            .insert([{ 
-                fecha: new Date().toISOString().split('T')[0],
-                total_asistentes: totalAsistentes, 
-                recaudacion_esperada: recaudacionEsperada,
-                pagado_efectivo: totalEfectivo,
-                pagado_tpv: totalTPV,
-                descuadre: descuadre,
-                copas_vendidas: totalCopas,
-                cervezas_vendidas: totalCervezas,
-                refrescos_vendidas: totalRefrescos,
-                aguas_vendidas: totalAguas,
-                energeticos_vendidas: totalEnergeticos
-            }]);
-
-        if (errorCaja) {
-            console.error("Error al guardar en Supabase:", errorCaja.message);
-            alert("⚠️ Error crítico: No se pudo guardar el informe en Supabase.");
-            return;
+        function obtenerPosicion(e) {
+            const r = canvas.getBoundingClientRect();
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clienteX - r.left, y: clienteY - r.top };
         }
 
-        // 8. REINICIAR TODO EL CLUB PARA EL PRÓXIMO DÍA (Y limpiar las variables de la burbuja)
-        await _supabase.from(NOMBRE_TABLA).update({ 
-            dentro: false, 
-            hora: null, 
-            consumiciones: null, 
-            copas: 0,
-            cervezas: 0,
-            refrescos: 0,
-            aguas: 0,
-            energeticos: 0,
-            pago_realizado: false 
-        }).gt('id', 0); 
-        
-        refrescarDatos(); 
-        alert("💾 ¡Cierre completado! Datos desglosados guardados y pantallas limpias.");
-    }
-}
-function obtenerPosicion(e) {
-    const r = canvas.getBoundingClientRect();
-    const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: clienteX - r.left, y: clienteY - r.top };
-}
+        function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
+        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
+        function pautarDibujo(e) {
+            if (!dibujando) return;
+            e.preventDefault();
+            const pos = obtenerPosicion(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
 
-function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
-function terminarDibujo() { dibujando = false; ctx.beginPath(); }
-function pautarDibujo(e) {
-    if (!dibujando) return;
-    e.preventDefault();
-    const pos = obtenerPosicion(e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-}
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        window.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mousemove', pautarDibujo);
 
-canvas.addEventListener('mousedown', iniciarDibujo);
-window.addEventListener('mouseup', terminarDibujo);
-canvas.addEventListener('mousemove', pautarDibujo);
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        window.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchmove', pautarDibujo);
 
-canvas.addEventListener('touchstart', iniciarDibujo);
-window.addEventListener('touchend', terminarDibujo);
-canvas.addEventListener('touchmove', pautarDibujo);
-
-// Arrancar datos iniciales al cargar la web
-refrescarDatos();
-
-// Temporizador automático de refresco
-setInterval(() => {
-    if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
         refrescarDatos();
-    }
-}, 10000);
-</script>
+
+        setInterval(() => {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
+                refrescarDatos();
+            }
+        }, 10000);
+    </script>
 </body>
 </html>
