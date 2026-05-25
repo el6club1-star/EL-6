@@ -150,7 +150,7 @@
                 <p><strong>1. NATURALEZA DEL CLUB Y CONDICIÓN DE SOCIO:</strong> El Club Privado El 6 es una asociación de carácter estrictamente restringido y privado. El acceso a las instalaciones y el uso de sus servicios están reservados única y exclusivamente a personas mayores de 18 años que hayan completado este registro, hayan sido expresamente admitidas por la Dirección y acepten sin reserva alguna el presente reglamento. La condición de socio es absolutamente personal, nominativa e intransferible.</p>
                 <p><strong>2. RESPONSABLE DEL TRATAMIENTO Y TRATAMIENTO DE DATOS (RGPD):</strong> En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y de la Ley Orgánica 3/2018 (LOPDGDD), se informa al solicitante de que todos los datos facilitados en este formulario (Nombre, DNI/NIE/Pasaporte, Fecha de Nacimiento, Email), así como su firma biométrica/digitalizada y el registro cronológico de sus accesos, serán incorporados a un tratamiento de datos responsabilidad del Club. La finalidad exclusiva es la gestión del control de acceso, el mantenimiento de la seguridad interna, la prevención del fraude y la autoorganización del club.</p>
                 <p><strong>3. LEGITIMACIÓN Y PLAZOS DE CONSERVACIÓN:</strong> La base legal que legitima este tratamiento es la ejecución del presente contrato de adhesión y el consentimiento expreso e inequívoco que el socio otorga al firmar. Los datos serán conservados de forma segura mientras el interesado mantenga su condición de alta en el club, o durante los plazos legales exigidos por la normativa administrativa, civil o penal española para la atención de posibles responsabilidades. El socio puede ejercitar sus derechos de acceso, rectificación, supresión ("olvido"), limitación y oposición dirigiendo una comunicación por escrito a la Dirección a través del correo electrónico <strong>el6club1@gmail.com</strong>, aportando copia de su documento de identidad.</p>
-                <p><strong>4. CONFIDENCIALIDAD ABSOLUTA Y CESIÓN LEGAL A AUTORIDADES:</strong> El Club garantiza el secreto y la confidencialidad de los datos de sus socios, adoptando las medidas de seguridad técnicas y organizativas necesarias para evitar su alteración o acceso no autorizado. Para cualquier consulta o incidencia relativa a la privacidad, el Club pone a disposición de los usuarios la dirección de correo electrónico <strong>el6club1@gmail.com</strong>. Los datos no serán vendidos, cedidos ni compartidos con terceros ajenos a la organización, salvo en cumplimiento de una obligación legal estricta o requerimiento formal y expreso de las Fuerzas y Cuerpos de Seguridad del Estado (Policía Nacional, Guardia Civil) o autoridades judiciales competentes en el marco de una investigación.</p>
+                <p><strong>4. CONFIDENCIALIDAD ABSOLUTA Y CESIÓN LEGAL A AUTORIDADES:</strong> El Club garantiza el secreto y la confinencialidad de los datos de sus socios, adoptando las medidas de seguridad técnicas y organizativas necesarias para evitar su alteración o acceso no autorizado. Para cualquier consulta o incidencia relativa a la privacidad, el Club pone a disposición de los usuarios la dirección de correo electrónico <strong>el6club1@gmail.com</strong>. Los datos no serán vendidos, cedidos ni compartidos con terceros ajenos a la organización, salvo en cumplimiento de una obligación legal estricta o requerimiento formal y expreso de las Fuerzas y Cuerpos de Seguridad del Estado (Policía Nacional, Guardia Civil) o autoridades judiciales competentes en el marco de una investigación.</p>
                 <p><strong>5. EJERCICIO RIGUROSO DEL DERECHO DE ADMISIÓN:</strong> El Club ejerce de forma permanente el Derecho de Admisión amparado por la legislación vigente applicable a establecimientos privados y de espectáculos públicos. La Dirección y su personal de control se reservan el derecho unilateral de denegar el acceso o suspender la entrada a cualquier socio, aun estando registrado, por razones de aforo, seguridad, alteración del orden o por no superar los filtros de verificación de la puerta de acceso.</p>
                 <p><strong>6. CÓDIGO DE VESTIMENTA Y DECORO EXIGIBLE (DRESS CODE):</strong> Para acceder y permanecer en el Club se exige el cumplimiento estricto del código de indumentaria elegante y sofisticado determinado por la empresa. Queda terminantemente prohibido el acceso portando ropa o calzado deportivo, prendas de baño, ropa de trabajo, prendas con mensajes de carácter ofensivo o cualquier vestuario que, a criterio exclusivo del personal de admisión, no cumpla con los estándares estéticos del local.</p>
                 <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestaciones racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
@@ -340,10 +340,14 @@
         }
 
         function exportarExcel() {
-            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA\n";
-            db.forEach(s => csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora}\n`);
-            const blob = new Blob([csv], {type: "text/csv"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "SOCIOS_EL6.csv"; a.click();
+            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
+            db.forEach(s => {
+                if (s.dentro || s.hora || s.consumiciones) {
+                    csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
+                }
+            });
+            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
         }
 
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
@@ -725,8 +729,10 @@
             else if (descuadre > 0) { estadoCaja = `🟢 ¡Sobra dinero! Beneficio extra de +${descuadre.toFixed(2)}€`; }
             else { estadoCaja = `🔴 ¡FALTA DINERO! Descuadre negativo de: ${descuadre.toFixed(2)}€`; }
 
-            if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche y reiniciar los datos?`)) {
+            if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche? SE DESCARGARÁ EL EXCEL Y SE RESETEARÁ EL AFORO Y LAS CONSUMICIONES A 0.`)) {
                 
+                exportarExcel();
+
                 const { error: errorCaja } = await _supabase
                     .from('cajas_diarias')
                     .insert([{ 
@@ -745,20 +751,29 @@
 
                 if (errorCaja) {
                     console.error("Error al guardar en Supabase:", errorCaja.message);
-                    alert("⚠️ Error crítico: No se pudo guardar el informe en Supabase.");
+                    alert("⚠️ Error crítico: No se pudo guardar el informe en la tabla cajas_diarias.");
                     return;
                 }
 
-                await _supabase.from(NOMBRE_TABLA).update({ 
-                    dentro: false, 
-                    hora: null, 
-                    consumiciones: null, 
-                    pago_realizado: false,
-                    hora_pago: null
-                }).gt('id', 0); 
+                const { error: errorSocios } = await _supabase
+                    .from(NOMBRE_TABLA)
+                    .update({ 
+                        dentro: false, 
+                        hora: null, 
+                        consumiciones: null, 
+                        pago_realizado: false,
+                        hora_pago: null
+                    })
+                    .gt('id', 0);
+
+                if (errorSocios) {
+                    console.error("Error al resetear socios:", errorSocios.message);
+                    alert("⚠️ Error al limpiar los socios en la base de datos.");
+                    return;
+                }
                 
-                refrescarDatos(); 
-                alert("💾 ¡Cierre completado! Datos desglosados guardados y pantallas limpias.");
+                await refrescarDatos(); 
+                alert("💾 ¡Cierre completado con éxito! Libro Excel descargado, informe guardado en la nube y todo vuelto a cero.");
             }
         }
 
