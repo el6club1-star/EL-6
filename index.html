@@ -773,7 +773,12 @@
                         return;
                     }
                 }
-                
+                // Resetear contadores visuales de la burbuja
+        const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
+        productosValidos.forEach(prod => {
+            const el = document.getElementById(`v-cant-${prod}`);
+            if (el) el.innerText = "0";
+        });
                 await refrescarDatos(); 
                 alert("💾 ¡Cierre completado con éxito! Libro Excel descargado, informe guardado en la nube y todo vuelto a cero.");
             }
