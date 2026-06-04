@@ -652,6 +652,7 @@
             const PRECIO_REFRESCO = 5;
             const PRECIO_AGUA = 5;
             const PRECIO_ENERGETICO = 5;
+            const PRECIO_CHUPITO = 5;
 
             let totalAsistentes = 0;
             let totalCopas = 0;
@@ -659,6 +660,7 @@
             let totalRefrescos = 0;
             let totalAguas = 0;
             let totalEnergeticos = 0;
+            let totalChupitos = 0;
             let recaudacionEsperada = 0;
 
             db.forEach(s => {
@@ -682,12 +684,15 @@
                     totalRefrescos += consumosMap['REFRESCO'];
                     totalAguas += consumosMap['AGUA'];
                     totalEnergeticos += consumosMap['ENERGÉTICO'];
+                    totalChupitos += consumosMap['CHUPITO'];
 
                     recaudacionEsperada += (consumosMap['COPA'] * PRECIO_COPA);
                     recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIO_CERVEZA);
                     recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
                     recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
                     recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
+                    recaudacionEsperada += (consumosMap['CHUPITO'] || 0) * PRECIO_CHUPITO;
+                    
                 }
             });
 
