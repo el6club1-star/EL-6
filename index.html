@@ -190,6 +190,7 @@
         let CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || { jefe: "1234", puerta: "0000", camarero: "2222" };
         let html5QrCode;
         let origenFirma = 'tarjeta';
+        const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
 
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
@@ -316,7 +317,6 @@
 
         async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
 
-        // COPIA DE SEGURIDAD CORREGIDA DE COMPATIBILIDAD
         function exportarBaseDatos() {
             const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
             const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
@@ -419,8 +419,6 @@
             document.getElementById('card-dni').innerText = s.dni;
             document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
             
-            const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-            
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
             
@@ -474,9 +472,7 @@
                             
                             <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
                             
-                            ${nivel !== 'camarero' ? `
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
-                            ` : ''}
+                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
                         </div>
                     </div>
                 `;
@@ -535,7 +531,6 @@
             if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
             if (!socioActivo) socioActivo = socioActual;
 
-            const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
             let consumos = {};
             productosValidos.forEach(p => consumos[p] = 0);
 
@@ -644,7 +639,6 @@
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-        // ==================== FUNCIÓN RESET COMPLETAMENTE ARREGLADA ====================
         async function resetJornada() { 
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
@@ -668,7 +662,7 @@
                     totalAsistentes++;
                     recaudacionEsperada += PRECIO_ENTRADA;
 
-                    let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0 };
+                    let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
                     const stringConsumos = String(s.consumiciones || '').trim();
                     if (stringConsumos.includes(':')) {
                         stringConsumos.split(',').forEach(item => {
@@ -691,8 +685,7 @@
                     recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
                     recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
                     recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
-                    recaudacionEsperada += (consumosMap['CHUPITO'] || 0) * PRECIO_CHUPITO;
-                    
+                    recaudacionEsperada += (consumosMap['CHUPITO'] * PRECIO_CHUPITO);
                 }
             });
 
@@ -711,7 +704,8 @@
                   `• Cervezas: ${totalCervezas} x ${PRECIO_CERVEZA}€ = ${dineroCervezas}€\n` +
                   `• Refrescos: ${totalRefrescos} x ${PRECIO_REFRESCO}€ = ${dineroRefrescos}€\n` +
                   `• Aguas: ${totalAguas} x ${PRECIO_AGUA}€ = ${dineroAguas}€\n` +
-                  `• Energéticos: ${totalEnergeticos} x ${PRECIO_ENERGETICO}€ = ${dineroEnergeticos}€\n\n` +
+                  `• Energéticos: ${totalEnergeticos} x ${PRECIO_ENERGETICO}€ = ${dineroEnergeticos}€\n` +
+                  `• Chupitos: ${totalChupitos} x ${PRECIO_CHUPITO}€ = ${dineroChupitos}€\n\n` +
                   `💰 TOTAL QUE DEBE HABER EN CAJA: ${recaudacionEsperada}€\n\n` +
                   `Por favor, introduce el TOTAL cobrado por TPV (Tarjeta / Datáfono):`;
 
@@ -757,8 +751,6 @@
                     return;
                 }
 
-                // ESTRATEGIA DE RESETEO MÁS SEGURA: Filtramos buscando los registros que tengan un ID existente
-                // Esto salta la protección de actualización masiva por defecto sin romper nada.
                 const listaIds = db.map(socio => socio.id).filter(id => id != null);
                 
                 if (listaIds.length > 0) {
@@ -779,12 +771,11 @@
                         return;
                     }
                 }
-                // Resetear contadores visuales de la burbuja
-        const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-        productosValidos.forEach(prod => {
-            const el = document.getElementById(`v-cant-${prod}`);
-            if (el) el.innerText = "0";
-        });
+
+                productosValidos.forEach(prod => {
+                    const el = document.getElementById(`v-cant-${prod}`);
+                    if (el) el.innerText = "0";
+                });
                 await refrescarDatos(); 
                 alert("💾 ¡Cierre completado con éxito! Libro Excel descargado, informe guardado en la nube y todo vuelto a cero.");
             }
