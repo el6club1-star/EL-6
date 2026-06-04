@@ -756,22 +756,22 @@
                     return;
                 }
 
-                const { error: errorSocios } = await _supabase
-                    .from(NOMBRE_TABLA)
-                    .update({ 
-                        dentro: false, 
-                        hora: null, 
-                        consumiciones: null, 
-                        pago_realizado: false,
-                        hora_pago: null
-                    })
-                    .gt('id', 0);
+              const { error: errorSocios } = await _supabase
+    .from(NOMBRE_TABLA)
+    .update({ 
+        dentro: false, 
+        hora: null, 
+        consumiciones: null, 
+        pago_realizado: false,
+        hora_pago: null
+    })
+    .neq('dni', ''); // Cambiado para evitar el bloqueo de seguridad masivo de Supabase
 
-                if (errorSocios) {
-                    console.error("Error al resetear socios:", errorSocios.message);
-                    alert("⚠️ Error al limpiar los socios en la base de datos.");
-                    return;
-                }
+if (errorSocios) {
+    console.error("Error al resetear socios:", errorSocios.message);
+    alert("⚠️ Error al limpiar los socios en la base de datos: " + errorSocios.message);
+    return;
+}
                 
                 await refrescarDatos(); 
                 alert("💾 ¡Cierre completado con éxito! Libro Excel descargado, informe guardado en la nube y todo vuelto a cero.");
