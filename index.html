@@ -585,23 +585,51 @@
             }
         }
 
-        async function modificarCantidadDirecta(dni, producto, cambio) {
-            const prodKey = producto.toUpperCase();
-            
-            let socioActivo = null;
-            if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
-            if (!socioActivo) socioActivo = socioActual;
+       async function modificarCantidadDirecta(dni, producto, cambio) {
+    const prodKey = producto.toUpperCase();
+    
+    let socioActivo = null;
+    if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
+    if (!socioActivo) socioActivo = socioActual;
 
-            let consumos = {};
-            productosValidos.forEach(p => consumos[p] = 0);
+    let consumos = {};
+    productosValidos.forEach(p => consumos[p] = 0);
 
-            const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
-            if (stringOriginal.includes(':')) {
-                stringOriginal.split(',').forEach(item => {
-                    const [p, c] = item.split(':');
-                    if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
-                });
-            }
+    const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
+    if (stringOriginal.includes(':')) {
+        stringOriginal.split(',').forEach(item => {
+            const [p, c] = item.split(':');
+            if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+        });
+    }
+
+    let cantActual = consumos[prodKey] || 0;
+    let nuevaCant = cantActual + cambio;
+    if (nuevaCant < 0) nuevaCant = 0;
+    consumos[prodKey] = nuevaCant;
+
+    // Aquí estaba el fallo de tu captura (línea 611). Ya está arreglado:
+    const elementoContador = document.getElementById(`v-cant-${producto}`);
+    if (elementoContador) {
+        elementoContador.innerText = nuevaCant;
+        elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
+    }
+
+    let resultadoString = Object.keys(consumos)
+        .filter(p => consumos[p] > 0)
+        .map(p => `${p}:${consumos[p]}`)
+        .join(','); 
+
+    await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+    
+    if (typeof db !== 'undefined') {
+        let idx = db.findIndex(x => x.dni === dni);
+        if (idx !== -1) db[idx].consumiciones = resultadoString;
+    }
+    if (socioActual && socioActual.dni === dni) {
+        socioActual.consumiciones = resultadoString;
+    }
+}
 
             let cantActual = consumos[prodKey] || 0;
             let nuevaCant = cantActual + cambio;
