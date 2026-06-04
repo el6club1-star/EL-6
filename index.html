@@ -9,7 +9,14 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --bg: #ffffff; --card: #f8fafc; --text: #1e293b; --success: #22c55e; --danger: #ef4444; }
+        :root { 
+            --gold: #d4af37; 
+            --bg: #ffffff; 
+            --card: #f8fafc; 
+            --text: #1e293b; 
+            --success: #22c55e; 
+            --danger: #ef4444; 
+        }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         #antena { position: fixed; top: 15px; left: 15px; display: flex; align-items: center; gap: 6px; z-index: 100000; font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 20px; background: rgba(0,0,0,0.05); pointer-events: none; }
         .dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; }
@@ -47,8 +54,6 @@
 
         #selloPagado { display: none; position: absolute; top: 15px; right: -30px; background: var(--success); color: white; padding: 5px 40px; transform: rotate(45deg); font-size: 10px; font-weight: bold; }
         #qr-space { background: white; padding: 10px; margin: 15px 0; display: inline-block; border-radius: 10px; min-height: 140px; }
-        .box-consumiciones { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .btn-cant { background: rgba(255,255,255,0.2); color: white; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .card-actions { display: flex; gap: 10px; margin-top: 15px; width: 320px; }
         .btn-card { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 10px; text-transform: uppercase; }
         .btn-pay { background: var(--success); color: white; }
@@ -62,16 +67,31 @@
         .admin-btns { display: flex; gap: 5px; position: absolute; right: 0; top: 50px; }
         .contenedor-rgpd { display: flex; align-items: center; gap: 5px; white-space: nowrap; margin-top: 5px; font-size: 8px; }
         .contenedor-rgpd a { color: blue !important; text-decoration: underline !important; cursor: pointer; }
+
+        /* Estilos Elegantes del Libro de Cajas */
+        #modalLibroCajas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .panel-caja { background: #1a1a1a; border: 1px solid var(--gold); border-radius: 20px; max-width: 500px; width: 100%; padding: 25px; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: 'Inter', sans-serif; box-sizing: border-box; }
+        .titulo-caja { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); margin: 0 0 15px 0; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 10px; text-align: center; }
+        .desglose-scroll { max-height: 200px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
+        .item-desglose { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .caja-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .caja-inputs label { font-size: 11px; font-weight: bold; color: var(--gold); display: block; margin-bottom: 5px; text-transform: uppercase; }
+        .caja-inputs input { background: #000; border: 1px solid rgba(212,175,55,0.4); color: #fff; font-weight: bold; font-size: 16px; text-align: center; padding: 8px; }
+        .caja-inputs input:focus { border-color: var(--gold); outline: none; }
+        .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="antena"><div id="dot" class="dot"></div><span id="statusText">LINK</span></div>
+    
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
+    
     <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+    
     <div class="container" id="principal">
         <header>
             <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
@@ -80,7 +100,7 @@
                 <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
                 <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
             </div>
-            <button class="btn-reset-noche" id="btnReset" onclick="resetJornada()">🔄 REINICIAR NOCHE</button>
+            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
             <div class="admin-btns" id="adminExtra" style="display:none;">
                 <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
                 <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
@@ -89,11 +109,13 @@
             <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
             <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
         </header>
+        
         <div id="panelAdmin" class="stats-container">
             <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
             <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
+        
         <div class="reg-box" id="cajaRegistro">
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
@@ -113,9 +135,11 @@
             </div>
             <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
         </div>
+        
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
         <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
+        
         <table>
             <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
             <tbody id="lista"></tbody>
@@ -159,7 +183,7 @@
                 <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda estrictamente prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
                 <p><strong>11. EXENCIÓN DE RESPONSABILIDAD POR EFECTOS PERSONALES:</strong> El Club dispone de las medidas de seguridad genéricas exigidas por la ley, pero no se hace responsable en ningún caso de la pérdida, hurto, robo, sustracción o daño material que puedan sufrir los objetos personales, dinero, prendas o dispositivos electrónicos de los socios dentro del establecimiento, siendo responsabilidad exclusiva de cada asistente la custodia diligente de sus pertenencias.</p>
                 <p><strong>12. RESPONSABILIDAD POR DAÑOS MATERIALES, VETO Y JURISDICCIÓN COMPETENTE:</strong> Cualquier daño, rotura o desperfecto causado de forma intencionada o por negligencia en el mobiliario, equipos, decoración o estructura del local generará la obligación de indemnizar económicamente al Club por el coste total de su reparación o sustitución. El incumplimiento de cualquiera de las cláusulas de este documento otorgará a la Dirección la facultad de aplicar el régimen sancionador de veto definitivo. Asimismo, para la resolución de cualquier controversia, litigio, discrepancia o reclamación judicial derivada de la interpretación o ejecución de este contrato y reglamento, <strong>tanto el Club como el socio se someten expresamente, con renuncia formal a cualquier otro fuero o jurisdicción que pudiera corresponderles, a la competencia exclusiva de los Juzgados y Tribunales de Madrid capital.</strong></p>
-                <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN Y COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
+                <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN AND COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
             </div>
             
             <canvas id="canvasFirma" width="440" height="120"></canvas>
@@ -167,6 +191,29 @@
             <button onclick="cerrarFirma()" style="width:100%; padding:5px; background:#ccc; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">VOLVER</button>
         </div>
         <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
+    </div>
+
+    <div id="modalLibroCajas">
+        <div class="panel-caja">
+            <h3 class="titulo-caja">⚜️ Arqueo y Libro de Cajas</h3>
+            <div class="desglose-scroll" id="cajaDesgloseContenido"></div>
+            
+            <div class="caja-inputs">
+                <div>
+                    <label>💳 Cobrado TPV</label>
+                    <input type="number" id="cajaTpvInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
+                </div>
+                <div>
+                    <label>💵 Cobrado Efectivo</label>
+                    <input type="number" id="cajaEfectivoInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
+                </div>
+            </div>
+            
+            <div id="cajaResultadoCéntimo" class="resultado-descuadre"></div>
+            
+            <button onclick="ejecutarCierreResetFinal()" style="width:100%; padding:12px; background:var(--gold); color:black; border:none; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Confirmar Cierre de Noche</button>
+            <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
+        </div>
     </div>
 
     <script>
@@ -191,6 +238,9 @@
         let html5QrCode;
         let origenFirma = 'tarjeta';
         const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
+
+        // Variables globales para guardar los datos calculados temporalmente en el arqueo
+        let datosCajaGlobal = {};
 
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
@@ -328,7 +378,7 @@
             reader.onload = async function(e) {
                 try {
                     const datos = JSON.parse(e.target.result);
-                    if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán coincidencias.`)) {
+                    if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
                         for(let s of datos) {
                             delete s.created_at;
                             await _supabase.from(NOMBRE_TABLA).upsert(s);
@@ -362,11 +412,16 @@
             const cat = document.getElementById('cat').value;
             if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
             
-            const { data } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
                 dni: d, nombre: n, email: e, cumple: c, dentro: true, 
                 hora: new Date().toLocaleTimeString(), cat: cat 
             }).select();
             
+            if (error) {
+                alert("Error al registrar: " + error.message);
+                return;
+            }
+
             if(e) {
                 emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
                     to_name: n, to_email: e, dni: d, categoria: cat
@@ -377,7 +432,13 @@
             document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
             document.getElementById('checkRGPD').checked = false;
 
-            refrescarDatos(); if(data && data[0]) abrirTarjeta(data[0]);
+            await refrescarDatos(); 
+            if(data && data[0]) {
+                abrirTarjeta(data[0]);
+            } else {
+                const recienCreado = db.find(x => x.dni === d);
+                if(recienCreado) abrirTarjeta(recienCreado);
+            }
         }
 
         function toggleCamara() {
@@ -548,7 +609,7 @@
             consumos[prodKey] = nuevaCant;
 
             const elementoContador = document.getElementById(`v-cant-${producto}`);
-            if (elementoContador) {
+            if (elementContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
@@ -639,7 +700,8 @@
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
-        async function resetJornada() { 
+        /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
+        function prepararCierreCaja() { 
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
             const PRECIO_CERVEZA = 5;
@@ -689,98 +751,126 @@
                 }
             });
 
-            const dineroEntradas = totalAsistentes * PRECIO_ENTRADA;
-            const dineroCopas = totalCopas * PRECIO_COPA;
-            const dineroCervezas = totalCervezas * PRECIO_CERVEZA;
-            const dineroRefrescos = totalRefrescos * PRECIO_REFRESCO;
-            const dineroAguas = totalAguas * PRECIO_AGUA;
-            const dineroEnergeticos = totalEnergeticos * PRECIO_ENERGETICO;
-            const dineroChupitos = totalChupitos * PRECIO_CHUPITO;
+            // Guardar en objeto global intermedio
+            datosCajaGlobal = {
+                totalAsistentes, recaudacionEsperada,
+                totalCopas, totalCervezas, totalRefrescos, totalAguas, totalEnergeticos, totalChupitos,
+                dineroEntradas: totalAsistentes * PRECIO_ENTRADA,
+                dineroCopas: totalCopas * PRECIO_COPA,
+                dineroCervezas: totalCervezas * PRECIO_CERVEZA,
+                dineroRefrescos: totalRefrescos * PRECIO_REFRESCO,
+                dineroAguas: totalAguas * PRECIO_AGUA,
+                dineroEnergeticos: totalEnergeticos * PRECIO_ENERGETICO,
+                dineroChupitos: totalChupitos * PRECIO_CHUPITO
+            };
 
-            const mensajeFormulario = `📊 ARQUEO DE CAJA GENERAL (DETALLADO)\n\n` +
-                  `• 🎫 ENTRADAS: ${totalAsistentes} x ${PRECIO_ENTRADA}€ = ${dineroEntradas}€\n\n` +
-                  `🍹 INVENTARIO DE BARRA DETECTADO:\n` +
-                  `• Copas: ${totalCopas} x ${PRECIO_COPA}€ = ${dineroCopas}€\n` +
-                  `• Cervezas: ${totalCervezas} x ${PRECIO_CERVEZA}€ = ${dineroCervezas}€\n` +
-                  `• Refrescos: ${totalRefrescos} x ${PRECIO_REFRESCO}€ = ${dineroRefrescos}€\n` +
-                  `• Aguas: ${totalAguas} x ${PRECIO_AGUA}€ = ${dineroAguas}€\n` +
-                  `• Energéticos: ${totalEnergeticos} x ${PRECIO_ENERGETICO}€ = ${dineroEnergeticos}€\n` +
-                  `• Chupitos: ${totalChupitos} x ${PRECIO_CHUPITO}€ = ${dineroChupitos}€\n\n` +
-                  `💰 TOTAL QUE DEBE HABER EN CAJA: ${recaudacionEsperada}€\n\n` +
-                  `Por favor, introduce el TOTAL cobrado por TPV (Tarjeta / Datáfono):`;
+            // Construir Desglose Elegante
+            let htmlHTML = `
+                <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
+                <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
+                <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
+                <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
+                <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
+                <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
+                <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
+                <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
+                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
+            `;
 
-            const tpvInput = prompt(mensajeFormulario, "0");
-            if (tpvInput === null) return; 
-            const totalTPV = parseFloat(tpvInput) || 0;
+            document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
+            document.getElementById('cajaTpvInput').value = 0;
+            document.getElementById('cajaEfectivoInput').value = 0;
+            
+            calcularDescuadreEnTiempoReal();
+            document.getElementById('modalLibroCajas').style.display = 'flex';
+        }
 
-            const efectivoInput = prompt(`💰 TOTAL ESPERADO: ${recaudacionEsperada}€\n💳 TPV registrado: ${totalTPV}€\n\nIntroduce el TOTAL en EFECTIVO (Dinero físico en el cajón):`, "0");
-            if (efectivoInput === null) return; 
-            const totalEfectivo = parseFloat(efectivoInput) || 0;
+        function calcularDescuadreEnTiempoReal() {
+            const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
+            const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
+            const totalReal = tpv + efectivo;
+            const descuadre = totalReal - datosCajaGlobal.recaudacionEsperada;
 
-            const totalCajaReal = totalTPV + totalEfectivo;
-            const descuadre = totalCajaReal - recaudacionEsperada;
-
-            let estadoCaja = "";
-            if (descuadre === 0) { estadoCaja = "✅ ¡Caja cuadrada al céntimo! (0€ de descuadre)"; }
-            else if (descuadre > 0) { estadoCaja = `🟢 ¡Sobra dinero! Beneficio extra de +${descuadre.toFixed(2)}€`; }
-            else { estadoCaja = `🔴 ¡FALTA DINERO! Descuadre negativo de: ${descuadre.toFixed(2)}€`; }
-
-            if(confirm(`${estadoCaja}\n\nRESUMEN FINAL REAL:\n• Cobrado por TPV: ${totalTPV}€\n• Cobrado en Efectivo: ${totalEfectivo}€\n• TOTAL EN MANO: ${totalCajaReal}€\n\n¿Estás seguro de que quieres cerrar la noche? SE DESCARGARÁ EL EXCEL Y SE RESETEARÁ EL AFORO Y LAS CONSUMICIONES A 0.`)) {
-                
-                exportarExcel();
-
-                const { error: errorCaja } = await _supabase
-                    .from('cajas_diarias')
-                    .insert([{ 
-                        fecha: new Date().toISOString().split('T')[0],
-                        total_asistentes: totalAsistentes, 
-                        recaudacion_esperada: recaudacionEsperada,
-                        pagado_efectivo: totalEfectivo,
-                        pagado_tpv: totalTPV,
-                        descuadre: descuadre,
-                        copas_vendidas: totalCopas,
-                        cervezas_vendidas: totalCervezas,
-                        refrescos_vendidas: totalRefrescos,
-                        aguas_vendidas: totalAguas,
-                        energeticos_vendidas: totalEnergeticos
-                    }]);
-
-                if (errorCaja) {
-                    console.error("Error al guardar en Supabase:", errorCaja.message);
-                    alert("⚠️ Error crítico: No se pudo guardar el informe en la tabla cajas_diarias.");
-                    return;
-                }
-
-                const listaIds = db.map(socio => socio.id).filter(id => id != null);
-                
-                if (listaIds.length > 0) {
-                    const { error: errorSocios } = await _supabase
-                        .from(NOMBRE_TABLA)
-                        .update({ 
-                            dentro: false, 
-                            hora: null, 
-                            consumiciones: null, 
-                            pago_realizado: false,
-                            hora_pago: null
-                        })
-                        .in('id', listaIds);
-
-                    if (errorSocios) {
-                        console.error("Error al resetear socios:", errorSocios.message);
-                        alert("⚠️ Error al limpiar los socios en la base de datos: " + errorSocios.message);
-                        return;
-                    }
-                }
-
-                productosValidos.forEach(prod => {
-                    const el = document.getElementById(`v-cant-${prod}`);
-                    if (el) el.innerText = "0";
-                });
-                await refrescarDatos(); 
-                alert("💾 ¡Cierre completado con éxito! Libro Excel descargado, informe guardado en la nube y todo vuelto a cero.");
+            const indicador = document.getElementById('cajaResultadoCéntimo');
+            if (descuadre === 0) {
+                indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
+                indicador.style.background = "rgba(34,197,94,0.2)";
+                indicador.style.color = "#22c55e";
+            } else if (descuadre > 0) {
+                indicador.innerText = `🟢 ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
+                indicador.style.background = "rgba(34,197,94,0.2)";
+                indicador.style.color = "#22c55e";
+            } else {
+                indicador.innerText = `🔴 ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`;
+                indicador.style.background = "rgba(239,68,68,0.2)";
+                indicador.style.color = "#ef4444";
             }
         }
 
+        async function ejecutarCierreResetFinal() {
+            if(!confirm("¿Estás completamente seguro de que deseas cerrar la noche? Se descargará el informe CSV y se limpiarán los aforos y las consumiciones en Supabase.")) return;
+
+            const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
+            const totalEfectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
+            const totalCajaReal = totalTPV + totalEfectivo;
+            const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
+
+            exportarExcel();
+
+            const { error: errorCaja } = await _supabase
+                .from('cajas_diarias')
+                .insert([{ 
+                    fecha: new Date().toISOString().split('T')[0],
+                    total_asistentes: datosCajaGlobal.totalAsistentes, 
+                    recaudacion_esperada: datosCajaGlobal.recaudacionEsperada,
+                    pagado_efectivo: totalEfectivo,
+                    pagado_tpv: totalTPV,
+                    descuadre: descuadre,
+                    copas_vendidas: datosCajaGlobal.totalCopas,
+                    cervezas_vendidas: datosCajaGlobal.totalCervezas,
+                    refrescos_vendidas: datosCajaGlobal.totalRefrescos,
+                    aguas_vendidas: datosCajaGlobal.totalAguas,
+                    energeticos_vendidas: datosCajaGlobal.totalEnergeticos
+                }]);
+
+            if (errorCaja) {
+                console.error("Error al guardar arqueo en Supabase:", errorCaja.message);
+                alert("⚠️ Error crítico: No se pudo guardar el arqueo en 'cajas_diarias'.");
+                return;
+            }
+
+            const listaIds = db.map(socio => socio.id).filter(id => id != null);
+            
+            if (listaIds.length > 0) {
+                const { error: errorSocios } = await _supabase
+                    .from(NOMBRE_TABLA)
+                    .update({ 
+                        dentro: false, 
+                        hora: null, 
+                        consumiciones: null, 
+                        pago_realizado: false,
+                        hora_pago: null
+                    })
+                    .in('id', listaIds);
+
+                if (errorSocios) {
+                    console.error("Error al resetear socios:", errorSocios.message);
+                    alert("⚠️ Error parcial: Se guardó el arqueo pero falló la limpieza de socios: " + errorSocios.message);
+                    return;
+                }
+            }
+
+            productosValidos.forEach(prod => {
+                const el = document.getElementById(`v-cant-${prod}`);
+                if (el) el.innerText = "0";
+            });
+
+            document.getElementById('modalLibroCajas').style.display = 'none';
+            await refrescarDatos(); 
+            alert("💾 ¡Noche cerrada con éxito! Archivo descargado, base de datos limpia y caja registrada en la nube.");
+        }
+
+        // Eventos del Lienzo Signature Canvas
         function obtenerPosicion(e) {
             const r = canvas.getBoundingClientRect();
             const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -806,10 +896,11 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
+        // Arranque inicial y ciclo asíncrono en segundo plano
         refrescarDatos();
 
         setInterval(() => {
-            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex') {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex') {
                 refrescarDatos();
             }
         }, 10000);
