@@ -609,7 +609,7 @@
             consumos[prodKey] = nuevaCant;
 
             const elementoContador = document.getElementById(`v-cant-${producto}`);
-            if (elementoContador) { // <-- CORREGIDO AQUÍ: Antes decía 'elementContador' sin la 'o'
+            if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
@@ -751,7 +751,6 @@
                 }
             });
 
-            // Guardar en objeto global intermedio
             datosCajaGlobal = {
                 totalAsistentes, recaudacionEsperada,
                 totalCopas, totalCervezas, totalRefrescos, totalAguas, totalEnergeticos, totalChupitos,
@@ -764,7 +763,6 @@
                 dineroChupitos: totalChupitos * PRECIO_CHUPITO
             };
 
-            // Construir Desglose Elegante
             let htmlHTML = `
                 <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
                 <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
@@ -808,14 +806,12 @@
         }
 
         async function ejecutarCierreResetFinal() {
-            if(!confirm("¿Estás completamente seguro de que deseas cerrar la noche? Se descargará el informe CSV y se limpiarán los aforos y las consumiciones en Supabase.")) return;
+            if(!confirm("¿Estás completamente seguro de que deseas cerrar la noche? Se guardará en el histórico y se limpiarán los aforos y consumiciones.")) return;
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const totalEfectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
             const totalCajaReal = totalTPV + totalEfectivo;
             const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
-
-            exportarExcel();
 
             const { error: errorCaja } = await _supabase
                 .from('cajas_diarias')
@@ -830,7 +826,8 @@
                     cervezas_vendidas: datosCajaGlobal.totalCervezas,
                     refrescos_vendidas: datosCajaGlobal.totalRefrescos,
                     aguas_vendidas: datosCajaGlobal.totalAguas,
-                    energeticos_vendidas: datosCajaGlobal.totalEnergeticos
+                    energeticos_vendidas: datosCajaGlobal.totalEnergeticos,
+                    chupitos_vendidas: datosCajaGlobal.totalChupitos
                 }]);
 
             if (errorCaja) {
@@ -867,7 +864,130 @@
 
             document.getElementById('modalLibroCajas').style.display = 'none';
             await refrescarDatos(); 
-            alert("💾 ¡Noche cerrada con éxito! Archivo descargado, base de datos limpia y caja registrada en la nube.");
+            alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
+        }
+
+        /* --- NUEVA PANTALLA VISUAL: HISTÓRICO DE LIBROS DE CAJA --- */
+        async function mostrarHistoricoCajas() {
+            // Eliminar si ya existía para no duplicar IDs
+            const viejo = document.getElementById('modalHistoricoCajas');
+            if(viejo) viejo.remove();
+
+            // Consultar todo el histórico guardado en Supabase
+            const { data: registros, error } = await _supabase
+                .from('cajas_diarias')
+                .select('*')
+                .order('fecha', { ascending: false });
+
+            if(error) {
+                alert("Error al cargar el histórico: " + error.message);
+                return;
+            }
+
+            // Crear el Modal del libro unificado de forma dinámica e hiper elegante
+            const modalHist = document.createElement('div');
+            modalHist.id = 'modalHistoricoCajas';
+            modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100005; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
+
+            let tablaHTML = `
+                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1050px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                        <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">📥 DESCARGAR LIBRO EXCEL (.CSV)</button>
+                            <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: none; border: none; color: #ff4a4a; font-size: 22px; font-weight: bold; cursor: pointer;">✕</button>
+                        </div>
+                    </div>
+                    
+                    <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 900px;">
+                            <thead>
+                                <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
+                                    <th style="padding: 12px 10px;">FECHA</th>
+                                    <th style="padding: 12px 10px; text-align:center;">ENTRADAS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">COPAS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">CERVEZAS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">CHUPITOS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">REFRESCOS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">ENERGÉTICOS</th>
+                                    <th style="padding: 12px 10px; text-align:right; background: rgba(255,255,255,0.03);">TOTAL CAJA</th>
+                                    <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
+                                    <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
+                                    <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            registros.forEach(r => {
+                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const desc = parseFloat(r.descuadre) || 0;
+                let estadoBadge = "";
+                
+                if(desc === 0) {
+                    estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Cuadrada</span>`;
+                } else if(desc > 0) {
+                    estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Sobran +${desc.toFixed(2)}€</span>`;
+                } else {
+                    estadoBadge = `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-weight:700;">Faltan ${desc.toFixed(2)}€</span>`;
+                }
+
+                // Ajustar fechas visuales limpias
+                const fInvertida = r.fecha.split('-').reverse().join('/');
+
+                tablaHTML += `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                        <td style="padding: 10px; font-weight: 700; color: #d4af37;">${fInvertida}</td>
+                        <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.cervezas_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.chupitos_vendidas || r.chupitos || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.refrescos_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.energeticos_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:right; font-weight: 800; color: #d4af37; background: rgba(255,255,255,0.01);">${totalCajaCalculado.toFixed(2)}€</td>
+                        <td style="padding: 10px; text-align:right; color: #9cf;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
+                        <td style="padding: 10px; text-align:right; color: #af9;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
+                        <td style="padding: 10px; text-align:center; font-size: 11px;">${estadoBadge}</td>
+                    </tr>
+                `;
+            });
+
+            tablaHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            modalHist.innerHTML = tablaHTML;
+            document.body.appendChild(modalHist);
+        }
+
+        // Función del motor para bajar TODAS las filas guardadas en un único libro unificado (.csv compatible con Excel)
+        async function descargarExcelUnificado() {
+            const { data: registros, error } = await _supabase
+                .from('cajas_diarias')
+                .select('*')
+                .order('fecha', { ascending: true });
+
+            if(error || !registros) return;
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
+
+            registros.forEach(r => {
+                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const chups = r.chupitos_vendidas || r.chupitos || 0;
+                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "LIBRO_DE_CAJAS_UNIFICADO.csv");
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
         }
 
         // Eventos del Lienzo Signature Canvas
@@ -900,10 +1020,9 @@
         refrescarDatos();
 
         setInterval(() => {
-            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex') {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
                 refrescarDatos();
             }
         }, 10000);
     </script>
 </body>
-</html>
