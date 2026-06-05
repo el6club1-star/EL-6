@@ -470,7 +470,7 @@
         }
 
         function abrirTarjeta(s) {
-            socioActual = s;
+           socioActual = s;
             const card = document.getElementById('cardMain');
             const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
             card.className = `card-vip cat-${catLimpia}`;
@@ -609,7 +609,7 @@
             consumos[prodKey] = nuevaCant;
 
             const elementoContador = document.getElementById(`v-cant-${producto}`);
-            if (elementContador) {
+            if (elementoContador) { // <-- CORREGIDO AQUÍ: Antes decía 'elementContador' sin la 'o'
                 elementoContador.innerText = nuevaCant;
                 elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
             }
