@@ -867,6 +867,58 @@
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
 
+        /* --- MODIFICAMOS EL DESGLOSE DE CAJA PARA HACERLO SEGURO Y VER EL BOTÓN AHÍ --- */
+        function calcularDescuadreEnTiempoReal() {
+            const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
+            const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
+            const totalReal = tpv + efectivo;
+            const descuadre = totalReal - datosCajaGlobal.recaudacionEsperada;
+
+            const indicador = document.getElementById('cajaResultadoCéntimo');
+            if (indicador) {
+                if (descuadre === 0) {
+                    indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
+                    indicador.style.background = "rgba(34,197,94,0.2)";
+                    indicador.style.color = "#22c55e";
+                } else if (descuadre > 0) {
+                    indicador.innerText = `🟢 ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
+                    indicador.style.background = "rgba(34,197,94,0.2)";
+                    indicador.style.color = "#22c55e";
+                } else {
+                    indicador.innerText = `🔴 ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`;
+                    indicador.style.background = "rgba(239,68,68,0.2)";
+                    indicador.style.color = "#ef4444";
+                }
+            }
+        }
+
+        // Esta función se ejecuta tras meter el código 1234
+        function inyectarBotonHistorialEnArqueo() {
+            // Buscamos el contenedor del modal del libro de cajas
+            const contenedorModal = document.getElementById('modalLibroCajas');
+            if (!contenedorModal) return;
+
+            // Si ya existe el botón en la ventana, no lo duplicamos
+            if (document.getElementById('btn-historial-seguro')) return;
+
+            // Buscamos el botón de "Confirmar Cierre" o la caja de botones dentro de ese modal
+            const btnConfirmar = contenedorModal.querySelector("button[onclick*='ejecutarCierreResetFinal']");
+            if (btnConfirmar) {
+                const btnHist = document.createElement('button');
+                btnHist.id = 'btn-historial-seguro';
+                btnHist.type = 'button';
+                btnHist.onclick = mostrarHistoricoCajas;
+                btnHist.innerText = "📊 VER LIBRO HISTÓRICO";
+                btnHist.style.cssText = "background: rgba(0,0,0,0.4); color: #d4af37; border: 1px solid #d4af37; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-top: 15px; width: 100%; display: block; text-align: center; letter-spacing: 0.5px; transition: 0.2s;";
+                
+                btnHist.onmouseover = () => { btnHist.style.background = '#d4af37'; btnHist.style.color = '#000'; };
+                btnHist.onmouseout = () => { btnHist.style.background = 'rgba(0,0,0,0.4)'; btnHist.style.color = '#d4af37'; };
+
+                // Colocamos el botón del histórico justo debajo del botón de cerrar la noche
+                btnConfirmar.parentNode.insertBefore(btnHist, btnConfirmar.nextSibling);
+            }
+        }
+
         /* --- NUEVA PANTALLA VISUAL: HISTÓRICO DE LIBROS DE CAJA --- */
         async function mostrarHistoricoCajas() {
             const viejo = document.getElementById('modalHistoricoCajas');
@@ -985,23 +1037,6 @@
             link.remove();
         }
 
-        // FUNCIÓN CREADORA AUTOMÁTICA DEL BOTÓN FLOTANTE
-        function montarBotonHistorialAutomatico() {
-            if (document.getElementById('btn-flotante-historial')) return;
-            const btn = document.createElement('button');
-            btn.id = 'btn-flotante-historial';
-            btn.type = 'button';
-            btn.onclick = mostrarHistoricoCajas;
-            btn.innerText = "📊 LIBRO DE CAJAS";
-            btn.style.cssText = "position: fixed; bottom: 20px; right: 20px; background: #111; color: #d4af37; border: 2px solid #d4af37; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 99999; transition: 0.2s;";
-            
-            // Efecto al pasar el ratón por encima
-            btn.onmouseover = () => { btn.style.background = '#d4af37'; btn.style.color = '#000'; };
-            btn.onmouseout = () => { btn.style.background = '#111'; btn.style.color = '#d4af37'; };
-            
-            document.body.appendChild(btn);
-        }
-
         // Eventos del Lienzo Signature Canvas
         function obtenerPosicion(e) {
             const r = canvas.getBoundingClientRect();
@@ -1028,15 +1063,17 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        // Arranque inicial
+        // Arranque inicial y bucles en segundo plano
         refrescarDatos();
-        montarBotonHistorialAutomatico(); // <-- Esto crea el botón en la esquina abajo a la derecha sola
 
         setInterval(() => {
             if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
                 refrescarDatos();
             }
-            montarBotonHistorialAutomatico();
-        }, 10000);
+            // Ejecutamos el inyector solo si la ventana de cierre está abierta y visible
+            if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
+                inyectarBotonHistorialEnArqueo();
+            }
+        }, 2000); // Comprobación rápida cada 2 segundos por seguridad
     </script>
 </body>
