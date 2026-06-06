@@ -867,7 +867,7 @@
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
 
-        /* --- MODIFICAMOS EL DESGLOSE DE CAJA PARA HACERLO SEGURO Y VER EL BOTÓN AHÍ --- */
+        /* --- DESGLOSE DE CAJA SEGURO --- */
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
@@ -892,16 +892,13 @@
             }
         }
 
-        // Esta función se ejecuta tras meter el código 1234
+        // Inyector automático dentro del menú tras el código administrador
         function inyectarBotonHistorialEnArqueo() {
-            // Buscamos el contenedor del modal del libro de cajas
             const contenedorModal = document.getElementById('modalLibroCajas');
             if (!contenedorModal) return;
 
-            // Si ya existe el botón en la ventana, no lo duplicamos
             if (document.getElementById('btn-historial-seguro')) return;
 
-            // Buscamos el botón de "Confirmar Cierre" o la caja de botones dentro de ese modal
             const btnConfirmar = contenedorModal.querySelector("button[onclick*='ejecutarCierreResetFinal']");
             if (btnConfirmar) {
                 const btnHist = document.createElement('button');
@@ -909,17 +906,16 @@
                 btnHist.type = 'button';
                 btnHist.onclick = mostrarHistoricoCajas;
                 btnHist.innerText = "📊 VER LIBRO HISTÓRICO";
-                btnHist.style.cssText = "background: rgba(0,0,0,0.4); color: #d4af37; border: 1px solid #d4af37; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-top: 15px; width: 100%; display: block; text-align: center; letter-spacing: 0.5px; transition: 0.2s;";
+                btnHist.style.cssText = "background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-top: 15px; width: 100%; display: block; text-align: center; letter-spacing: 0.5px; transition: 0.2s;";
                 
                 btnHist.onmouseover = () => { btnHist.style.background = '#d4af37'; btnHist.style.color = '#000'; };
-                btnHist.onmouseout = () => { btnHist.style.background = 'rgba(0,0,0,0.4)'; btnHist.style.color = '#d4af37'; };
+                btnHist.onmouseout = () => { btnHist.style.background = 'rgba(0,0,0,0.6)'; btnHist.style.color = '#d4af37'; };
 
-                // Colocamos el botón del histórico justo debajo del botón de cerrar la noche
                 btnConfirmar.parentNode.insertBefore(btnHist, btnConfirmar.nextSibling);
             }
         }
 
-        /* --- NUEVA PANTALLA VISUAL: HISTÓRICO DE LIBROS DE CAJA --- */
+        /* --- NUEVA PANTALLA VISUAL: HISTÓRICO DE LIBROS DE CAJA (CORREGIDA CAPA CAPITÁN) --- */
         async function mostrarHistoricoCajas() {
             const viejo = document.getElementById('modalHistoricoCajas');
             if(viejo) viejo.remove();
@@ -936,7 +932,8 @@
 
             const modalHist = document.createElement('div');
             modalHist.id = 'modalHistoricoCajas';
-            modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100005; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
+            // SUBIDO EL Z-INDEX A 200000 PARA QUE SALGA POR ENCIMA DEL CIERRE SIEMPRE
+            modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
 
             let tablaHTML = `
                 <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1050px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
@@ -1070,10 +1067,9 @@
             if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
                 refrescarDatos();
             }
-            // Ejecutamos el inyector solo si la ventana de cierre está abierta y visible
             if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
                 inyectarBotonHistorialEnArqueo();
             }
-        }, 2000); // Comprobación rápida cada 2 segundos por seguridad
+        }, 1500);
     </script>
 </body>
