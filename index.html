@@ -813,6 +813,7 @@
             const totalCajaReal = totalTPV + totalEfectivo;
             const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
 
+            // Guardamos en Supabase asegurando que los nombres de las columnas coinciden con tu base de datos
             const { error: errorCaja } = await _supabase
                 .from('cajas_diarias')
                 .insert([{ 
@@ -832,7 +833,7 @@
 
             if (errorCaja) {
                 console.error("Error al guardar arqueo en Supabase:", errorCaja.message);
-                alert("⚠️ Error crítico: No se pudo guardar el arqueo en 'cajas_diarias'.");
+                alert("⚠️ Error crítico: No se pudo guardar el arqueo en 'cajas_diarias'. Revisa la consola.");
                 return;
             }
 
@@ -867,7 +868,7 @@
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
 
-        /* --- DESGLOSE DE CAJA SEGURO --- */
+        /* --- DESGLOSE DE CAJA SEGURO Y CÁLCULOS --- */
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
@@ -892,6 +893,7 @@
             }
         }
 
+        /* --- INYECTOR DEL BOTÓN DE HISTÓRICO PROTEGIDO --- */
         function inyectarBotonHistorialEnArqueo() {
             const contenedorModal = document.getElementById('modalLibroCajas');
             if (!contenedorModal) return;
@@ -914,7 +916,7 @@
             }
         }
 
-        /* --- NUEVA PANTALLA VISUAL: HISTÓRICO CON FUNCIÓN DE BORRADO --- */
+        /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
         async function mostrarHistoricoCajas() {
             const viejo = document.getElementById('modalHistoricoCajas');
             if(viejo) viejo.remove();
@@ -934,7 +936,7 @@
             modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
 
             let tablaHTML = `
-                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1100px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
+                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
                         <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
                         <div style="display: flex; gap: 12px; align-items: center;">
@@ -944,7 +946,7 @@
                     </div>
                     
                     <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 950px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1000px;">
                             <thead>
                                 <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
                                     <th style="padding: 12px 10px;">FECHA</th>
@@ -958,7 +960,7 @@
                                     <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
                                     <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
                                     <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
-                                    <th style="padding: 12px 10px; text-align:center; color: #ff4a4a;">ACCIONES</th>
+                                    <th style="padding: 12px 10px; text-align:center; color: #ff4a4a; background: rgba(239,68,68,0.05);">ACCIONES</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -977,9 +979,11 @@
                     estadoBadge = `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-weight:700;">Faltan ${desc.toFixed(2)}€</span>`;
                 }
 
-                const fInvertida = r.fecha.split('-').reverse().join('/');
+                let fInvertida = r.fecha;
+                if(r.fecha && r.fecha.includes('-')) {
+                    fInvertida = r.fecha.split('-').reverse().join('/');
+                }
 
-                // Añadimos la fila incluyendo el botón de eliminar que pasa como parámetro el ID único de la base de datos
                 tablaHTML += `
                     <tr id="fila-caja-${r.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
                         <td style="padding: 10px; font-weight: 700; color: #d4af37;">${fInvertida}</td>
@@ -993,8 +997,8 @@
                         <td style="padding: 10px; text-align:right; color: #9cf;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:right; color: #af9;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:center; font-size: 11px;">${estadoBadge}</td>
-                        <td style="padding: 10px; text-align:center;">
-                            <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.15); color: #ff4a4a; border: 1px solid #ff4a4a; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; transition: 0.2s;" onmouseover="this.style.background='#ff4a4a'; this.style.color='#000';" onmouseout="this.style.background='rgba(239,68,68,0.15)'; this.style.color='#ff4a4a';">🗑️ Borrar</button>
+                        <td style="padding: 10px; text-align:center; background: rgba(239,68,68,0.02);">
+                            <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ff4a4a; border: 1px solid #ff4a4a; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; display: inline-block; transition: 0.2s;" onmouseover="this.style.background='#ff4a4a'; this.style.color='#000';" onmouseout="this.style.background='rgba(239,68,68,0.2)'; this.style.color='#ff4a4a';">🗑️ Borrar</button>
                         </td>
                     </tr>
                 `;
@@ -1011,9 +1015,9 @@
             document.body.appendChild(modalHist);
         }
 
-        /* --- NUEVA FUNCIÓN INTERNA PARA BORRAR UNA CAJA MAL HECHA --- */
+        /* --- ACCIÓN: BORRAR REGISTRO INDIVIDUAL DE SUPABASE --- */
         async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
-            if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nEsta acción no se puede deshacer y se borrará de la nube.`)) return;
+            if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
 
             const { error } = await _supabase
                 .from('cajas_diarias')
@@ -1021,17 +1025,17 @@
                 .eq('id', idCaja);
 
             if (error) {
-                alert("No se pudo eliminar el registro: " + error.message);
+                alert("No se pudo eliminar el registro de Supabase: " + error.message);
                 return;
             }
 
-            // Si se borra bien en Supabase, lo hacemos desaparecer de la tabla visual de inmediato
             const fila = document.getElementById(`fila-caja-${idCaja}`);
             if (fila) fila.remove();
             
             alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
         }
 
+        /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV --- */
         async function descargarExcelUnificado() {
             const { data: registros, error } = await _supabase
                 .from('cajas_diarias')
