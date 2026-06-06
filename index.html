@@ -806,7 +806,7 @@
         }
 
         async function ejecutarCierreResetFinal() {
-            if(!confirm("¿Estás completamente seguro de que deseas cerrar la noche? Se guardará en el histórico y se limpiarán los aforos y consumiciones.")) return;
+           if(!confirm("¿Estás completamente seguro de que deseas cerrar la noche? Se guardará en el histórico y se limpiarán los aforos y consumiciones.")) return;
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const totalEfectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
@@ -869,11 +869,9 @@
 
         /* --- NUEVA PANTALLA VISUAL: HISTÓRICO DE LIBROS DE CAJA --- */
         async function mostrarHistoricoCajas() {
-            // Eliminar si ya existía para no duplicar IDs
             const viejo = document.getElementById('modalHistoricoCajas');
             if(viejo) viejo.remove();
 
-            // Consultar todo el histórico guardado en Supabase
             const { data: registros, error } = await _supabase
                 .from('cajas_diarias')
                 .select('*')
@@ -884,7 +882,6 @@
                 return;
             }
 
-            // Crear el Modal del libro unificado de forma dinámica e hiper elegante
             const modalHist = document.createElement('div');
             modalHist.id = 'modalHistoricoCajas';
             modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100005; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
@@ -932,7 +929,6 @@
                     estadoBadge = `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-weight:700;">Faltan ${desc.toFixed(2)}€</span>`;
                 }
 
-                // Ajustar fechas visuales limpias
                 const fInvertida = r.fecha.split('-').reverse().join('/');
 
                 tablaHTML += `
@@ -963,7 +959,6 @@
             document.body.appendChild(modalHist);
         }
 
-        // Función del motor para bajar TODAS las filas guardadas en un único libro unificado (.csv compatible con Excel)
         async function descargarExcelUnificado() {
             const { data: registros, error } = await _supabase
                 .from('cajas_diarias')
@@ -988,6 +983,23 @@
             document.body.appendChild(link);
             link.click();
             link.remove();
+        }
+
+        // FUNCIÓN CREADORA AUTOMÁTICA DEL BOTÓN FLOTANTE
+        function montarBotonHistorialAutomatico() {
+            if (document.getElementById('btn-flotante-historial')) return;
+            const btn = document.createElement('button');
+            btn.id = 'btn-flotante-historial';
+            btn.type = 'button';
+            btn.onclick = mostrarHistoricoCajas;
+            btn.innerText = "📊 LIBRO DE CAJAS";
+            btn.style.cssText = "position: fixed; bottom: 20px; right: 20px; background: #111; color: #d4af37; border: 2px solid #d4af37; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 99999; transition: 0.2s;";
+            
+            // Efecto al pasar el ratón por encima
+            btn.onmouseover = () => { btn.style.background = '#d4af37'; btn.style.color = '#000'; };
+            btn.onmouseout = () => { btn.style.background = '#111'; btn.style.color = '#d4af37'; };
+            
+            document.body.appendChild(btn);
         }
 
         // Eventos del Lienzo Signature Canvas
@@ -1016,13 +1028,15 @@
         window.addEventListener('touchend', terminarDibujo);
         canvas.addEventListener('touchmove', pautarDibujo);
 
-        // Arranque inicial y ciclo asíncrono en segundo plano
+        // Arranque inicial
         refrescarDatos();
+        montarBotonHistorialAutomatico(); // <-- Esto crea el botón en la esquina abajo a la derecha sola
 
         setInterval(() => {
             if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
                 refrescarDatos();
             }
+            montarBotonHistorialAutomatico();
         }, 10000);
     </script>
 </body>
