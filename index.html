@@ -266,7 +266,7 @@
             actualizarVisualPago();
         }
 
-        function actualizarVisualPago() {
+       function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
             let pagadoValido = socioActual.pago_realizado;
@@ -337,9 +337,27 @@
                 botonCamaraPrincipal.style.display = 'block';
             }
 
+            // Activamos la escucha del botón pagar justo al entrar
+            inyectarInterceptosDePago();
             refrescarDatos();
         }
-        
+
+        // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
+        function inyectarInterceptosDePago() {
+            const btnPagar = document.getElementById('btnPagarTarjeta');
+            if (!btnPagar) return;
+
+            if (!btnPagar.dataset.interceptado) {
+                btnPagar.dataset.interceptado = "true";
+                btnPagar.addEventListener('click', () => {
+                    setTimeout(async () => {
+                        if (typeof refrescarDatos === 'function') {
+                            await refrescarDatos();
+                        }
+                    }, 600);
+                });
+            }
+        }
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
