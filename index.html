@@ -648,7 +648,44 @@
             }
         }
 
-        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
+       // CASILLA DE SALIDA: Ahora en vez de descargar una foto, envía la tarjeta por email mediante Supabase + Make
+        async function descargarTarjeta() { 
+            // Verificamos que tengamos los datos del socio activo en la tarjeta
+            if (!socioActual || !socioActual.dni) {
+                alert("⚠️ No hay ningún socio seleccionado para enviar la tarjeta.");
+                return;
+            }
+
+            if (!socioActual.email) {
+                alert("⚠️ Este socio no tiene un correo electrónico registrado en la base de datos.");
+                return;
+            }
+
+            // Confirmación rápida en pantalla
+            const confirmar = confirm(`¿Quieres enviar/reenviar la tarjeta digital al correo: ${socioActual.email}?`);
+            if (!confirmar) return;
+
+            try {
+                // 1. Mandamos el trigger a Supabase poniendo 'reenviar_tarjeta' en true
+                await _supabase
+                    .from(NOMBRE_TABLA)
+                    .update({ reenviar_tarjeta: true })
+                    .eq('dni', socioActual.dni);
+
+                // 2. Lo volvemos a bajar a false inmediatamente para dejar el botón listo para otra ocasión
+                await _supabase
+                    .from(NOMBRE_TABLA)
+                    .update({ reenviar_tarjeta: false })
+                    .eq('dni', socioActual.dni);
+
+                alert(`✉️ ¡Petición procesada! La tarjeta se está enviando a: ${socioActual.email}`);
+
+            } catch (error) {
+                console.error(error);
+                alert("❌ Hubo un error al intentar comunicar con Supabase.");
+            }
+        }
+
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         
         function cerrar() { 
@@ -717,7 +754,6 @@
             const t = document.getElementById('tipoClave').value; const n = document.getElementById('nuevaClaveInput').value;
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
-
         /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
         function prepararCierreCaja() { 
             const PRECIO_ENTRADA = 20;
