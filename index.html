@@ -115,7 +115,108 @@
             <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
+        <button type="button" onclick="toggleEscanerDNI()" style="background: #d4af37; color: black; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">💳 ESCANEAR DNI / PASAPORTE (CÁMARA)</button>
         
+        <div id="contenedorCamaraDNI" style="display: none; position: relative; width: 100%; max-width: 500px; margin: 15px auto; border: 3px solid var(--gold); border-radius: 12px; overflow: hidden; background: #000;">
+            <video id="videoDNI" autoplay playsinline muted style="width: 100%; height: auto; display: block;"></video>
+            <div style="position: absolute; bottom: 15%; left: 5%; width: 90%; height: 25%; border: 2px dashed rgba(212,175,55,0.8); background: rgba(212,175,55,0.1); border-radius: 6px; pointer-events: none; display: flex; justify-content: center; align-items: center;">
+                <span style="color: #fff; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">ENFOCAR LÍNEAS DE ABAJO <<<<<<<</span>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/mrz-detection@1.0.0/dist/mrz-detection.min.js"></script>
+
+        <script>
+            let streamDNI = null;
+            let intervaloEscaneo = null;
+
+            // Función que enciende y apaga la cámara al pulsar el botón
+            async function toggleEscanerDNI() {
+                const contenedor = document.getElementById('contenedorCamaraDNI');
+                const video = document.getElementById('videoDNI');
+                
+                // Si la cámara ya está activa, la apagamos
+                if (streamDNI) { 
+                    apagarCamaraDNI(); 
+                    return; 
+                }
+                
+                // Si está apagada, pedimos permisos y la encendemos con alta resolución
+                try {
+                    contenedor.style.display = 'block';
+                    streamDNI = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+                    });
+                    video.srcObject = streamDNI;
+                    // Analiza un cuadro de video cada 400 milisegundos para no saturar el dispositivo
+                    intervaloEscaneo = setInterval(procesarFrameDNI, 400);
+                } catch (err) {
+                    alert("No se pudo acceder a la cámara del dispositivo: " + err);
+                    contenedor.style.display = 'none';
+                }
+            }
+
+            // Función para liberar la cámara y limpiar la pantalla
+            function apagarCamaraDNI() {
+                if (intervaloEscaneo) clearInterval(intervaloEscaneo);
+                if (streamDNI) { 
+                    streamDNI.getTracks().forEach(track => track.stop()); 
+                }
+                streamDNI = null;
+                document.getElementById('contenedorCamaraDNI').style.display = 'none';
+            }
+
+            // Función interna que analiza los frames en tiempo real
+            async function procesarFrameDNI() {
+                const video = document.getElementById('videoDNI');
+                if (video.paused || video.ended) return;
+                
+                // Dibujamos el frame de video actual en un lienzo oculto
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth; 
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                try {
+                    // La librería analiza el lienzo buscando la estructura internacional MRZ
+                    const resultado = await MRZDetection.readLines(canvas);
+                    
+                    if (resultado && resultado.isValid) {
+                        // 1. Extraemos el número de documento limpio de flechas
+                        document.getElementById('dni').value = resultado.documentNumber.replace(/</g, '').toUpperCase();
+                        
+                        // 2. Extraemos y combinamos Nombre y Apellidos de forma legible
+                        let nombreSocio = resultado.firstName.replace(/</g, ' ').trim();
+                        let apellidoSocio = resultado.lastName.replace(/</g, ' ').trim();
+                        document.getElementById('nom').value = (nombreSocio + " " + apellidoSocio).toUpperCase();
+                        
+                        // 3. Extraemos y formateamos la Fecha de Nacimiento para tu input tipo 'date'
+                        if (resultado.birthDate && resultado.birthDate.length === 6) {
+                            let aa = resultado.birthDate.substring(0, 2);
+                            let mm = resultado.birthDate.substring(2, 4);
+                            let dd = resultado.birthDate.substring(4, 6);
+                            // Si el año es mayor que 26 (estamos en 2026), es del siglo pasado (19XX), si no, es de este (20XX)
+                            let siglo = parseInt(aa) > 26 ? "19" : "20"; 
+                            document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
+                        }
+                        
+                        // Si tu aplicación tiene la función de autocompletar instalada, la disparamos
+                        if (typeof autocompletarSocio === "function") {
+                            autocompletarSocio();
+                        }
+                        
+                        // Si estás en un iPad o móvil compatible, emitimos una pequeña vibración de éxito
+                        if (navigator.vibrate) navigator.vibrate(100);
+                        
+                        // Apagamos la cámara automáticamente al terminar
+                        apagarCamaraDNI();
+                    }
+                } catch (e) {
+                    // Ignoramos errores de lectura si el frame sale borroso o movido
+                }
+            }
+        </script>
+        <div class="reg-box" id="cajaRegistro">
         <div class="reg-box" id="cajaRegistro">
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
