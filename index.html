@@ -648,9 +648,8 @@
             }
         }
 
-       // CASILLA DE SALIDA: Ahora en vez de descargar una foto, envía la tarjeta por email mediante Supabase + Make
+       // FUNCIÓN MEJORADA: Deja la casilla en TRUE para que a Make le dé tiempo a leerla
         async function descargarTarjeta() { 
-            // Verificamos que tengamos los datos del socio activo en la tarjeta
             if (!socioActual || !socioActual.dni) {
                 alert("⚠️ No hay ningún socio seleccionado para enviar la tarjeta.");
                 return;
@@ -661,24 +660,24 @@
                 return;
             }
 
-            // Confirmación rápida en pantalla
             const confirmar = confirm(`¿Quieres enviar/reenviar la tarjeta digital al correo: ${socioActual.email}?`);
             if (!confirmar) return;
 
             try {
-                // 1. Mandamos el trigger a Supabase poniendo 'reenviar_tarjeta' en true
+                // Ponemos el botón en modo carga
+                const btn = document.querySelector("button[onclick='descargarTarjeta()']");
+                const txtOriginal = btn ? btn.innerText : "ENVIAR TARJETA";
+                if(btn) btn.innerText = "⏳ PROCESANDO...";
+
+                // Marcamos como TRUE en Supabase. No lo bajamos a FALSE, se encarga Make.
                 await _supabase
                     .from(NOMBRE_TABLA)
                     .update({ reenviar_tarjeta: true })
                     .eq('dni', socioActual.dni);
 
-                // 2. Lo volvemos a bajar a false inmediatamente para dejar el botón listo para otra ocasión
-                await _supabase
-                    .from(NOMBRE_TABLA)
-                    .update({ reenviar_tarjeta: false })
-                    .eq('dni', socioActual.dni);
-
-                alert(`✉️ ¡Petición procesada! La tarjeta se está enviando a: ${socioActual.email}`);
+                alert(`✉️ Petición registrada. Make enviará la tarjeta a: ${socioActual.email}`);
+                
+                if(btn) btn.innerText = txtOriginal;
 
             } catch (error) {
                 console.error(error);
