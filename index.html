@@ -121,7 +121,7 @@
             <video id="videoDNI" autoplay playsinline muted style="width: 100%; height: auto; display: block;"></video>
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-shadow: inset 0 0 80px rgba(0,0,0,0.6); pointer-events: none;"></div>
             <div style="position: absolute; bottom: 12%; left: 5%; width: 90%; height: 28%; border: 2px dashed #d4af37; background: rgba(212,175,55,0.15); border-radius: 6px; pointer-events: none; display: flex; justify-content: center; align-items: center;">
-                <span id="txtEstadoOCR" style="color: #fff; font-size: 11px; font-weight: bold; background: #000; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">Alinea las líneas impresas abajo <<<<<<</span>
+                <span id="txtEstadoOCR" style="color: #fff; font-size: 11px; font-weight: bold; background: #000; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">Enfoca el documento de forma recta y nítida</span>
             </div>
         </div>
 
@@ -137,11 +137,10 @@
                 if (!ocrWorker) {
                     document.getElementById('txtEstadoOCR').innerText = "Iniciando IA LECTORA...";
                     ocrWorker = await Tesseract.createWorker('eng');
-                    // Optimizamos el diccionario para que reconozca mejor caracteres de documentos internacionales (MRZ)
                     await ocrWorker.setParameters({
-                        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789< ',
+                        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',
                     });
-                    document.getElementById('txtEstadoOCR').innerText = "IA LISTA. ENFOCA LAS FLECHITAS";
+                    document.getElementById('txtEstadoOCR').innerText = "IA LISTA. ESCANEA TU DOCUMENTO";
                 }
             }
 
@@ -162,8 +161,7 @@
                         video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
                     });
                     video.srcObject = streamDNI;
-                    
-                    intervaloEscaneo = setInterval(procesarFrameOCR, 700);
+                    intervaloEscaneo = setInterval(procesarFrameOCR, 600);
                 } catch (err) {
                     alert("Error cámara: " + err);
                     contenedor.style.display = 'none';
@@ -194,96 +192,89 @@
                 try {
                     const { data: { text } } = await ocrWorker.recognize(canvas);
                     
-                    // Convertimos el bloque de texto en líneas individuales limpiando retornos extraños
-                    let lineas = text.split('\n').map(l => l.replace(/\s+/g, '').toUpperCase()).filter(l => l.length >= 30);
-                    
-                    // Buscamos las líneas que contengan la estructura MRZ clásica con flechas ('<<')
-                    let lineaEstructura = lineas.find(l => l.includes('<<<'));
+                    // Unimos todo el texto eliminando espacios para buscar patrones reales libres de saltos de línea molestos
+                    let textoBloque = text.replace(/\s+/g, '').toUpperCase();
 
-                    if (lineas.length >= 2 || lineaEstructura) {
-                        let parsed = false;
+                    if (textoBloque.includes('<')) {
+                        let dniDetectado = null;
+                        let nombreDetectado = null;
+                        let cumpleDetectado = null;
 
-                        // --- MODELO COGNITIVO PARA DNI ESPAÑOL / FORMATOS TD1 (3 líneas de 36 caracteres) ---
-                        if (lineas.length >= 3 || (lineas.length >= 2 && lineas[0].startsWith('ID'))) {
-                            let l1 = lineas[0] || "";
-                            let l2 = lineas[1] || "";
-                            let l3 = lineas[2] || "";
+                        // 1. FILTRO INTELIGENTE PARA DNI ESPAÑOL / NIE (8 números y una letra o letra inicial + 7 números + letra)
+                        let regexDNI = textoBloque.match(/[0-9XYZ][0-9]{7}[A-Z]/);
+                        if (regexDNI) {
+                            dniDetectado = regexDNI[0];
+                        } else {
+                            // Si no encuentra el formato DNI estándar, buscamos el formato de Pasaporte (9 caracteres alfanuméricos tras el código de país)
+                            let regexPasaporte = textoBloque.match(/ESP([A-Z0-9]{6,9})/);
+                            if (regexPasaporte) {
+                                dniDetectado = regexPasaporte[1];
+                            }
+                        }
 
-                            if (l1.length >= 30 && l2.length >= 30) {
-                                // 1. Extraer DNI de la primera línea
-                                let numDoc = l1.substring(5, 14).replace(/</g, '').trim();
-                                
-                                // 2. Extraer Fecha de Nacimiento de la segunda línea (Formato: YYMMDD)
-                                let fechaRaw = l2.substring(0, 6);
-                                
-                                // 3. Extraer Nombre de la tercera línea (o final de la segunda según versión)
-                                let datosNombre = l3.length > 5 ? l3 : l1.substring(15);
-                                let partes = datosNombre.split('<<');
-                                let apellidos = partes[0] ? partes[0].replace(/</g, ' ').trim() : "";
-                                let nombre = partes[1] ? partes[1].replace(/</g, ' ').trim() : "";
-
-                                if (numDoc.length >= 8) {
-                                    document.getElementById('dni').value = numDoc;
-                                    if (nombre || apellidos) {
-                                        document.getElementById('nom').value = `${nombre} ${apellidos}`.replace(/\s+/g, ' ').trim();
-                                    }
-                                    inyectarFechaCumple(fechaRaw);
-                                    parsed = true;
+                        // 2. FILTRO INTELIGENTE PARA FECHA DE NACIMIENTO
+                        // Buscamos los 6 dígitos seguidos que van delante de la letra de género (M o F) o seguidos del indicador de validez
+                        let regexCumple = textoBloque.match(/[0-9]{6}[0-9][MF]/);
+                        if (regexCumple) {
+                            cumpleDetectado = regexCumple[0].substring(0, 6);
+                        } else {
+                            // Alternativa si la lectura no pilla el género perfectamente
+                            let lineasSeparadas = text.split('\n').map(l => l.replace(/\s+/g, ''));
+                            for (let l of lineasSeparadas) {
+                                if (l.length >= 30 && /^\d+$/.test(l.substring(0,6))) {
+                                    cumpleDetectado = l.substring(0,6);
+                                    break;
                                 }
                             }
                         }
 
-                        // --- MODELO COGNITIVO PASAPORTES / FORMATO TD3 (2 líneas de 44 caracteres) ---
-                        if (!parsed && lineas.length >= 2) {
-                            let l1 = lineas[0];
-                            let l2 = lineas[1];
+                        // 3. FILTRO INTELIGENTE PARA NOMBRE COMPLETO
+                        // Buscamos la línea que tiene la estructura de nombres separados por doble flecha "<< "
+                        let lineasOriginales = text.split('\n').map(l => l.replace(/\s+/g, '').toUpperCase());
+                        let lineaNombre = lineasOriginales.find(l => l.includes('<<') && !l.startsWith('IDESP') && !l.startsWith('P<ESP'));
+                        
+                        if (!lineaNombre && lineasOriginales.length >= 3) {
+                            // Si es DNI clásico la tercera línea suele ser el nombre completo
+                            lineaNombre = lineasOriginales[2];
+                        }
 
-                            if ((l1.startsWith('P<') || l1.includes('<')) && l2.length >= 35) {
-                                // 1. Extraer Pasaporte de la segunda línea (primeros 9 caracteres habituales)
-                                let numPas = l2.substring(0, 9).replace(/</g, '').trim();
-                                
-                                // 2. Extraer Fecha de Nacimiento (caracteres 13 al 19 en la segunda línea)
-                                let fechaRaw = l2.substring(13, 19);
-                                
-                                // 3. Extraer Nombre de la primera línea
-                                let datosNombre = l1.substring(5);
-                                let partes = datosNombre.split('<<');
-                                let apellidos = partes[0] ? partes[0].replace(/</g, ' ').trim() : "";
-                                let nombre = partes[1] ? partes[1].replace(/</g, ' ').trim() : "";
-
-                                if (numPas.length >= 7) {
-                                    document.getElementById('dni').value = numPas;
-                                    if (nombre || apellidos) {
-                                        document.getElementById('nom').value = `${nombre} ${apellidos}`.replace(/\s+/g, ' ').trim();
-                                    }
-                                    inyectarFechaCumple(fechaRaw);
-                                    parsed = true;
-                                }
+                        if (lineaNombre) {
+                            let partes = lineaNombre.split('<<');
+                            let apellidos = partes[0] ? partes[0].replace(/</g, ' ').trim() : "";
+                            let nombre = partes[1] ? partes[1].replace(/</g, ' ').trim() : "";
+                            // Si viene al revés o vacío, limpiamos todas las flechas simples
+                            if (nombre || apellidos) {
+                                nombreDetectado = `${nombre} ${apellidos}`.trim();
+                            } else {
+                                nombreDetectado = lineaNombre.replace(/</g, ' ').trim();
                             }
                         }
 
-                        // Si la IA ha conseguido estructurar los datos con éxito
-                        if (parsed) {
+                        // INYECCIÓN FINAL EN TU FORMULARIO
+                        if (dniDetectado && dniDetectado.length >= 7) {
+                            document.getElementById('dni').value = dniDetectado;
+                            
+                            if (nombreDetectado && nombreDetectado.length > 3) {
+                                document.getElementById('nom').value = nombreDetectado.replace(/\s+/g, ' ');
+                            }
+                            
+                            if (cumpleDetectado) {
+                                let aa = cumpleDetectado.substring(0, 2);
+                                let mm = cumpleCompleto = cumpleDetectado.substring(2, 4);
+                                let dd = cumpleDetectado.substring(4, 6);
+                                let siglo = parseInt(aa) > 26 ? "19" : "20"; 
+                                document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
+                            }
+
                             if (typeof autocompletarSocio === "function") autocompletarSocio();
                             if (navigator.vibrate) navigator.vibrate(100);
                             apagarCamaraDNI();
                         }
                     }
                 } catch (e) {
-                    console.error("Error interpretando documento:", e);
+                    console.error("Error analizando:", e);
                 } finally {
                     procesandoFrame = false;
-                }
-            }
-
-            // Función auxiliar inteligente para formatear la fecha al calendario nativo
-            function inyectarFechaCumple(seisDigitos) {
-                if (/^\d{6}$/.test(seisDigitos)) {
-                    let aa = seisDigitos.substring(0, 2);
-                    let mm = seisDigitos.substring(2, 4);
-                    let dd = seisDigitos.substring(4, 6);
-                    let siglo = parseInt(aa) > 26 ? "19" : "20"; 
-                    document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
                 }
             }
         </script>
