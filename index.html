@@ -120,8 +120,8 @@
         <div id="contenedorCamaraDNI" style="display: none; position: relative; width: 100%; max-width: 500px; margin: 15px auto; border: 3px solid var(--gold); border-radius: 12px; overflow: hidden; background: #000;">
             <video id="videoDNI" autoplay playsinline muted style="width: 100%; height: auto; display: block;"></video>
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-shadow: inset 0 0 80px rgba(0,0,0,0.6); pointer-events: none;"></div>
-            <div style="position: absolute; bottom: 15%; left: 5%; width: 90%; height: 30%; border: 2px dashed #d4af37; background: rgba(212,175,55,0.15); border-radius: 6px; pointer-events: none; display: flex; justify-content: center; align-items: center;">
-                <span id="txtEstadoOCR" style="color: #fff; font-size: 11px; font-weight: bold; background: #000; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">Alinea el documento aquí</span>
+            <div style="position: absolute; bottom: 12%; left: 5%; width: 90%; height: 28%; border: 2px dashed #d4af37; background: rgba(212,175,55,0.15); border-radius: 6px; pointer-events: none; display: flex; justify-content: center; align-items: center;">
+                <span id="txtEstadoOCR" style="color: #fff; font-size: 11px; font-weight: bold; background: #000; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">Alinea las líneas impresas abajo <<<<<<</span>
             </div>
         </div>
 
@@ -133,12 +133,15 @@
             let ocrWorker = null;
             let procesandoFrame = false;
 
-            // Inicializar el motor OCR en segundo plano para máxima velocidad
             async function iniciarMotorOCR() {
                 if (!ocrWorker) {
-                    document.getElementById('txtEstadoOCR').innerText = "Cargando lector...";
-                    ocrWorker = await Tesseract.createWorker('eng'); // Cargamos inglés/caracteres estándar para MRZ
-                    document.getElementById('txtEstadoOCR').innerText = "Lector listo";
+                    document.getElementById('txtEstadoOCR').innerText = "Iniciando IA LECTORA...";
+                    ocrWorker = await Tesseract.createWorker('eng');
+                    // Optimizamos el diccionario para que reconozca mejor caracteres de documentos internacionales (MRZ)
+                    await ocrWorker.setParameters({
+                        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789< ',
+                    });
+                    document.getElementById('txtEstadoOCR').innerText = "IA LISTA. ENFOCA LAS FLECHITAS";
                 }
             }
 
@@ -159,21 +162,17 @@
                         video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
                     });
                     video.srcObject = streamDNI;
-                    document.getElementById('txtEstadoOCR').innerText = "Enfoca las letras del documento";
                     
-                    // Procesamos capturas continuas cada 800ms para asegurar la lectura
-                    intervaloEscaneo = setInterval(procesarFrameOCR, 800);
+                    intervaloEscaneo = setInterval(procesarFrameOCR, 700);
                 } catch (err) {
-                    alert("No se pudo iniciar la cámara: " + err);
+                    alert("Error cámara: " + err);
                     contenedor.style.display = 'none';
                 }
             }
 
             function apagarCamaraDNI() {
                 if (intervaloEscaneo) clearInterval(intervaloEscaneo);
-                if (streamDNI) { 
-                    streamDNI.getTracks().forEach(track => track.stop()); 
-                }
+                if (streamDNI) { streamDNI.getTracks().forEach(track => track.stop()); }
                 streamDNI = null;
                 procesandoFrame = false;
                 document.getElementById('contenedorCamaraDNI').style.display = 'none';
@@ -186,7 +185,6 @@
 
                 procesandoFrame = true;
                 
-                // Capturar la zona del cuadro delimitador mediante Canvas
                 const canvas = document.createElement('canvas');
                 canvas.width = video.videoWidth; 
                 canvas.height = video.videoHeight;
@@ -194,33 +192,98 @@
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 try {
-                    // Enviamos el cuadro procesado a Tesseract
                     const { data: { text } } = await ocrWorker.recognize(canvas);
                     
-                    // Limpiamos el texto eliminando espacios inútiles
-                    let textoLimpio = text.replace(/\s+/g, '').toUpperCase();
+                    // Convertimos el bloque de texto en líneas individuales limpiando retornos extraños
+                    let lineas = text.split('\n').map(l => l.replace(/\s+/g, '').toUpperCase()).filter(l => l.length >= 30);
                     
-                    // Expresión regular para cazar DNI españoles (8 números + 1 letra) o Pasaportes en líneas MRZ
-                    let matchDNI = textoLimpio.match(/[0-9X-Z][0-9]{7}[A-Z]|[A-Z]{3}[0-9]{6,9}/);
-                    
-                    if (matchDNI) {
-                        let documentoDetectado = matchDNI[0];
-                        
-                        // Rellenamos el campo de tu formulario
-                        document.getElementById('dni').value = documentoDetectado;
-                        
-                        // Lanzamos tu función nativa de búsqueda
-                        if (typeof autocompletarSocio === "function") {
-                            autocompletarSocio();
+                    // Buscamos las líneas que contengan la estructura MRZ clásica con flechas ('<<')
+                    let lineaEstructura = lineas.find(l => l.includes('<<<'));
+
+                    if (lineas.length >= 2 || lineaEstructura) {
+                        let parsed = false;
+
+                        // --- MODELO COGNITIVO PARA DNI ESPAÑOL / FORMATOS TD1 (3 líneas de 36 caracteres) ---
+                        if (lineas.length >= 3 || (lineas.length >= 2 && lineas[0].startsWith('ID'))) {
+                            let l1 = lineas[0] || "";
+                            let l2 = lineas[1] || "";
+                            let l3 = lineas[2] || "";
+
+                            if (l1.length >= 30 && l2.length >= 30) {
+                                // 1. Extraer DNI de la primera línea
+                                let numDoc = l1.substring(5, 14).replace(/</g, '').trim();
+                                
+                                // 2. Extraer Fecha de Nacimiento de la segunda línea (Formato: YYMMDD)
+                                let fechaRaw = l2.substring(0, 6);
+                                
+                                // 3. Extraer Nombre de la tercera línea (o final de la segunda según versión)
+                                let datosNombre = l3.length > 5 ? l3 : l1.substring(15);
+                                let partes = datosNombre.split('<<');
+                                let apellidos = partes[0] ? partes[0].replace(/</g, ' ').trim() : "";
+                                let nombre = partes[1] ? partes[1].replace(/</g, ' ').trim() : "";
+
+                                if (numDoc.length >= 8) {
+                                    document.getElementById('dni').value = numDoc;
+                                    if (nombre || apellidos) {
+                                        document.getElementById('nom').value = `${nombre} ${apellidos}`.replace(/\s+/g, ' ').trim();
+                                    }
+                                    inyectarFechaCumple(fechaRaw);
+                                    parsed = true;
+                                }
+                            }
                         }
-                        
-                        if (navigator.vibrate) navigator.vibrate(100);
-                        apagarCamaraDNI();
+
+                        // --- MODELO COGNITIVO PASAPORTES / FORMATO TD3 (2 líneas de 44 caracteres) ---
+                        if (!parsed && lineas.length >= 2) {
+                            let l1 = lineas[0];
+                            let l2 = lineas[1];
+
+                            if ((l1.startsWith('P<') || l1.includes('<')) && l2.length >= 35) {
+                                // 1. Extraer Pasaporte de la segunda línea (primeros 9 caracteres habituales)
+                                let numPas = l2.substring(0, 9).replace(/</g, '').trim();
+                                
+                                // 2. Extraer Fecha de Nacimiento (caracteres 13 al 19 en la segunda línea)
+                                let fechaRaw = l2.substring(13, 19);
+                                
+                                // 3. Extraer Nombre de la primera línea
+                                let datosNombre = l1.substring(5);
+                                let partes = datosNombre.split('<<');
+                                let apellidos = partes[0] ? partes[0].replace(/</g, ' ').trim() : "";
+                                let nombre = partes[1] ? partes[1].replace(/</g, ' ').trim() : "";
+
+                                if (numPas.length >= 7) {
+                                    document.getElementById('dni').value = numPas;
+                                    if (nombre || apellidos) {
+                                        document.getElementById('nom').value = `${nombre} ${apellidos}`.replace(/\s+/g, ' ').trim();
+                                    }
+                                    inyectarFechaCumple(fechaRaw);
+                                    parsed = true;
+                                }
+                            }
+                        }
+
+                        // Si la IA ha conseguido estructurar los datos con éxito
+                        if (parsed) {
+                            if (typeof autocompletarSocio === "function") autocompletarSocio();
+                            if (navigator.vibrate) navigator.vibrate(100);
+                            apagarCamaraDNI();
+                        }
                     }
                 } catch (e) {
-                    console.error("Error OCR:", e);
+                    console.error("Error interpretando documento:", e);
                 } finally {
                     procesandoFrame = false;
+                }
+            }
+
+            // Función auxiliar inteligente para formatear la fecha al calendario nativo
+            function inyectarFechaCumple(seisDigitos) {
+                if (/^\d{6}$/.test(seisDigitos)) {
+                    let aa = seisDigitos.substring(0, 2);
+                    let mm = seisDigitos.substring(2, 4);
+                    let dd = seisDigitos.substring(4, 6);
+                    let siglo = parseInt(aa) > 26 ? "19" : "20"; 
+                    document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
                 }
             }
         </script>
@@ -245,7 +308,7 @@
         </div>
         
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
-        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; pointer-events: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
+        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
         
         <table>
