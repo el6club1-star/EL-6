@@ -115,19 +115,14 @@
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
 
-        <!-- RECEPTOR AUTOMÁTICO PARA EL LECTOR FISCO USB -->
-        <div style="background: #1e293b; border: 1px solid var(--gold); padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
-            <span style="color: #fff; font-size: 12px; font-weight: bold; letter-spacing: 1px;">🟢 LECTOR HARDWARE CONFIGURADO: PASA EL DNI O PASAPORTE EN CUALQUIER MOMENTO</span>
-        </div>
+        <!-- EL CARTEL AZUL REPETIDO SE HA ELIMINADO DE AQUÍ PARA DEJAR LA PÁGINA LIMPIA -->
 
         <script>
-            // Almacén para capturar las ráfagas ultra-rápidas que envía el lector USB
+            // El cerebro del lector USB sigue funcionando en segundo plano sin molestar
             let bufferLector = "";
             let timerLector = null;
 
-            // Escuchamos el teclado de forma global (el lector USB imita a un teclado súper rápido)
             window.addEventListener('keydown', function(e) {
-                // Si pulsa Enter, significa que el lector ha terminado de enviar el bloque de datos
                 if (e.key === 'Enter') {
                     if (bufferLector.length > 15) {
                         procesarDatosLectorFisico(bufferLector);
@@ -137,15 +132,12 @@
                     return;
                 }
 
-                // Añadimos el carácter recibido al buffer
                 bufferLector += e.key;
 
-                // Si pasan más de 200 milisegundos sin recibir teclas, vaciamos por si ha sido un humano escribiendo despacio
                 clearTimeout(timerLector);
                 timerLector = setTimeout(() => { bufferLector = ""; }, 200);
             });
 
-            // Procesador inteligente de los datos del lector físico (DNI PDF417 / Pasaportes)
             function procesarDatosLectorFisico(datosRaw) {
                 let texto = datosRaw.toUpperCase().replace(/\s+/g, '');
                 
@@ -153,40 +145,32 @@
                 let nombreEncontrado = null;
                 let fechaEncontrada = null;
 
-                // 1. EXTRAER DNI / NIE (Busca 8 números + letra, o formato extranjero X/Y/Z)
                 let matchDNI = texto.match(/[0-9XYZ][0-9]{7}[A-Z]/);
                 if (matchDNI) {
                     dniEncontrado = matchDNI[0];
                 } else {
-                    // Formato alternativo para pasaportes en líneas MRZ
                     let matchPas = texto.match(/(ESP|P<)[A-Z0-9]{6,9}/);
                     if (matchPas) {
                         dniEncontrado = matchPas[0].replace('ESP', '').replace('P<', '');
                     }
                 }
 
-                // 2. EXTRAER FECHA DE NACIMIENTO (YYMMDD seguido de género M/F o dígito de control)
                 let matchFecha = texto.match(/[0-9]{6}[0-9][MF]/);
                 if (matchFecha) {
                     fechaEncontrada = matchFecha[0].substring(0, 6);
                 }
 
-                // 3. EXTRAER NOMBRE Y APELLIDOS (Busca las dobles flechas del formato oficial)
                 if (texto.includes('<<')) {
-                    // Buscamos separar los bloques limpiando las flechas remanentes
                     let partes = texto.split('<<');
-                    // Intentamos aislar apellidos del nombre según la estructura estándar
                     let parteApe = partes[0].match(/[A-Z]{3,}/g);
                     let parteNom = partes[1] ? partes[1].match(/[A-Z]{3,}/g) : null;
                     
                     let apellidos = parteApe ? parteApe.join(' ') : "";
                     let nombre = parteNom ? parteNom.join(' ') : "";
                     
-                    // Limpieza de códigos de país o palabras del documento
                     nombreEncontrado = `${nombre} ${apellidos}`.replace("IDESP", "").replace("ESP", "").trim();
                 }
 
-                // INYECCIÓN DIRECTA EN TU INTERFAZ DE REGISTRO
                 if (dniEncontrado) document.getElementById('dni').value = dniEncontrado;
                 if (nombreEncontrado && nombreEncontrado.length > 2) document.getElementById('nom').value = nombreEncontrado;
                 
@@ -198,7 +182,6 @@
                     document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
                 }
 
-                // Ejecutamos las funciones de guardado automático de tu club
                 if (dniEncontrado && typeof autocompletarSocio === "function") {
                     autocompletarSocio();
                     if (navigator.vibrate) navigator.vibrate(80);
@@ -226,8 +209,8 @@
             <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
         </div>
         
-        <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
-        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
+        <!-- EL BOTÓN NEGRO VIEJO DE LA CÁMARA QR TAMBIÉN HA SIDO FULMINADO DE AQUÍ -->
+        
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
         
         <table>
