@@ -117,14 +117,15 @@
 
         <!-- EL CARTEL AZUL REPETIDO SE HA ELIMINADO DE AQUÍ PARA DEJAR LA PÁGINA LIMPIA -->
 
-        <script>
-            // El cerebro del lector USB sigue funcionando en segundo plano sin molestar
+       <script>
+            // Sistema reforzado para capturar DNI (PDF417) y Pasaportes en Mac
             let bufferLector = "";
             let timerLector = null;
 
             window.addEventListener('keydown', function(e) {
+                // Si detecta la tecla Enter, el lector ha terminado de enviar el bloque completo
                 if (e.key === 'Enter') {
-                    if (bufferLector.length > 15) {
+                    if (bufferLector.length > 10) {
                         procesarDatosLectorFisico(bufferLector);
                     }
                     bufferLector = "";
@@ -132,34 +133,48 @@
                     return;
                 }
 
-                bufferLector += e.key;
+                // Ignoramos teclas de control del Mac que puedan ensuciar el texto
+                if (e.key.length === 1) {
+                    bufferLector += e.key;
+                }
 
+                // Ampliamos el temporizador a 800ms para que procese el DNI completo sin cortarse
                 clearTimeout(timerLector);
-                timerLector = setTimeout(() => { bufferLector = ""; }, 200);
+                timerLector = setTimeout(() => { 
+                    if (bufferLector.length > 15) {
+                        procesarDatosLectorFisico(bufferLector);
+                    }
+                    bufferLector = ""; 
+                }, 800);
             });
 
             function procesarDatosLectorFisico(datosRaw) {
+                // Limpiamos el texto recibido
                 let texto = datosRaw.toUpperCase().replace(/\s+/g, '');
                 
                 let dniEncontrado = null;
                 let nombreEncontrado = null;
                 let fechaEncontrada = null;
 
+                // 1. BUSCAR DNI O NIE ESPAÑOL
                 let matchDNI = texto.match(/[0-9XYZ][0-9]{7}[A-Z]/);
                 if (matchDNI) {
                     dniEncontrado = matchDNI[0];
                 } else {
+                    // Formato para pasaportes o cadenas MRZ largas
                     let matchPas = texto.match(/(ESP|P<)[A-Z0-9]{6,9}/);
                     if (matchPas) {
                         dniEncontrado = matchPas[0].replace('ESP', '').replace('P<', '');
                     }
                 }
 
+                // 2. BUSCAR FECHA DE NACIMIENTO
                 let matchFecha = texto.match(/[0-9]{6}[0-9][MF]/);
                 if (matchFecha) {
                     fechaEncontrada = matchFecha[0].substring(0, 6);
                 }
 
+                // 3. BUSCAR NOMBRE Y APELLIDOS EN DOCUMENTO OFICIAL
                 if (texto.includes('<<')) {
                     let partes = texto.split('<<');
                     let parteApe = partes[0].match(/[A-Z]{3,}/g);
@@ -171,6 +186,7 @@
                     nombreEncontrado = `${nombre} ${apellidos}`.replace("IDESP", "").replace("ESP", "").trim();
                 }
 
+                // INYECTAR EN LAS CASILLAS DE EL 6
                 if (dniEncontrado) document.getElementById('dni').value = dniEncontrado;
                 if (nombreEncontrado && nombreEncontrado.length > 2) document.getElementById('nom').value = nombreEncontrado;
                 
@@ -182,13 +198,13 @@
                     document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
                 }
 
+                // Si ha encontrado el DNI, lanza el autocompletado del socio
                 if (dniEncontrado && typeof autocompletarSocio === "function") {
                     autocompletarSocio();
                     if (navigator.vibrate) navigator.vibrate(80);
                 }
             }
         </script>
-
         <div class="reg-box" id="cajaRegistro">
             <div>
                 <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
