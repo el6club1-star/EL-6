@@ -117,15 +117,15 @@
 
         <!-- EL CARTEL AZUL REPETIDO SE HA ELIMINADO DE AQUÍ PARA DEJAR LA PÁGINA LIMPIA -->
 
-       <script>
-            // Sistema reforzado para capturar DNI (PDF417) y Pasaportes en Mac
+     <script>
+            // SISTEMA REFORZADO PARA CAPTURAR DNI (PDF417) EN MAC
             let bufferLector = "";
             let timerLector = null;
 
             window.addEventListener('keydown', function(e) {
-                // Si detecta la tecla Enter, el lector ha terminado de enviar el bloque completo
+                // Si el lector envía un Enter, ha terminado la ráfaga
                 if (e.key === 'Enter') {
-                    if (bufferLector.length > 10) {
+                    if (bufferLector.length > 15) {
                         procesarDatosLectorFisico(bufferLector);
                     }
                     bufferLector = "";
@@ -133,19 +133,19 @@
                     return;
                 }
 
-                // Ignoramos teclas de control del Mac que puedan ensuciar el texto
+                // Capturamos las teclas que son letras o números
                 if (e.key.length === 1) {
                     bufferLector += e.key;
                 }
 
-                // Ampliamos el temporizador a 800ms para que procese el DNI completo sin cortarse
+                // Aumentamos la paciencia del código a 750ms para que entre todo el DNI
                 clearTimeout(timerLector);
                 timerLector = setTimeout(() => { 
-                    if (bufferLector.length > 15) {
+                    if (bufferLector.length > 20) {
                         procesarDatosLectorFisico(bufferLector);
                     }
                     bufferLector = ""; 
-                }, 800);
+                }, 750); 
             });
 
             function procesarDatosLectorFisico(datosRaw) {
@@ -161,7 +161,7 @@
                 if (matchDNI) {
                     dniEncontrado = matchDNI[0];
                 } else {
-                    // Formato para pasaportes o cadenas MRZ largas
+                    // Formato alternativo para pasaportes o cadenas largas
                     let matchPas = texto.match(/(ESP|P<)[A-Z0-9]{6,9}/);
                     if (matchPas) {
                         dniEncontrado = matchPas[0].replace('ESP', '').replace('P<', '');
@@ -174,9 +174,10 @@
                     fechaEncontrada = matchFecha[0].substring(0, 6);
                 }
 
-                // 3. BUSCAR NOMBRE Y APELLIDOS EN DOCUMENTO OFICIAL
+                // 3. BUSCAR NOMBRE Y APELLIDOS EN EL DNI/PDF417
                 if (texto.includes('<<')) {
                     let partes = texto.split('<<');
+                    // Buscamos los bloques de texto limpio
                     let parteApe = partes[0].match(/[A-Z]{3,}/g);
                     let parteNom = partes[1] ? partes[1].match(/[A-Z]{3,}/g) : null;
                     
@@ -186,7 +187,7 @@
                     nombreEncontrado = `${nombre} ${apellidos}`.replace("IDESP", "").replace("ESP", "").trim();
                 }
 
-                // INYECTAR EN LAS CASILLAS DE EL 6
+                // INYECCIÓN DE DATOS EN LA INTERFAZ DE EL 6
                 if (dniEncontrado) document.getElementById('dni').value = dniEncontrado;
                 if (nombreEncontrado && nombreEncontrado.length > 2) document.getElementById('nom').value = nombreEncontrado;
                 
@@ -198,7 +199,7 @@
                     document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
                 }
 
-                // Si ha encontrado el DNI, lanza el autocompletado del socio
+                // Lanza la función de autocompletado si encuentra el DNI
                 if (dniEncontrado && typeof autocompletarSocio === "function") {
                     autocompletarSocio();
                     if (navigator.vibrate) navigator.vibrate(80);
