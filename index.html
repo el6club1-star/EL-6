@@ -226,10 +226,10 @@
             <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
         </div>
         
-        <!-- EL BOTÓN NEGRO VIEJO DE LA CÁMARA QR TAMBIÉN HA SIDO FULMINADO DE AQUÍ -->
+        <!-- BOTÓN DE LA CÁMARA RECUPERADO -->
+        <button id="btnCam" onclick="toggleCamara()" style="width:100%; padding:15px; background:black; color:var(--gold); border:1px solid var(--gold); border-radius:12px; font-weight:bold; cursor:pointer; margin-bottom:15px; display:none;">📷 ABRIR / CERRAR LECTOR QR</button>
         
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
-        
         <table>
             <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
             <tbody id="lista"></tbody>
