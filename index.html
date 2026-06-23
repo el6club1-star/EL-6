@@ -496,7 +496,41 @@
             };
             reader.readAsText(file);
         }
+async function toggleCamara() {
+    const contenedorQr = document.getElementById('qr-space');
+    if (!contenedorQr) return;
 
+    if (camActiva) {
+        // Si está encendida, la apagamos
+        if (html5QrCode) {
+            await html5QrCode.stop();
+        }
+        contenedorQr.style.display = 'none';
+        camActiva = false;
+    } else {
+        // Si está apagada, la encendemos
+        contenedorQr.style.display = 'block';
+        html5QrCode = new Html5Qrcode("qr-space");
+        try {
+            await html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: 250 },
+                (textoQr) => {
+                    // Cuando lee un código QR
+                    const inputDni = document.getElementById('dni');
+                    if (inputDni) {
+                        inputDni.value = textoQr.toUpperCase().trim();
+                        if (typeof autocompletarSocio === "function") autocompletarSocio();
+                    }
+                    toggleCamara(); // Cierra la cámara al leer
+                }
+            );
+            camActiva = true;
+        } catch (err) {
+            alert("No se puede acceder a la cámara");
+        }
+    }
+}
         function exportarExcel() {
             let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
             db.forEach(s => {
