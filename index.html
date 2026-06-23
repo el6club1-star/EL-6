@@ -84,228 +84,139 @@
 <body>
     <div id="antena"><div id="dot" class="dot"></div><span id="statusText">LINK</span></div>
     
-     <div id="pantallaLogin">
-        <h1 style="letter-spacing: 10px;">EL 6</h1>
-        <input type="password" id="passApp" placeholder="CÓDIGO">
-        <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
-    </div>
-<button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
-    
-    <div class="container" id="principal">
-        <header>
-            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
-                <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
-                <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
-                <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
-            </div>
-            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
-            <div class="admin-btns" id="adminExtra" style="display:none;">
-                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
-                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
-                <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
-            </div>
-            <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
-            <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
-        </header>
-        
-        <div id="panelAdmin" class="stats-container">
-            <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
-            <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
-            <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
-        </div>
+    <div id="pantallaLogin">
+        <h1 style="letter-spacing: 10px;">EL 6</h1>
+        <input type="password" id="passApp" placeholder="CÓDIGO">
+        <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
+    </div>
+    
+    <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+    
+    <div class="container" id="principal">
+        <header>
+            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
+                <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
+                <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
+                <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
+            </div>
+            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
+            <div class="admin-btns" id="adminExtra" style="display:none;">
+                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
+                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
+                <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
+            </div>
+            <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
+            <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
+        </header>
+        
+        <div id="panelAdmin" class="stats-container">
+            <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
+            <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
+            <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
+        </div>
+        
+        <div class="reg-box" id="cajaRegistro">
+            <div>
+                <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
+                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
+                <div class="contenedor-rgpd">
+                    <input type="checkbox" id="checkRGPD" style="width:auto;"> 
+                    <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
+                </div>
+            </div>
+            <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
+            <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
+            <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
+            <div><label style="font-size:11px; font-weight:bold;">TIPO</label>
+                <select id="cat">
+                    <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
+                </select>
+            </div>
+            <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
+        </div>
+        
+        <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
+        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
+        <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
+        
+        <table>
+            <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
+            <tbody id="lista"></tbody>
+        </table>
+    </div>
 
-        <!-- EL CARTEL AZUL REPETIDO SE HA ELIMINADO DE AQUÍ PARA DEJAR LA PÁGINA LIMPIA -->
+    <div id="modalTarjeta">
+        <div class="card-vip" id="cardMain">
+            <div id="selloPagado">PAGADO ✅</div>
+            <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
+            <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
+            <div id="card-categoria-texto" style="font-size:12px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; opacity:0.9;"></div>
+            <div id="qr-space"></div>
+            <div id="card-consumos"></div>
+            <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
+                <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
+                <p>DNI: <span id="card-dni" style="float:right;">---</span></p>
+                <p>CATEGORÍA: <span id="card-cat-abajo" style="float:right;">---</span></p>
+                <img id="previewFirmaSocio" src="" alt="Firma">
+            </div>
+        </div>
+        <div class="card-actions" id="accionesTarjeta">
+            <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
+            <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
+            <button class="btn-card btn-rules" onclick="gestionarEstatutos('tarjeta')">FIRMAR ESTATUTOS</button>
+        </div>
+        
+        <div id="box-firma">
+            <h3 style="margin:0 0 10px 0; font-size:16px; text-align:center; color: black;">ESTATUTOS</h3>
+            <div class="texto-legal">
+                <p style="text-align: center; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 15px;">CONTRATO DE ADHESIÓN, REGLAMENTO INTERNO DE OBLIGADO CUMPLIMIENTO Y POLÍTICA DE PRIVACIDAD (RGPD) – CLUB PRIVADO EL 6</p>
+                <p><strong>1. NATURALEZA DEL CLUB Y CONDICIÓN DE SOCIO:</strong> El Club Privado El 6 es una asociación de carácter estrictamente restringido y privado. El acceso a las instalaciones y el uso de sus servicios están reservados única y exclusivamente a personas mayores de 18 años que hayan completado este registro, hayan sido expresamente admitidas por la Dirección y acepten sin reserva alguna el presente reglamento. La condición de socio es absolutamente personal, nominativa e intransferible.</p>
+                <p><strong>2. RESPONSABLE DEL TRATAMIENTO Y TRATAMIENTO DE DATOS (RGPD):</strong> En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y de la Ley Orgánica 3/2018 (LOPDGDD), se informa al solicitante de que todos los datos facilitados en este formulario (Nombre, DNI/NIE/Pasaporte, Fecha de Nacimiento, Email), así como su firma biométrica/digitalizada y el registro cronológico de sus accesos, serán incorporados a un tratamiento de datos responsabilidad del Club. La finalidad exclusiva es la gestión del control de acceso, el mantenimiento de la seguridad interna, la prevención del fraude y la autoorganización del club.</p>
+                <p><strong>3. LEGITIMACIÓN Y PLAZOS DE CONSERVACIÓN:</strong> La base legal que legitima este tratamiento es la ejecución del presente contrato de adhesión y el consentimiento expreso e inequívoco que el socio otorga al firmar. Los datos serán conservados de forma segura mientras el interesado mantenga su condición de alta en el club, o durante los plazos legales exigidos por la normativa administrativa, civil o penal española para la atención de posibles responsabilidades. El socio puede ejercitar sus derechos de acceso, rectificación, supresión ("olvido"), limitación y oposición dirigiendo una comunicación por escrito a la Dirección a través del correo electrónico <strong>el6club1@gmail.com</strong>, aportando copia de su documento de identidad.</p>
+                <p><strong>4. CONFIDENCIALIDAD ABSOLUTA Y CESIÓN LEGAL A AUTORIDADES:</strong> El Club garantiza el secreto y la confidencialidad de los datos de sus socios, adoptando las medidas de seguridad técnicas y organizativas necesarias para evitar su alteración o acceso no autorizado. Para cualquier consulta o incidencia relativa a la privacidad, el Club pone a disposición de los usuarios la dirección de correo electrónico <strong>el6club1@gmail.com</strong>. Los datos no serán vendidos, cedidos ni compartidos con terceros ajenos a la organización, salvo en cumplimiento de una obligación legal estricta o requerimiento formal y expreso de las Fuerzas y Cuerpos de Seguridad del Estado (Policía Nacional, Guardia Civil) o autoridades judiciales competentes en el marco de una investigación.</p>
+                <p><strong>5. EJERCICIO RIGUROSO DEL DERECHO DE ADMISIÓN:</strong> El Club ejerce de forma permanente el Derecho de Admisión amparado por la legislación vigente applicable a establecimientos privados y de espectáculos públicos. La Dirección y su personal de control se reservan el derecho unilateral de denegar el acceso o suspender la entrada a cualquier socio, aun estando registrado, por razones de aforo, seguridad, alteración del orden o por no superar los filtros de verificación de la puerta de acceso.</p>
+                <p><strong>6. CÓDIGO DE VESTIMENTA Y DECORO EXIGIBLE (DRESS CODE):</strong> Para acceder y permanecer en el Club se exige el cumplimiento estricto del código de indumentaria elegante y sofisticado determinado por la empresa. Queda terminantemente prohibido el acceso portando ropa o calzado deportivo, prendas de baño, ropa de trabajo, prendas con mensajes de carácter ofensivo o cualquier vestuario que, a criterio exclusivo del personal de admisión, no cumpla con los estándares estéticos del local.</p>
+                <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestations racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
+                <p><strong>8. POLÍTICA DE TOLERANCIA CERO CON SUSTANCIAS ILEGALES:</strong> El Club mantiene una política de tolerancia cero absoluta respecto al consumo, tenencia, introducción, facilitación o tráfico de cualquier tipo de sustancia estupefaciente, droga ilegal o psicotrópica dentro de todo el perímetro de las instalaciones (incluyendo zonas comunes y aseos). La mera detección o sospecha fundada por parte del personal facultará al Club para la retirada permanente de la condición de socio, expulsión inmediata y, en su caso, la correspondiente notificación a las autoridades policiales españolas.</p>
+                <p><strong>9. CONSUMO RESPONSABLE DE ALCOHOL Y SEGURIDAD:</strong> El socio se compromete a mantener un comportamiento cívico y controlado. De acuerdo con la normativa vigente de protección al menor y seguridad pública, el personal del local se reserva el derecho legítimo de negar el servicio de bebidas alcohólicas a cualquier persona que muestre síntomas evidentes de embriaguez o alteración psicológica, procediendo a su desalojo si compromete la tranquilidad del establecimiento.</p>
+                <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda estrictamente prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
+                <p><strong>11. EXENCIÓN DE RESPONSABILIDAD POR EFECTOS PERSONALES:</strong> El Club dispone de las medidas de seguridad genéricas exigidas por la ley, pero no se hace responsable en ningún caso de la pérdida, hurto, robo, sustracción o daño material que puedan sufrir los objetos personales, dinero, prendas o dispositivos electrónicos de los socios dentro del establecimiento, siendo responsabilidad exclusiva de cada asistente la custodia diligente de sus pertenencias.</p>
+                <p><strong>12. RESPONSABILIDAD POR DAÑOS MATERIALES, VETO Y JURISDICCIÓN COMPETENTE:</strong> Cualquier daño, rotura o desperfecto causado de forma intencionada o por negligencia en el mobiliario, equipos, decoración o estructura del local generará la obligación de indemnizar económicamente al Club por el coste total de su reparación o sustitución. El incumplimiento de cualquiera de las cláusulas de este documento otorgará a la Dirección la facultad de aplicar el régimen sancionador de veto definitivo. Asimismo, para la resolución de cualquier controversia, litigio, discrepancia o reclamación judicial derivada de la interpretación o ejecución de este contrato y reglamento, <strong>tanto el Club como el socio se someten expresamente, con renuncia formal a cualquier otro fuero o jurisdicción que pudiera corresponderles, a la competencia exclusiva de los Juzgados y Tribunales de Madrid capital.</strong></p>
+                <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN AND COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
+            </div>
+            
+            <canvas id="canvasFirma" width="440" height="120"></canvas>
+            <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
+            <button onclick="cerrarFirma()" style="width:100%; padding:5px; background:#ccc; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">VOLVER</button>
+        </div>
+        <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
+    </div>
 
-     <script>
-            // SISTEMA REFORZADO PARA CAPTURAR DNI (PDF417) EN MAC
-            let bufferLector = "";
-            let timerLector = null;
+    <div id="modalLibroCajas">
+        <div class="panel-caja">
+            <h3 class="titulo-caja">⚜️ Arqueo y Libro de Cajas</h3>
+            <div class="desglose-scroll" id="cajaDesgloseContenido"></div>
+            
+            <div class="caja-inputs">
+                <div>
+                    <label>💳 Cobrado TPV</label>
+                    <input type="number" id="cajaTpvInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
+                </div>
+                <div>
+                    <label>💵 Cobrado Efectivo</label>
+                    <input type="number" id="cajaEfectivoInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
+                </div>
+            </div>
+            
+            <div id="cajaResultadoCéntimo" class="resultado-descuadre"></div>
+            
+            <button onclick="ejecutarCierreResetFinal()" style="width:100%; padding:12px; background:var(--gold); color:black; border:none; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Confirmar Cierre de Noche</button>
+            <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
 
-            window.addEventListener('keydown', function(e) {
-                // Si el lector envía un Enter, ha terminado la ráfaga
-                if (e.key === 'Enter') {
-                    if (bufferLector.length > 15) {
-                        procesarDatosLectorFisico(bufferLector);
-                    }
-                    bufferLector = "";
-                    clearTimeout(timerLector);
-                    return;
-                }
-
-                // Capturamos las teclas que son letras o números
-                if (e.key.length === 1) {
-                    bufferLector += e.key;
-                }
-
-                // Aumentamos la paciencia del código a 750ms para que entre todo el DNI
-                clearTimeout(timerLector);
-                timerLector = setTimeout(() => { 
-                    if (bufferLector.length > 20) {
-                        procesarDatosLectorFisico(bufferLector);
-                    }
-                    bufferLector = ""; 
-                }, 750); 
-            });
-
-            function procesarDatosLectorFisico(datosRaw) {
-                // Limpiamos el texto recibido
-                let texto = datosRaw.toUpperCase().replace(/\s+/g, '');
-                
-                let dniEncontrado = null;
-                let nombreEncontrado = null;
-                let fechaEncontrada = null;
-
-                // 1. BUSCAR DNI O NIE ESPAÑOL
-                let matchDNI = texto.match(/[0-9XYZ][0-9]{7}[A-Z]/);
-                if (matchDNI) {
-                    dniEncontrado = matchDNI[0];
-                } else {
-                    // Formato alternativo para pasaportes o cadenas largas
-                    let matchPas = texto.match(/(ESP|P<)[A-Z0-9]{6,9}/);
-                    if (matchPas) {
-                        dniEncontrado = matchPas[0].replace('ESP', '').replace('P<', '');
-                    }
-                }
-
-                // 2. BUSCAR FECHA DE NACIMIENTO
-                let matchFecha = texto.match(/[0-9]{6}[0-9][MF]/);
-                if (matchFecha) {
-                    fechaEncontrada = matchFecha[0].substring(0, 6);
-                }
-
-                // 3. BUSCAR NOMBRE Y APELLIDOS EN EL DNI/PDF417
-                if (texto.includes('<<')) {
-                    let partes = texto.split('<<');
-                    // Buscamos los bloques de texto limpio
-                    let parteApe = partes[0].match(/[A-Z]{3,}/g);
-                    let parteNom = partes[1] ? partes[1].match(/[A-Z]{3,}/g) : null;
-                    
-                    let apellidos = parteApe ? parteApe.join(' ') : "";
-                    let nombre = parteNom ? parteNom.join(' ') : "";
-                    
-                    nombreEncontrado = `${nombre} ${apellidos}`.replace("IDESP", "").replace("ESP", "").trim();
-                }
-
-                // INYECCIÓN DE DATOS EN LA INTERFAZ DE EL 6
-                if (dniEncontrado) document.getElementById('dni').value = dniEncontrado;
-                if (nombreEncontrado && nombreEncontrado.length > 2) document.getElementById('nom').value = nombreEncontrado;
-                
-                if (fechaEncontrada) {
-                    let aa = fechaEncontrada.substring(0, 2);
-                    let mm = fechaEncontrada.substring(2, 4);
-                    let dd = fechaEncontrada.substring(4, 6);
-                    let siglo = parseInt(aa) > 26 ? "19" : "20"; 
-                    document.getElementById('cumple').value = `${siglo}${aa}-${mm}-${dd}`;
-                }
-
-                // Lanza la función de autocompletado si encuentra el DNI
-                if (dniEncontrado && typeof autocompletarSocio === "function") {
-                    autocompletarSocio();
-                    if (navigator.vibrate) navigator.vibrate(80);
-                }
-            }
-        </script>
-        <div class="reg-box" id="cajaRegistro">
-            <div>
-                <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
-                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
-                <div class="contenedor-rgpd">
-                    <input type="checkbox" id="checkRGPD" style="width:auto;"> 
-                    <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
-                </div>
-            </div>
-            <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
-            <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
-            <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
-            <div><label style="font-size:11px; font-weight:bold;">TIPO</label>
-                <select id="cat">
-                    <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
-                </select>
-            </div>
-            <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
-        </div>
-        
-        <!-- EL BOTÓN NEGRO VIEJO DE LA CÁMARA QR TAMBIÉN HA SIDO FULMINADO DE AQUÍ -->
-        
-        <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
-        
-        <table>
-            <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
-            <tbody id="lista"></tbody>
-        </table>
-    </div>
-    <div id="modalTarjeta">
-        <div class="card-vip" id="cardMain">
-            <div id="selloPagado">PAGADO ✅</div>
-            <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
-            <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
-            <div id="card-categoria-texto" style="font-size:12px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; opacity:0.9;"></div>
-            <div id="qr-space"></div>
-            <div id="card-consumos"></div>
-            <div style="text-align:left; font-size:11px; border-top:1px solid rgba(255,255,255,0.2); padding-top:5px;">
-                <p>SOCIO: <span id="card-nom" style="float:right;">---</span></p>
-                <p>DNI: <span id="card-dni" style="float:right;">---</span></p>
-                <p>CATEGORÍA: <span id="card-cat-abajo" style="float:right;">---</span></p>
-                <img id="previewFirmaSocio" src="" alt="Firma">
-            </div>
-        </div>
-        <div class="card-actions" id="accionesTarjeta">
-            <button class="btn-card btn-pay" id="btnPagarTarjeta" onclick="marcarPago()">PAGAR</button>
-            <button class="btn-card btn-send" onclick="descargarTarjeta()">ENVIAR TARJETA</button>
-            <button class="btn-card btn-rules" onclick="gestionarEstatutos('tarjeta')">FIRMAR ESTATUTOS</button>
-        </div>
-        
-        <div id="box-firma">
-            <h3 style="margin:0 0 10px 0; font-size:16px; text-align:center; color: black;">ESTATUTOS</h3>
-            <div class="texto-legal">
-                <p style="text-align: center; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 15px;">CONTRATO DE ADHESIÓN, REGLAMENTO INTERNO DE OBLIGADO CUMPLIMIENTO Y POLÍTICA DE PRIVACIDAD (RGPD) – CLUB PRIVADO EL 6</p>
-                <p><strong>1. NATURALEZA DEL CLUB Y CONDICIÓN DE SOCIO:</strong> El Club Privado El 6 es una asociación de carácter estrictamente restringido y privado. El acceso a las instalaciones y el uso de sus servicios están reservados única y exclusivamente a personas mayores de 18 años que hayan completado este registro, hayan sido expresamente admitidas por la Dirección y acepten sin reserva alguna el presente reglamento. La condición de socio es absolutamente personal, nominativa e intransferible.</p>
-                <p><strong>2. RESPONSABLE DEL TRATAMIENTO Y TRATAMIENTO DE DATOS (RGPD):</strong> En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y de la Ley Orgánica 3/2018 (LOPDGDD), se informa al solicitante de que todos los datos facilitados en este formulario (Nombre, DNI/NIE/Pasaporte, Fecha de Nacimiento, Email), así como su firma biométrica/digitalizada y el registro cronológico de sus accesos, serán incorporados a un tratamiento de datos responsabilidad del Club. La finalidad exclusiva es la gestión del control de acceso, el mantenimiento de la seguridad interna, la prevención del fraude y la autoorganización del club.</p>
-                <p><strong>3. LEGITIMACIÓN Y PLAZOS DE CONSERVACIÓN:</strong> La base legal que legitima este tratamiento es la ejecución del presente contrato de adhesión y el consentimiento expreso e inequívoco que el socio otorga al firmar. Los datos serán conservados de forma segura mientras el interesado mantenga su condición de alta en el club, o durante los plazos legales exigidos por la normativa administrativa, civil o penal española para la atención de posibles responsabilidades. El socio puede ejercitar sus derechos de acceso, rectificación, supresión ("olvido"), limitación y oposición dirigiendo una comunicación por escrito a la Dirección a través del correo electrónico <strong>el6club1@gmail.com</strong>, aportando copia de su documento de identidad.</p>
-                <p><strong>4. CONFIDENCIALIDAD ABSOLUTA Y CESIÓN LEGAL A AUTORIDADES:</strong> El Club garantiza el secreto y la confidencialidad de los datos de sus socios, adoptando las medidas de seguridad técnicas y organizativas necesarias para evitar su alteración o acceso no autorizado. Para cualquier consulta o incidencia relativa a la privacidad, el Club pone a disposición de los usuarios la dirección de correo electrónico <strong>el6club1@gmail.com</strong>. Los datos no serán vendidos, cedidos ni compartidos con terceros ajenos a la organización, salvo en cumplimiento de una obligación legal estricta o requerimiento formal y expreso de las Fuerzas y Cuerpos de Seguridad del Estado (Policía Nacional, Guardia Civil) o autoridades judiciales competentes en el marco de una investigación.</p>
-                <p><strong>5. EJERCICIO RIGUROSO DEL DERECHO DE ADMISIÓN:</strong> El Club ejerce de forma permanente el Derecho de Admisión amparado por la legislación vigente applicable a establecimientos privados y de espectáculos públicos. La Dirección y su personal de control se reservan el derecho unilateral de denegar el acceso o suspender la entrada a cualquier socio, aun estando registrado, por razones de aforo, seguridad, alteración del orden o por no superar los filtros de verificación de la puerta de acceso.</p>
-                <p><strong>6. CÓDIGO DE VESTIMENTA Y DECORO EXIGIBLE (DRESS CODE):</strong> Para acceder y permanecer en el Club se exige el cumplimiento estricto del código de indumentaria elegante y sofisticado determinado por la empresa. Queda terminantemente prohibido el acceso portando ropa o calzado deportivo, prendas de baño, ropa de trabajo, prendas con mensajes de carácter ofensivo o cualquier vestuario que, a criterio exclusivo del personal de admisión, no cumpla con los estándares estéticos del local.</p>
-                <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestations racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
-                <p><strong>8. POLÍTICA DE TOLERANCIA CERO CON SUSTANCIAS ILEGALES:</strong> El Club mantiene una política de tolerancia cero absoluta respecto al consumo, tenencia, introducción, facilitación o tráfico de cualquier tipo de sustancia estupefaciente, droga ilegal o psicotrópica dentro de todo el perímetro de las instalaciones (incluyendo zonas comunes y aseos). La mera detección o sospecha fundada por parte del personal facultará al Club para la retirada permanente de la condición de socio, expulsión inmediata y, en su caso, la correspondiente notificación a las autoridades policiales españolas.</p>
-                <p><strong>9. CONSUMO RESPONSABLE DE ALCOHOL Y SEGURIDAD:</strong> El socio se compromete a mantener un comportamiento cívico y controlado. De acuerdo con la normativa vigente de protección al menor y seguridad pública, el personal del local se reserva el derecho legítimo de negar el servicio de bebidas alcohólicas a cualquier persona que muestre síntomas evidentes de embriaguez o alteración psicológica, procediendo a su desalojo si compromete la tranquilidad del establecimiento.</p>
-                <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda estrictamente prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
-                <p><strong>11. EXENCIÓN DE RESPONSABILIDAD POR EFECTOS PERSONALES:</strong> El Club dispone de las medidas de seguridad genéricas exigidas por la ley, pero no se hace responsable en ningún caso de la pérdida, hurto, robo, sustracción o daño material que puedan sufrir los objetos personales, dinero, prendas o dispositivos electrónicos de los socios dentro del establecimiento, siendo responsabilidad exclusiva de cada asistente la custodia diligente de sus pertenencias.</p>
-                <p><strong>12. RESPONSABILIDAD POR DAÑOS MATERIALES, VETO Y JURISDICCIÓN COMPETENTE:</strong> Cualquier daño, rotura o desperfecto causado de forma intencionada o por negligencia en el mobiliario, equipos, decoración o estructura del local generará la obligación de indemnizar económicamente al Club por el coste total de su reparación o sustitución. El incumplimiento de cualquiera de las cláusulas de este documento otorgará a la Dirección la facultad de aplicar el régimen sancionador de veto definitivo. Asimismo, para la resolución de cualquier controversia, litigio, discrepancia o reclamación judicial derivada de la interpretación o ejecución de este contrato y reglamento, <strong>tanto el Club como el socio se someten expresamente, con renuncia formal a cualquier otro fuero o jurisdicción que pudiera corresponderles, a la competencia exclusiva de los Juzgados y Tribunales de Madrid capital.</strong></p>
-                <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN AND COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
-            </div>
-            
-            <canvas id="canvasFirma" width="440" height="120"></canvas>
-            <button onclick="guardarFirmaSocio()" style="width:100%; padding:10px; background:var(--gold); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer;">ACEPTAR Y FIRMAR</button>
-            <button onclick="cerrarFirma()" style="width:100%; padding:5px; background:#ccc; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">VOLVER</button>
-        </div>
-        <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
-    </div>
-
-    <div id="modalLibroCajas">
-        <div class="panel-caja">
-            <h3 class="titulo-caja">⚜️ Arqueo y Libro de Cajas</h3>
-            <div class="desglose-scroll" id="cajaDesgloseContenido"></div>
-            
-            <div class="caja-inputs">
-                <div>
-                    <label>💳 Cobrado TPV</label>
-                    <input type="number" id="cajaTpvInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
-                </div>
-                <div>
-                    <label>💵 Cobrado Efectivo</label>
-                    <input type="number" id="cajaEfectivoInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
-                </div>
-            </div>
-            
-            <div id="cajaResultadoCéntimo" class="resultado-descuadre"></div>
-            
-            <button onclick="ejecutarCierreResetFinal()" style="width:100%; padding:12px; background:var(--gold); color:black; border:none; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Confirmar Cierre de Noche</button>
-            <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
-        </div>
-    </div>
-
-   <script>
+    <script>
         (function(){
             emailjs.init("TU_USER_ID_AQUÍ"); 
         })();
@@ -333,7 +244,7 @@
 
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
-            if (dot) { if(online) dot.className = 'dot online'; else dot.className = 'dot offline'; }
+            if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
         }
 
         async function refrescarDatos() {
@@ -344,7 +255,6 @@
         }
 
         async function marcarPago() {
-            if(!socioActual) return;
             const ahora = new Date().toISOString();
             const esPagado = socioActual.pago_realizado;
             await _supabase.from(NOMBRE_TABLA).update({ 
@@ -359,7 +269,6 @@
        function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
-            if(!sello || !btn || !socioActual) return;
             let pagadoValido = socioActual.pago_realizado;
             if(socioActual.hora_pago) {
                 const hPago = new Date(socioActual.hora_pago);
@@ -387,10 +296,10 @@
             }
             const s = db.find(x => x.dni === val);
             if(s) { 
-                document.getElementById('nom').value = s.nombre || ""; 
-                document.getElementById('mail').value = s.email || ""; 
+                document.getElementById('nom').value = s.nombre; 
+                document.getElementById('mail').value = s.email; 
                 document.getElementById('cat').value = (s.cat || "estándar").toLowerCase(); 
-                document.getElementById('cumple').value = s.cumple || ""; 
+                document.getElementById('cumple').value = s.cumple; 
                 document.getElementById('checkRGPD').checked = true; 
             }
         }
@@ -428,27 +337,12 @@
                 botonCamaraPrincipal.style.display = 'block';
             }
 
+            // Activamos la escucha del botón pagar justo al entrar
             inyectarInterceptosDePago();
             refrescarDatos();
         }
 
-        function cerrarSesion() {
-            document.getElementById('pantallaLogin').style.display='flex'; 
-            document.getElementById('principal').style.display='none'; 
-            document.getElementById('btnLogout').style.display='none';
-            document.getElementById('passApp').value = "";
-        }
-
-        function actualizarClave() {
-            const tipo = document.getElementById('tipoClave').value;
-            const nueva = document.getElementById('nuevaClaveInput').value.trim();
-            if(!nueva) return alert("Introduce una clave válida");
-            CLAVES[tipo] = nueva;
-            localStorage.setItem('claves_el6', JSON.stringify(CLAVES));
-            alert(`Clave de ${tipo.toUpperCase()} actualizada correctamente`);
-            document.getElementById('nuevaClaveInput').value = "";
-        }
-
+        // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
         function inyectarInterceptosDePago() {
             const btnPagar = document.getElementById('btnPagarTarjeta');
             if (!btnPagar) return;
@@ -464,7 +358,6 @@
                 });
             }
         }
-
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
@@ -515,203 +408,6 @@
             reader.readAsText(file);
         }
 
-        async function toggleCamara() {
-            const contenedorQr = document.getElementById('qr-space');
-            if (!contenedorQr) return;
-
-            if (camActiva) {
-                if (html5QrCode) { await html5QrCode.stop(); }
-                contenedorQr.style.display = 'none';
-                camActiva = false;
-            } else {
-                contenedorQr.style.display = 'block';
-                html5QrCode = new Html5Qrcode("qr-space");
-                try {
-                    await html5QrCode.start(
-                        { facingMode: "environment" }, 
-                        { fps: 10, qrbox: 250 },
-                        (textoQr) => {
-                            const inputDni = document.getElementById('dni');
-                            if (inputDni) {
-                                inputDni.value = textoQr.toUpperCase().trim();
-                                if (typeof autocompletarSocio === "function") autocompletarSocio();
-                            }
-                            toggleCamara();
-                        }
-                    );
-                    camActiva = true;
-                } catch (err) { alert("No se puede acceder a la cámara"); }
-            }
-        }
-
-        function prepararCierreCaja() {
-            document.getElementById('modalLibroCajas').style.display = 'flex';
-            const desglose = document.getElementById('cajaDesgloseContenido');
-            if(desglose) {
-                desglose.innerHTML = `<p style="color:black;">Resumen de actividad para el cierre del aforo activo (${aforo} personas dentro).</p>`;
-            }
-            calcularDescuadreEnTiempoReal();
-        }
-
-        function calcularDescuadreEnTiempoReal() {
-            const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
-            const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const totalIntroducido = tpv + efectivo;
-            const resContainer = document.getElementById('cajaResultadoCéntimo');
-            if(resContainer) {
-                resContainer.innerHTML = `<p style="color:black; font-weight:bold; margin-top:10px;">Total Contabilizado: ${totalIntroducido.toFixed(2)}€</p>`;
-            }
-        }
-
-        async function ejecutarCierreResetFinal() {
-            if(confirm("¿Confirmas el cierre definitivo de la noche? El aforo actual volverá a cero.")) {
-                try {
-                    await _supabase.from(NOMBRE_TABLA).update({ dentro: false });
-                    alert("Aforo reiniciado correctamente. ¡Noche cerrada!");
-                    document.getElementById('modalLibroCajas').style.display = 'none';
-                    refrescarDatos();
-                } catch(e) {
-                    alert("Error en el servidor al cerrar la noche.");
-                }
-            }
-        }
-
-        async function toggleEntrada(dni) { 
-            const s = db.find(x => x.dni === dni); 
-            if(!s) return;
-            await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); 
-            refrescarDatos(); 
-        }
-
-        async function tVeto(dni) { 
-            const m = prompt("Motivo del veto:"); 
-            if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } 
-        }
-
-        function reAbrir(dni) {
-            const s = db.find(x => x.dni === dni);
-            if(s) {
-                socioActual = s;
-                document.getElementById('card-id').innerText = "Nº " + (s.id || "---");
-                document.getElementById('card-nom').innerText = s.nombre || "---";
-                document.getElementById('card-dni').innerText = formatearDNI(s.dni);
-                document.getElementById('card-cat-abajo').innerText = s.cat || "Estándar";
-                document.getElementById('card-categoria-texto').innerText = s.cat || "Estándar";
-                actualizarVisualPago();
-                document.getElementById('modalTarjeta').style.display = 'flex';
-            }
-        }
-
-        function cerrar() {
-            document.getElementById('modalTarjeta').style.display = 'none';
-            socioActual = null;
-        }
-
-        function exportarExcel() {
-            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
-            db.forEach(s => {
-                if (s.dentro || s.hora || s.consumiciones) {
-                    csv += `${s.id || ''},${s.dni || ''},${s.nombre || ''},${s.cat || ''},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
-                }
-            });
-            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
-        }
-    </script>
-        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
-        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
-        
-        async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            const e = document.getElementById('mail').value;
-            const c = document.getElementById('cumple').value;
-            const cat = document.getElementById('cat').value;
-            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            
-            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-                hora: new Date().toLocaleTimeString(), cat: cat 
-            }).select();
-            
-            if (error) {
-                alert("Error al registrar: " + error.message);
-                return;
-            }
-
-            if(e) {
-                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                    to_name: n, to_email: e, dni: d, categoria: cat
-                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-            }
-
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
-
-            await refrescarDatos(); 
-            if(data && data[0]) {
-                abrirTarjeta(data[0]);
-            } else {
-                const recienCreado = db.find(x => x.dni === d);
-                if(recienCreado) abrirTarjeta(recienCreado);
-            }
-        }
-
-        // =======================================================
-        // SISTEMA DE CÁMARA QR INDEPENDIENTE Y SEGURO (CORREGIDO)
-        // =======================================================
-        async function toggleCamara() {
-            // Buscamos un contenedor válido que esté en la pantalla principal
-            let contenedorQr = document.getElementById('qr-space-lector');
-            
-            // Si no existe, lo creamos dinámicamente encima del buscador para que se vea perfectamente
-            if (!contenedorQr) {
-                contenedorQr = document.createElement('div');
-                contenedorQr.id = 'qr-space-lector';
-                contenedorQr.style.width = '100%';
-                contenedorQr.style.maxWidth = '400px';
-                contenedorQr.style.margin = '0 auto 15px auto';
-                contenedorQr.style.borderRadius = '12px';
-                contenedorQr.style.overflow = 'hidden';
-                contenedorQr.style.display = 'none';
-                
-                const botonCam = document.getElementById('btnCam');
-                if(botonCam) {
-                    botonCam.parentNode.insertBefore(contenedorQr, botonCam.nextSibling);
-                }
-            }
-
-            if (camActiva) {
-                if (html5QrCode) {
-                    try { await html5QrCode.stop(); } catch(e){}
-                }
-                contenedorQr.style.display = 'none';
-                camActiva = false;
-            } else {
-                contenedorQr.style.display = 'block';
-                html5QrCode = new Html5Qrcode("qr-space-lector");
-                try {
-                    await html5QrCode.start(
-                        { facingMode: "environment" }, 
-                        { fps: 15, qrbox: { width: 250, height: 250 } },
-                        (textoQr) => {
-                            const inputDni = document.getElementById('dni');
-                            if (inputDni) {
-                                inputDni.value = textoQr.toUpperCase().trim();
-                                if (typeof autocompletarSocio === "function") autocompletarSocio();
-                            }
-                            toggleCamara(); // Se apaga sola como un interruptor al leer
-                        }
-                    );
-                    camActiva = true;
-                } catch (err) {
-                    alert("No se puede acceder a la cámara o ya está en uso");
-                    contenedorQr.style.display = 'none';
-                }
-            }
-        }
-    </script>
         function exportarExcel() {
             let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
             db.forEach(s => {
@@ -952,45 +648,7 @@
             }
         }
 
-      // FUNCIÓN DEFINITIVA: Se limpia sola a los 3 segundos para que Make lea el TRUE
-        async function descargarTarjeta() { 
-            if (!socioActual || !socioActual.dni) {
-                alert("⚠️ No hay ningún socio seleccionado para enviar la tarjeta.");
-                return;
-            }
-
-            if (!socioActual.email) {
-                alert("⚠️ Este socio no tiene un correo electrónico registrado en la base de datos.");
-                return;
-            }
-
-            const confirmar = confirm(`¿Quieres enviar/reenviar la tarjeta digital al correo: ${socioActual.email}?`);
-            if (!confirmar) return;
-
-            try {
-                // 1. Cambiamos a TRUE en Supabase para que salte Make
-                await _supabase
-                    .from(NOMBRE_TABLA)
-                    .update({ reenviar_tarjeta: true })
-                    .eq('dni', socioActual.dni);
-
-                alert(`✉️ Petición enviada con éxito. La tarjeta va en camino a: ${socioActual.email}`);
-
-                // 2. Esperamos 3 segundos en segundo plano y lo volvemos a poner en FALSE automáticamente
-                setTimeout(async () => {
-                    await _supabase
-                        .from(NOMBRE_TABLA)
-                        .update({ reenviar_tarjeta: false })
-                        .eq('dni', socioActual.dni);
-                    console.log("Casilla limpiada a FALSE automáticamente.");
-                }, 3000);
-
-            } catch (error) {
-                console.error(error);
-                alert("❌ Hubo un error al intentar comunicar con Supabase.");
-            }
-        }
-
+        async function descargarTarjeta() { const can = await html2canvas(document.getElementById('cardMain')); const a = document.createElement('a'); a.download = 'TARJETA.png'; a.href = can.toDataURL(); a.click(); }
         function reAbrir(dni) { abrirTarjeta(db.find(x=>x.dni===dni)); }
         
         function cerrar() { 
@@ -1059,6 +717,7 @@
             const t = document.getElementById('tipoClave').value; const n = document.getElementById('nuevaClaveInput').value;
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
+
         /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
         function prepararCierreCaja() { 
             const PRECIO_ENTRADA = 20;
