@@ -305,7 +305,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         (function(){
             emailjs.init("TU_USER_ID_AQUÍ"); 
         })();
@@ -333,7 +333,9 @@
 
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
-            if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
+            if(dot) {
+                if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
+            }
         }
 
         async function refrescarDatos() {
@@ -358,6 +360,7 @@
        function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
+            if(!sello || !btn) return;
             let pagadoValido = socioActual.pago_realizado;
             if(socioActual.hora_pago) {
                 const hPago = new Date(socioActual.hora_pago);
@@ -426,12 +429,10 @@
                 botonCamaraPrincipal.style.display = 'block';
             }
 
-            // Activamos la escucha del botón pagar justo al entrar
             inyectarInterceptosDePago();
             refrescarDatos();
         }
 
-        // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
         function inyectarInterceptosDePago() {
             const btnPagar = document.getElementById('btnPagarTarjeta');
             if (!btnPagar) return;
@@ -447,6 +448,7 @@
                 });
             }
         }
+
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
@@ -456,9 +458,11 @@
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
             if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
-            document.getElementById('st-total').innerText = db.length; 
-            document.getElementById('st-aforo').innerText = aforo; 
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+            
+            if(document.getElementById('st-total')) document.getElementById('st-total').innerText = db.length; 
+            if(document.getElementById('st-aforo')) document.getElementById('st-aforo').innerText = aforo; 
+            if(document.getElementById('st-vetados')) document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+            
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
@@ -496,41 +500,112 @@
             };
             reader.readAsText(file);
         }
-async function toggleCamara() {
-    const contenedorQr = document.getElementById('qr-space');
-    if (!contenedorQr) return;
 
-    if (camActiva) {
-        // Si está encendida, la apagamos
-        if (html5QrCode) {
-            await html5QrCode.stop();
-        }
-        contenedorQr.style.display = 'none';
-        camActiva = false;
-    } else {
-        // Si está apagada, la encendemos
-        contenedorQr.style.display = 'block';
-        html5QrCode = new Html5Qrcode("qr-space");
-        try {
-            await html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: 250 },
-                (textoQr) => {
-                    // Cuando lee un código QR
-                    const inputDni = document.getElementById('dni');
-                    if (inputDni) {
-                        inputDni.value = textoQr.toUpperCase().trim();
-                        if (typeof autocompletarSocio === "function") autocompletarSocio();
-                    }
-                    toggleCamara(); // Cierra la cámara al leer
+        function exportarExcel() {
+            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
+            db.forEach(s => {
+                if (s.dentro || s.hora || s.consumiciones) {
+                    csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
                 }
-            );
-            camActiva = true;
-        } catch (err) {
-            alert("No se puede acceder a la cámara");
+            });
+            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
         }
-    }
-}
+
+        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
+        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
+        
+        async function registrar() {
+            const d = document.getElementById('dni').value.toUpperCase();
+            const n = document.getElementById('nom').value;
+            const e = document.getElementById('mail').value;
+            const c = document.getElementById('cumple').value;
+            const cat = document.getElementById('cat').value;
+            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+            
+            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+                hora: new Date().toLocaleTimeString(), cat: cat 
+            }).select();
+            
+            if (error) {
+                alert("Error al registrar: " + error.message);
+                return;
+            }
+
+            if(e) {
+                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+                    to_name: n, to_email: e, dni: d, categoria: cat
+                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
+            }
+
+            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
+
+            await refrescarDatos(); 
+            if(data && data[0]) {
+                abrirTarjeta(data[0]);
+            } else {
+                const recienCreado = db.find(x => x.dni === d);
+                if(recienCreado) abrirTarjeta(recienCreado);
+            }
+        }
+
+        // =======================================================
+        // SISTEMA DE CÁMARA QR INDEPENDIENTE Y SEGURO (CORREGIDO)
+        // =======================================================
+        async function toggleCamara() {
+            // Buscamos un contenedor válido que esté en la pantalla principal
+            let contenedorQr = document.getElementById('qr-space-lector');
+            
+            // Si no existe, lo creamos dinámicamente encima del buscador para que se vea perfectamente
+            if (!contenedorQr) {
+                contenedorQr = document.createElement('div');
+                contenedorQr.id = 'qr-space-lector';
+                contenedorQr.style.width = '100%';
+                contenedorQr.style.maxWidth = '400px';
+                contenedorQr.style.margin = '0 auto 15px auto';
+                contenedorQr.style.borderRadius = '12px';
+                contenedorQr.style.overflow = 'hidden';
+                contenedorQr.style.display = 'none';
+                
+                const botonCam = document.getElementById('btnCam');
+                if(botonCam) {
+                    botonCam.parentNode.insertBefore(contenedorQr, botonCam.nextSibling);
+                }
+            }
+
+            if (camActiva) {
+                if (html5QrCode) {
+                    try { await html5QrCode.stop(); } catch(e){}
+                }
+                contenedorQr.style.display = 'none';
+                camActiva = false;
+            } else {
+                contenedorQr.style.display = 'block';
+                html5QrCode = new Html5Qrcode("qr-space-lector");
+                try {
+                    await html5QrCode.start(
+                        { facingMode: "environment" }, 
+                        { fps: 15, qrbox: { width: 250, height: 250 } },
+                        (textoQr) => {
+                            const inputDni = document.getElementById('dni');
+                            if (inputDni) {
+                                inputDni.value = textoQr.toUpperCase().trim();
+                                if (typeof autocompletarSocio === "function") autocompletarSocio();
+                            }
+                            toggleCamara(); // Se apaga sola como un interruptor al leer
+                        }
+                    );
+                    camActiva = true;
+                } catch (err) {
+                    alert("No se puede acceder a la cámara o ya está en uso");
+                    contenedorQr.style.display = 'none';
+                }
+            }
+        }
+    </script>
         function exportarExcel() {
             let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
             db.forEach(s => {
