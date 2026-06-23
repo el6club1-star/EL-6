@@ -305,243 +305,319 @@
         </div>
     </div>
 
-    <script>
-        (function(){
-            emailjs.init("TU_USER_ID_AQUÍ"); 
-        })();
+   <script>
+        (function(){
+            emailjs.init("TU_USER_ID_AQUÍ"); 
+        })();
 
-        const supabaseUrl = 'https://rmskjegarvntuqpfzfbm.supabase.co';
-        const supabaseKey = 'sb_publishable_hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-        const NOMBRE_TABLA = 'socios';
-        let db = []; let aforo = 0; let socioActual = null; let nivel = "personal";
-        
-        const canvas = document.getElementById('canvasFirma');
-        const ctx = canvas.getContext('2d');
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#000000';
-        let dibujando = false;
-        let camActiva = false;
-        let CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || { jefe: "1234", puerta: "0000", camarero: "2222" };
-        let html5QrCode;
-        let origenFirma = 'tarjeta';
-        const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
+        const supabaseUrl = 'https://rmskjegarvntuqpfzfbm.supabase.co';
+        const supabaseKey = 'sb_publishable_hEqxPZNGDxpNZEnz7hrymg_cL8GvwHK';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const NOMBRE_TABLA = 'socios';
+        let db = []; let aforo = 0; let socioActual = null; let nivel = "personal";
+        
+        const canvas = document.getElementById('canvasFirma');
+        const ctx = canvas.getContext('2d');
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#000000';
+        let dibujando = false;
+        let camActiva = false;
+        let CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || { jefe: "1234", puerta: "0000", camarero: "2222" };
+        let html5QrCode;
+        let origenFirma = 'tarjeta';
+        const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
 
-        // Variables globales para guardar los datos calculados temporalmente en el arqueo
-        let datosCajaGlobal = {};
+        // Variables globales para guardar los datos calculados temporalmente en el arqueo
+        let datosCajaGlobal = {};
 
-        function actualizarAntena(online) {
-            const dot = document.getElementById('dot');
-            if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
-        }
+        function actualizarAntena(online) {
+            const dot = document.getElementById('dot');
+            if (dot) { if(online) dot.className = 'dot online'; else dot.className = 'dot offline'; }
+        }
 
-        async function refrescarDatos() {
-            try {
-                const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
-                if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); actualizarAntena(true); }
-            } catch (err) { actualizarAntena(false); }
-        }
+        async function refrescarDatos() {
+            try {
+                const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
+                if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); actualizarAntena(true); }
+            } catch (err) { actualizarAntena(false); }
+        }
 
-        async function marcarPago() {
-            const ahora = new Date().toISOString();
-            const esPagado = socioActual.pago_realizado;
-            await _supabase.from(NOMBRE_TABLA).update({ 
-                pago_realizado: !esPagado, 
-                hora_pago: !esPagado ? ahora : null 
-            }).eq('dni', socioActual.dni);
-            socioActual.pago_realizado = !esPagado;
-            socioActual.hora_pago = !esPagado ? ahora : null;
-            actualizarVisualPago();
-        }
+        async function marcarPago() {
+            if(!socioActual) return;
+            const ahora = new Date().toISOString();
+            const esPagado = socioActual.pago_realizado;
+            await _supabase.from(NOMBRE_TABLA).update({ 
+                pago_realizado: !esPagado, 
+                hora_pago: !esPagado ? ahora : null 
+            }).eq('dni', socioActual.dni);
+            socioActual.pago_realizado = !esPagado;
+            socioActual.hora_pago = !esPagado ? ahora : null;
+            actualizarVisualPago();
+        }
 
-       function actualizarVisualPago() {
-            const sello = document.getElementById('selloPagado');
-            const btn = document.getElementById('btnPagarTarjeta');
-            let pagadoValido = socioActual.pago_realizado;
-            if(socioActual.hora_pago) {
-                const hPago = new Date(socioActual.hora_pago);
-                const hAgora = new Date();
-                const diff = (hAgora - hPago) / (1000 * 60 * 60);
-                if(diff > 5) pagadoValido = false; 
-            }
-            if(pagadoValido) {
-                sello.style.display = 'block';
-                btn.innerText = 'PAGO REALIZADO';
-                btn.style.background = '#15803d';
-            } else {
-                sello.style.display = 'none';
-                btn.innerText = 'PAGAR';
-                btn.style.background = 'var(--success)';
-            }
-        }
+       function actualizarVisualPago() {
+            const sello = document.getElementById('selloPagado');
+            const btn = document.getElementById('btnPagarTarjeta');
+            if(!sello || !btn || !socioActual) return;
+            let pagadoValido = socioActual.pago_realizado;
+            if(socioActual.hora_pago) {
+                const hPago = new Date(socioActual.hora_pago);
+                const hAgora = new Date();
+                const diff = (hAgora - hPago) / (1000 * 60 * 60);
+                if(diff > 5) pagadoValido = false; 
+            }
+            if(pagadoValido) {
+                sello.style.display = 'block';
+                btn.innerText = 'PAGO REALIZADO';
+                btn.style.background = '#15803d';
+            } else {
+                sello.style.display = 'none';
+                btn.innerText = 'PAGAR';
+                btn.style.background = 'var(--success)';
+            }
+        }
 
-        function autocompletarSocio() {
-            const val = document.getElementById('dni').value.trim().toUpperCase();
-            if(!val) {
-                document.getElementById('nom').value = ""; document.getElementById('mail').value = "";
-                document.getElementById('cat').value = "estándar"; document.getElementById('cumple').value = "";
-                document.getElementById('checkRGPD').checked = false; return;
-            }
-            const s = db.find(x => x.dni === val);
-            if(s) { 
-                document.getElementById('nom').value = s.nombre; 
-                document.getElementById('mail').value = s.email; 
-                document.getElementById('cat').value = (s.cat || "estándar").toLowerCase(); 
-                document.getElementById('cumple').value = s.cumple; 
-                document.getElementById('checkRGPD').checked = true; 
-            }
-        }
+        function autocompletarSocio() {
+            const val = document.getElementById('dni').value.trim().toUpperCase();
+            if(!val) {
+                document.getElementById('nom').value = ""; document.getElementById('mail').value = "";
+                document.getElementById('cat').value = "estándar"; document.getElementById('cumple').value = "";
+                document.getElementById('checkRGPD').checked = false; return;
+            }
+            const s = db.find(x => x.dni === val);
+            if(s) { 
+                document.getElementById('nom').value = s.nombre || ""; 
+                document.getElementById('mail').value = s.email || ""; 
+                document.getElementById('cat').value = (s.cat || "estándar").toLowerCase(); 
+                document.getElementById('cumple').value = s.cumple || ""; 
+                document.getElementById('checkRGPD').checked = true; 
+            }
+        }
 
-        function validarEntrada() {
-            const p = document.getElementById('passApp').value;
-            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
-        }
+        function validarEntrada() {
+            const p = document.getElementById('passApp').value;
+            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
+            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
+            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
+            else alert("CÓDIGO INCORRECTO");
+        }
 
-        function entrar() { 
-            document.getElementById('pantallaLogin').style.display='none'; 
-            document.getElementById('principal').style.display='block'; 
-            document.getElementById('btnLogout').style.display='block'; 
-            if(nivel === 'jefe') { 
-                document.getElementById('btnExport').style.display='block'; 
-                document.getElementById('btnReset').style.display='block'; 
-                document.getElementById('panelAdmin').style.display='grid'; 
-                document.getElementById('adminExtra').style.display='flex';
-                document.getElementById('configClaves').style.display = 'block';
-            }
-            if(nivel === 'camarero') {
-                document.getElementById('cajaRegistro').style.display = 'none';
-                document.getElementById('btnReset').style.display = 'none';
-                document.getElementById('panelAdmin').style.display = 'none';
-                if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-                if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
-            }
+        function entrar() { 
+            document.getElementById('pantallaLogin').style.display='none'; 
+            document.getElementById('principal').style.display='block'; 
+            document.getElementById('btnLogout').style.display='block'; 
+            if(nivel === 'jefe') { 
+                document.getElementById('btnExport').style.display='block'; 
+                document.getElementById('btnReset').style.display='block'; 
+                document.getElementById('panelAdmin').style.display='grid'; 
+                document.getElementById('adminExtra').style.display='flex';
+                document.getElementById('configClaves').style.display = 'block';
+            }
+            if(nivel === 'camarero') {
+                document.getElementById('cajaRegistro').style.display = 'none';
+                document.getElementById('btnReset').style.display = 'none';
+                document.getElementById('panelAdmin').style.display = 'none';
+                if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+                if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+            }
 
-            const botonCamaraPrincipal = document.getElementById('btnCam');
-            if (botonCamaraPrincipal) {
-                botonCamaraPrincipal.style.display = 'block';
-            }
+            const botonCamaraPrincipal = document.getElementById('btnCam');
+            if (botonCamaraPrincipal) {
+                botonCamaraPrincipal.style.display = 'block';
+            }
 
-            // Activamos la escucha del botón pagar justo al entrar
-            inyectarInterceptosDePago();
-            refrescarDatos();
-        }
+            inyectarInterceptosDePago();
+            refrescarDatos();
+        }
 
-        // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
-        function inyectarInterceptosDePago() {
-            const btnPagar = document.getElementById('btnPagarTarjeta');
-            if (!btnPagar) return;
+        function cerrarSesion() {
+            document.getElementById('pantallaLogin').style.display='flex'; 
+            document.getElementById('principal').style.display='none'; 
+            document.getElementById('btnLogout').style.display='none';
+            document.getElementById('passApp').value = "";
+        }
 
-            if (!btnPagar.dataset.interceptado) {
-                btnPagar.dataset.interceptado = "true";
-                btnPagar.addEventListener('click', () => {
-                    setTimeout(async () => {
-                        if (typeof refrescarDatos === 'function') {
-                            await refrescarDatos();
-                        }
-                    }, 600);
-                });
-            }
-        }
-        function formatearDNI(dni) {
-            if(!dni || dni.length < 3) return dni;
-            return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
-        }
+        function actualizarClave() {
+            const tipo = document.getElementById('tipoClave').value;
+            const nueva = document.getElementById('nuevaClaveInput').value.trim();
+            if(!nueva) return alert("Introduce una clave válida");
+            CLAVES[tipo] = nueva;
+            localStorage.setItem('claves_el6', JSON.stringify(CLAVES));
+            alert(`Clave de ${tipo.toUpperCase()} actualizada correctamente`);
+            document.getElementById('nuevaClaveInput').value = "";
+        }
 
-        function render() {
-            const b = document.getElementById('buscador').value.toLowerCase();
-            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
-            document.getElementById('st-total').innerText = db.length; 
-            document.getElementById('st-aforo').innerText = aforo; 
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            document.getElementById('lista').innerHTML = f.map(s => `
-                <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
-                    </td>
-                </tr>`).join('');
-        }
+        function inyectarInterceptosDePago() {
+            const btnPagar = document.getElementById('btnPagarTarjeta');
+            if (!btnPagar) return;
 
-        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
+            if (!btnPagar.dataset.interceptado) {
+                btnPagar.dataset.interceptado = "true";
+                btnPagar.addEventListener('click', () => {
+                    setTimeout(async () => {
+                        if (typeof refrescarDatos === 'function') {
+                            await refrescarDatos();
+                        }
+                    }, 600);
+                });
+            }
+        }
 
-        function exportarBaseDatos() {
-            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
-        }
+        function formatearDNI(dni) {
+            if(!dni || dni.length < 3) return dni;
+            return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
+        }
 
-        async function importarBaseDatos(event) {
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const datos = JSON.parse(e.target.result);
-                    if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
-                        for(let s of datos) {
-                            delete s.created_at;
-                            await _supabase.from(NOMBRE_TABLA).upsert(s);
-                        }
-                        alert("Importación completada"); refrescarDatos();
-                    }
-                } catch(err) { alert("Archivo no válido"); }
-            };
-            reader.readAsText(file);
-        }
-async function toggleCamara() {
-    const contenedorQr = document.getElementById('qr-space');
-    if (!contenedorQr) return;
+        function render() {
+            const b = document.getElementById('buscador').value.toLowerCase();
+            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
+            document.getElementById('st-total').innerText = db.length; 
+            document.getElementById('st-aforo').innerText = aforo; 
+            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+            document.getElementById('lista').innerHTML = f.map(s => `
+                <tr class="${s.vetado ? 'fila-vetada' : ''}">
+                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
+                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+                    </td>
+                </tr>`).join('');
+        }
 
-    if (camActiva) {
-        // Si está encendida, la apagamos
-        if (html5QrCode) {
-            await html5QrCode.stop();
-        }
-        contenedorQr.style.display = 'none';
-        camActiva = false;
-    } else {
-        // Si está apagada, la encendemos
-        contenedorQr.style.display = 'block';
-        html5QrCode = new Html5Qrcode("qr-space");
-        try {
-            await html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: 250 },
-                (textoQr) => {
-                    // Cuando lee un código QR
-                    const inputDni = document.getElementById('dni');
-                    if (inputDni) {
-                        inputDni.value = textoQr.toUpperCase().trim();
-                        if (typeof autocompletarSocio === "function") autocompletarSocio();
-                    }
-                    toggleCamara(); // Cierra la cámara al leer
-                }
-            );
-            camActiva = true;
-        } catch (err) {
-            alert("No se puede acceder a la cámara");
-        }
-    }
-}
-        function exportarExcel() {
-            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
-            db.forEach(s => {
-                if (s.dentro || s.hora || s.consumiciones) {
-                    csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
-                }
-            });
-            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
-        }
+        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
 
+        function exportarBaseDatos() {
+            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
+        }
+
+        async function importarBaseDatos(event) {
+            const file = event.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const datos = JSON.parse(e.target.result);
+                    if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
+                        for(let s of datos) {
+                            delete s.created_at;
+                            await _supabase.from(NOMBRE_TABLA).upsert(s);
+                        }
+                        alert("Importación completada"); refrescarDatos();
+                    }
+                } catch(err) { alert("Archivo no válido"); }
+            };
+            reader.readAsText(file);
+        }
+
+        async function toggleCamara() {
+            const contenedorQr = document.getElementById('qr-space');
+            if (!contenedorQr) return;
+
+            if (camActiva) {
+                if (html5QrCode) { await html5QrCode.stop(); }
+                contenedorQr.style.display = 'none';
+                camActiva = false;
+            } else {
+                contenedorQr.style.display = 'block';
+                html5QrCode = new Html5Qrcode("qr-space");
+                try {
+                    await html5QrCode.start(
+                        { facingMode: "environment" }, 
+                        { fps: 10, qrbox: 250 },
+                        (textoQr) => {
+                            const inputDni = document.getElementById('dni');
+                            if (inputDni) {
+                                inputDni.value = textoQr.toUpperCase().trim();
+                                if (typeof autocompletarSocio === "function") autocompletarSocio();
+                            }
+                            toggleCamara();
+                        }
+                    );
+                    camActiva = true;
+                } catch (err) { alert("No se puede acceder a la cámara"); }
+            }
+        }
+
+        function prepararCierreCaja() {
+            document.getElementById('modalLibroCajas').style.display = 'flex';
+            const desglose = document.getElementById('cajaDesgloseContenido');
+            if(desglose) {
+                desglose.innerHTML = `<p style="color:black;">Resumen de actividad para el cierre del aforo activo (${aforo} personas dentro).</p>`;
+            }
+            calcularDescuadreEnTiempoReal();
+        }
+
+        function calcularDescuadreEnTiempoReal() {
+            const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
+            const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
+            const totalIntroducido = tpv + efectivo;
+            const resContainer = document.getElementById('cajaResultadoCéntimo');
+            if(resContainer) {
+                resContainer.innerHTML = `<p style="color:black; font-weight:bold; margin-top:10px;">Total Contabilizado: ${totalIntroducido.toFixed(2)}€</p>`;
+            }
+        }
+
+        async function ejecutarCierreResetFinal() {
+            if(confirm("¿Confirmas el cierre definitivo de la noche? El aforo actual volverá a cero.")) {
+                try {
+                    await _supabase.from(NOMBRE_TABLA).update({ dentro: false });
+                    alert("Aforo reiniciado correctamente. ¡Noche cerrada!");
+                    document.getElementById('modalLibroCajas').style.display = 'none';
+                    refrescarDatos();
+                } catch(e) {
+                    alert("Error en el servidor al cerrar la noche.");
+                }
+            }
+        }
+
+        async function toggleEntrada(dni) { 
+            const s = db.find(x => x.dni === dni); 
+            if(!s) return;
+            await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); 
+            refrescarDatos(); 
+        }
+
+        async function tVeto(dni) { 
+            const m = prompt("Motivo del veto:"); 
+            if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } 
+        }
+
+        function reAbrir(dni) {
+            const s = db.find(x => x.dni === dni);
+            if(s) {
+                socioActual = s;
+                document.getElementById('card-id').innerText = "Nº " + (s.id || "---");
+                document.getElementById('card-nom').innerText = s.nombre || "---";
+                document.getElementById('card-dni').innerText = formatearDNI(s.dni);
+                document.getElementById('card-cat-abajo').innerText = s.cat || "Estándar";
+                document.getElementById('card-categoria-texto').innerText = s.cat || "Estándar";
+                actualizarVisualPago();
+                document.getElementById('modalTarjeta').style.display = 'flex';
+            }
+        }
+
+        function cerrar() {
+            document.getElementById('modalTarjeta').style.display = 'none';
+            socioActual = null;
+        }
+
+        function exportarExcel() {
+            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
+            db.forEach(s => {
+                if (s.dentro || s.hora || s.consumiciones) {
+                    csv += `${s.id || ''},${s.dni || ''},${s.nombre || ''},${s.cat || ''},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
+                }
+            });
+            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+        }
+    </script>
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
         async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
         
