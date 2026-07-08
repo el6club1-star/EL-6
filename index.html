@@ -352,16 +352,17 @@
             // Refresca la tabla visual trasera
             render();
             
-            // Si tienes la tarjeta abierta de ese socio, la refresca al instante sin cerrarla
+            // Si tienes la tarjeta abierta de ese socio...
             if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
-                reAbrir(socioActual.dni); 
-
-                // 🌟 SINCRONIZACIÓN EN TIEMPO REAL PARA EL CAMARERO 🌟
-                // Forzamos a que se vuelva a ejecutar abrirTarjeta con los nuevos datos modificados por el jefe
-                // para que la burbuja externa de copas se redibuje sola en el acto.
-                if (typeof abrirTarjeta === 'function') {
-                    abrirTarjeta(socioActual);
+                
+                // 🌟 PROTECCIÓN ANTI-RÁFAGA: Si es camarero, NO forzamos el reabierto agresivo en caliente
+                // para evitar que los botones y el número de copas parpadeen al restar.
+                if (nivel !== 'camarero') {
+                    reAbrir(socioActual.dni); 
+                    if (typeof abrirTarjeta === 'function') {
+                        abrirTarjeta(socioActual);
+                    }
                 }
 
                 if (typeof refrescarDatos === 'function') {
@@ -376,25 +377,28 @@
         const style = document.createElement('style');
         style.id = 'ocultarMasCamarero';
         style.innerHTML = `
-            /* Ocultación instantánea por CSS para evitar ráfagas y parpadeos al redibujar en tiempo real */
+            /* Ocultamos por completo el botón del más para el rol camarero en cualquier sección */
             #card-consumos button[onclick*=", 1)"],
             #card-consumos button[onclick*=",1)"],
             #ventanilla-consumos button[onclick*=", 1)"],
-            #ventanilla-consumos button[onclick*=",1)"] {
+            #ventanilla-consumos button[onclick*=",1)"],
+            #card-consumos div button:last-of-type,
+            #ventanilla-consumos div button:last-of-type,
+            #card-consumos td button:last-of-type,
+            #ventanilla-consumos td button:last-of-type {
                 display: none !important;
             }
         `;
         document.head.appendChild(style);
 
-        // Como los botones de las copas se crean al vuelo repetidamente, este intervalo se asegura de borrar el de '+' en cuanto asome
         setInterval(() => {
-            // AJUSTE CLAVE: Añadida la ventanilla flotante a la búsqueda para fulminar el '+' ahí también
             document.querySelectorAll('#card-consumos button, #ventanilla-consumos button').forEach(btn => {
-                if (btn.innerText.includes('+') || btn.innerText.toLowerCase().includes('sumar') || btn.getAttribute('onclick')?.includes('sumar') || btn.getAttribute('onclick')?.includes(', 1)')) {
+                const clickAttr = btn.getAttribute('onclick') || '';
+                if (btn.innerText.includes('+') || clickAttr.includes(', 1)') || clickAttr.includes(',1)')) {
                     btn.style.setProperty('display', 'none', 'important');
                 }
             });
-        }, 100);
+        }, 50);
     }
 }
 
