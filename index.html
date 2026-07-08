@@ -357,9 +357,13 @@
                 socioActual = payload.new;
                 reAbrir(socioActual.dni); 
 
-                // 🌟 NUEVA INSTRUCCIÓN CLAVE: 🌟
-                // Si el camarero está viendo la burbuja de copas de este socio en este instante,
-                // forzamos la recarga inmediata de los contadores con el cambio del jefe.
+                // 🌟 SINCRONIZACIÓN EN TIEMPO REAL PARA EL CAMARERO 🌟
+                // Forzamos a que se vuelva a ejecutar abrirTarjeta con los nuevos datos modificados por el jefe
+                // para que la burbuja externa de copas se redibuje sola en el acto.
+                if (typeof abrirTarjeta === 'function') {
+                    abrirTarjeta(socioActual);
+                }
+
                 if (typeof refrescarDatos === 'function') {
                     refrescarDatos();
                 }
