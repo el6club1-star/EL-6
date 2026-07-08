@@ -306,32 +306,34 @@
             }
         }
 
-        function validarEntrada() {
-            const p = document.getElementById('passApp').value;
-            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
-        }
+       function validarEntrada() {
+    const p = document.getElementById('passApp').value;
+    if (p === CLAVES.jefe) { nivel = "jefe"; entrar(); } 
+    else if (p === CLAVES.puerta) { nivel = "personal"; entrar(); } 
+    else if (p === CLAVES.camarero) { nivel = "camarero"; entrar(); } 
+    else alert("CÓDIGO INCORRECTO");
+}
 
-       function entrar() { 
-    document.getElementById('pantallaLogin').style.display='none'; 
-    document.getElementById('principal').style.display='block'; 
-    document.getElementById('btnLogout').style.display='block'; 
-    if(nivel === 'jefe') { 
-        document.getElementById('btnExport').style.display='block'; 
-        document.getElementById('btnReset').style.display='block'; 
-        document.getElementById('panelAdmin').style.display='grid'; 
-        document.getElementById('adminExtra').style.display='flex';
+function entrar() { 
+    document.getElementById('pantallaLogin').style.display = 'none'; 
+    document.getElementById('principal').style.display = 'block'; 
+    document.getElementById('btnLogout').style.display = 'block'; 
+    
+    if (nivel === 'jefe') { 
+        document.getElementById('btnExport').style.display = 'block'; 
+        document.getElementById('btnReset').style.display = 'block'; 
+        document.getElementById('panelAdmin').style.display = 'grid'; 
+        document.getElementById('adminExtra').style.display = 'flex';
         document.getElementById('configClaves').style.display = 'block';
     }
- if(nivel === 'camarero') {
+    
+    if (nivel === 'camarero') {
         document.getElementById('cajaRegistro').style.display = 'none';
         document.getElementById('btnReset').style.display = 'none';
         document.getElementById('panelAdmin').style.display = 'none';
-        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+        if (document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+        if (document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+        if (document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
     }
 
     const botonCamaraPrincipal = document.getElementById('btnCam');
@@ -339,22 +341,18 @@
         botonCamaraPrincipal.style.display = 'block';
     }
 
-    // Activamos la escucha del botón pagar justo al entrar
     inyectarInterceptosDePago();
     refrescarDatos();
 
-    // === ESCUCHA EN TIEMPO REAL (FUSIONADA Y SINCRONIZADA ORIGINAL) ===
+    // === ESCUCHA EN TIEMPO REAL (SUPABASE) ===
     _supabase
         .channel('cambios-en-directo')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-            // Actualiza la lista en memoria local con el cambio recibido de Supabase
             db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
             aforo = db.filter(x => x.dentro).length;
             
-            // Refresca la tabla visual trasera
             render();
             
-            // Si tienes la tarjeta abierta de ese socio, la refresca al instante
             if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
                 reAbrir(socioActual.dni); 
@@ -370,12 +368,11 @@
         })
         .subscribe();
 
-    // === QUITAR SOLO EL BOTÓN DE MÁS PARA EL CAMARERO ===
+    // === CAPA EXTRA DE OCULTACIÓN PARA EL CAMARERO ===
     if (nivel === 'camarero') {
         const style = document.createElement('style');
         style.id = 'ocultarMasCamarero';
         style.innerHTML = `
-            /* Esto fulmina el botón '+' al instante en la tarjeta y en la ventanilla flotante por CSS */
             #card-consumos button[onclick*=", 1)"],
             #card-consumos button[onclick*=",1)"],
             #ventanilla-consumos button[onclick*=", 1)"],
@@ -389,7 +386,6 @@
         `;
         document.head.appendChild(style);
 
-        // Intervalo clásico de apoyo para asegurar el borrado por texto
         setInterval(() => {
             document.querySelectorAll('#card-consumos button, #ventanilla-consumos button').forEach(btn => {
                 const clickAttr = btn.getAttribute('onclick') || '';
@@ -401,7 +397,6 @@
     }
 }
 
-// NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
     const btnPagar = document.getElementById('btnPagarTarjeta');
     if (!btnPagar) return;
@@ -417,136 +412,155 @@ function inyectarInterceptosDePago() {
         });
     }
 }
-        function formatearDNI(dni) {
-            if(!dni || dni.length < 3) return dni;
-            return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
-        }
 
-        function render() {
-            const b = document.getElementById('buscador').value.toLowerCase();
-            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
-            document.getElementById('st-total').innerText = db.length; 
-            document.getElementById('st-aforo').innerText = aforo; 
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            document.getElementById('lista').innerHTML = f.map(s => `
-                <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
-                    </td>
-                </tr>`).join('');
-        }
+function formatearDNI(dni) {
+    if (!dni || dni.length < 3) return dni;
+    return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
+}
 
-        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
+function render() {
+    const b = document.getElementById('buscador').value.toLowerCase();
+    let f = db.filter(x => (x.nombre || "").toLowerCase().includes(b) || (x.dni || "").toLowerCase().includes(b));
+    if ((nivel === "personal" || nivel === "camarero") && b === "") f = [];
+    
+    document.getElementById('st-total').innerText = db.length; 
+    document.getElementById('st-aforo').innerText = aforo; 
+    document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+    
+    document.getElementById('lista').innerHTML = f.map(s => `
+        <tr class="${s.vetado ? 'fila-vetada' : ''}">
+            <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+            <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+            <td>
+                <button class="btn-acc" style="${nivel === 'camarero' ? 'display:none' : ''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                <button class="btn-acc" style="${nivel === 'camarero' ? 'display:none' : ''}" onclick="tVeto('${s.dni}')">VETO</button>
+                <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                <button class="btn-acc" style="color:red; ${nivel !== 'jefe' ? 'display:none' : ''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+            </td>
+        </tr>`).join('');
+}
 
-        function exportarBaseDatos() {
-            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
-        }
+async function borrarSocio(dni) { 
+    if (confirm("¿Borrar socio?")) { 
+        await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); 
+        refrescarDatos(); 
+    } 
+}
 
-        async function importarBaseDatos(event) {
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const datos = JSON.parse(e.target.result);
-                    if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
-                        for(let s of datos) {
-                            delete s.created_at;
-                            await _supabase.from(NOMBRE_TABLA).upsert(s);
-                        }
-                        alert("Importación completada"); refrescarDatos();
-                    }
-                } catch(err) { alert("Archivo no válido"); }
-            };
-            reader.readAsText(file);
-        }
+function exportarBaseDatos() {
+    const blob = new Blob([JSON.stringify(db)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
+}
 
-        function exportarExcel() {
-            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
-            db.forEach(s => {
-                if (s.dentro || s.hora || s.consumiciones) {
-                    csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
+async function importarBaseDatos(event) {
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        try {
+            const datos = JSON.parse(e.target.result);
+            if (Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
+                for (let s of datos) {
+                    delete s.created_at;
+                    await _supabase.from(NOMBRE_TABLA).upsert(s);
                 }
-            });
-            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+                alert("Importación completada"); refrescarDatos();
+            }
+        } catch (err) { alert("Archivo no válido"); }
+    };
+    reader.readAsText(file);
+}
+
+function exportarExcel() {
+    let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
+    db.forEach(s => {
+        if (s.dentro || s.hora || s.consumiciones) {
+            csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro ? 'DENTRO' : 'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
         }
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+}
 
-        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
-        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
-        
-        async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            const e = document.getElementById('mail').value;
-            const c = document.getElementById('cumple').value;
-            const cat = document.getElementById('cat').value;
-            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            
-            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-                hora: new Date().toLocaleTimeString(), cat: cat 
-            }).select();
-            
-            if (error) {
-                alert("Error al registrar: " + error.message);
-                return;
-            }
+async function toggleEntrada(dni) { 
+    const s = db.find(x => x.dni === dni); 
+    await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); 
+    refrescarDatos(); 
+}
 
-            if(e) {
-                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                    to_name: n, to_email: e, dni: d, categoria: cat
-                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-            }
+async function tVeto(dni) { 
+    const m = prompt("Motivo:"); 
+    if (m) { 
+        await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); 
+        refrescarDatos(); 
+    } 
+}
 
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
+async function registrar() {
+    const d = document.getElementById('dni').value.toUpperCase();
+    const n = document.getElementById('nom').value;
+    const e = document.getElementById('mail').value;
+    const c = document.getElementById('cumple').value;
+    const cat = document.getElementById('cat').value;
+    if (!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+    
+    const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+        dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+        hora: new Date().toLocaleTimeString(), cat: cat 
+    }).select();
+    
+    if (error) {
+        alert("Error al registrar: " + error.message);
+        return;
+    }
 
-            await refrescarDatos(); 
-            if(data && data[0]) {
-                abrirTarjeta(data[0]);
-            } else {
-                const recienCreado = db.find(x => x.dni === d);
-                if(recienCreado) abrirTarjeta(recienCreado);
-            }
-        }
+    if (e) {
+        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+            to_name: n, to_email: e, dni: d, categoria: cat
+        }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
+    }
 
-        function toggleCamara() {
-            const readerDiv = document.getElementById('reader');
-            const btn = document.getElementById('btnCam');
-            if(!camActiva) {
-                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-                    async (text) => {
-                        btn.click();
-                        const socio = db.find(x => x.dni === text.trim().toUpperCase());
-                        if(socio) {
-                            if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
-                            await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
-                            refrescarDatos(); abrirTarjeta(socio);
-                        } else {
-                            if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
-                                document.getElementById('dni').value = text.trim().toUpperCase();
-                                document.getElementById('nom').focus();
-                            }
-                        }
-                    }, () => {}
-                );
-            } else {
-                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
-                if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
-            }
-        }
+    document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+    document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+    document.getElementById('checkRGPD').checked = false;
 
-       function abrirTarjeta(s) {
+    await refrescarDatos(); 
+    if (data && data[0]) {
+        abrirTarjeta(data[0]);
+    } else {
+        const recienCreado = db.find(x => x.dni === d);
+        if (recienCreado) abrirTarjeta(recienCreado);
+    }
+}
+
+function toggleCamara() {
+    const readerDiv = document.getElementById('reader');
+    const btn = document.getElementById('btnCam');
+    if (!camActiva) {
+        readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+            async (text) => {
+                btn.click();
+                const socio = db.find(x => x.dni === text.trim().toUpperCase());
+                if (socio) {
+                    if (socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
+                    await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
+                    refrescarDatos(); abrirTarjeta(socio);
+                } else {
+                    if (confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
+                        document.getElementById('dni').value = text.trim().toUpperCase();
+                        document.getElementById('nom').focus();
+                    }
+                }
+            }, () => { }
+        );
+    } else {
+        readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
+        if (html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
+    }
+}
+
+function abrirTarjeta(s) {
     socioActual = s;
     const card = document.getElementById('cardMain');
     const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -557,17 +571,15 @@ function inyectarInterceptosDePago() {
     document.getElementById('card-dni').innerText = s.dni;
     document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
     
-   // 🛡️ RECONSTRUCCIÓN SEGURA: Mapeamos los consumos aquí mismo para evitar errores de indefinido
     let consumosSocio = {};
     if (typeof productosValidos !== 'undefined') {
         productosValidos.forEach(p => consumosSocio[p] = 0);
         
-        // Extraemos el stringOriginal de forma segura basándonos en el socio 's'
         const stringOriginal = String(s && s.consumiciones ? s.consumiciones : '').trim();
         if (stringOriginal.includes(':')) {
             stringOriginal.split(',').forEach(item => {
                 const [prod, cant] = item.split(':');
-                if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
+                if (prod && productosValidos.includes(prod.trim().toUpperCase())) {
                     consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
                 }
             });
@@ -609,7 +621,6 @@ function inyectarInterceptosDePago() {
             const cantidad = consumosSocio[prod] || 0;
             const miNivel = (typeof nivel !== 'undefined') ? nivel : 'camarero';
             
-            // 🚀 CONTROL ABSOLUTO: Si eres camarero, el botón '+' NO SE ESCRIBE EN ABSOLUTO
             const botonMasHTML = (miNivel === 'camarero') 
                 ? `<div style="width: 26px; height: 26px;"></div>` 
                 : `<button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>`;
@@ -619,9 +630,7 @@ function inyectarInterceptosDePago() {
                     <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
-                        
                         <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
-                        
                         ${botonMasHTML}
                     </div>
                 </div>
@@ -629,6 +638,12 @@ function inyectarInterceptosDePago() {
         });
     }
 
+    // Cerramos la etiqueta div contenedora de los productos de la burbuja
+    htmlBurbuja += `s\n        </div>`;
+    
+    // Inyectamos el string completo generado en el DOM de la ventanilla flotante
+    burbujaExterna.innerHTML = htmlBurbuja;
+}
     htmlBurbuja += `</div>`;
     burbujaExterna.innerHTML = htmlBurbuja;
 
