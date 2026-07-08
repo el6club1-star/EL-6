@@ -341,43 +341,28 @@
     inyectarInterceptosDePago();
     refrescarDatos();
 
-    // === ESCUCHA EN TIEMPO REAL (FUSIONADA Y SINCRONIZADA) ===
+    // === ESCUCHA EN TIEMPO REAL (FUSIONADA Y SINCRONIZADA ORIGINAL) ===
     _supabase
         .channel('cambios-en-directo')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-            // Guardamos el DNI del socio modificado
-            const dniCambiado = payload.new.dni;
-
             // Actualiza la lista en memoria local con el cambio recibido de Supabase
-            db = db.map(socio => socio.dni === dniCambiado ? payload.new : socio);
+            db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
             aforo = db.filter(x => x.dentro).length;
             
             // Refresca la tabla visual trasera
             render();
             
-            // Si tienes la tarjeta abierta de ese socio...
-            if (socioActual && socioActual.dni === dniCambiado) {
-                // Comprobamos si el cambio en la base de datos es exactamente el mismo que ya tenemos en memoria local.
-                // Si las copas en la BD coinciden con lo que el camarero ya ve en pantalla, NO redibujamos para evitar la ráfaga.
-                const esMismoConsumo = JSON.stringify(socioActual.consumos) === JSON.stringify(payload.new.consumos) || 
-                                       JSON.stringify(socioActual.copas) === JSON.stringify(payload.new.copas);
-
+            // Si tienes la tarjeta abierta de ese socio, la refresca al instante
+            if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
-                
-                if (nivel === 'camarero' && esMismoConsumo) {
-                    // Si eres camarero y tú mismo has provocado el cambio restando, no refrescamos de golpe para evitar parpadeos
-                    if (typeof refrescarDatos === 'function') {
-                        refrescarDatos();
-                    }
-                } else {
-                    // En la carga inicial (QR) o si el administrador cambia algo desde su panel, se abre al instante
-                    reAbrir(dniCambiado); 
-                    if (typeof abrirTarjeta === 'function') {
-                        abrirTarjeta(socioActual);
-                    }
-                    if (typeof refrescarDatos === 'function') {
-                        refrescarDatos();
-                    }
+                reAbrir(socioActual.dni); 
+
+                if (typeof abrirTarjeta === 'function') {
+                    abrirTarjeta(socioActual);
+                }
+
+                if (typeof refrescarDatos === 'function') {
+                    refrescarDatos();
                 }
             }
         })
@@ -388,7 +373,7 @@
         const style = document.createElement('style');
         style.id = 'ocultarMasCamarero';
         style.innerHTML = `
-            /* Ocultamos por completo el botón del más para el rol camarero en cualquier sección */
+            /* Esto fulmina el botón '+' al instante en la tarjeta y en la ventanilla flotante por CSS */
             #card-consumos button[onclick*=", 1)"],
             #card-consumos button[onclick*=",1)"],
             #ventanilla-consumos button[onclick*=", 1)"],
@@ -402,6 +387,7 @@
         `;
         document.head.appendChild(style);
 
+        // Intervalo clásico de apoyo para asegurar el borrado por texto
         setInterval(() => {
             document.querySelectorAll('#card-consumos button, #ventanilla-consumos button').forEach(btn => {
                 const clickAttr = btn.getAttribute('onclick') || '';
