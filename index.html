@@ -340,6 +340,25 @@
             // Activamos la escucha del botón pagar justo al entrar
             inyectarInterceptosDePago();
             refrescarDatos();
+
+            // === ESCUCHA EN TIEMPO REAL (FUSIONADA) ===
+            _supabase
+                .channel('cambios-en-directo')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
+                    // Actualiza la lista en memoria local con el cambio recibido de Supabase
+                    db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
+                    aforo = db.filter(x => x.dentro).length;
+                    
+                    // Refresca la tabla visual trasera
+                    render();
+                    
+                    // Si tienes la tarjeta abierta de ese socio, la refresca al instante sin cerrarla
+                    if (socioActual && socioActual.dni === payload.new.dni) {
+                        socioActual = payload.new;
+                        reAbrir(socioActual.dni); 
+                    }
+                })
+                .subscribe();
         }
 
         // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
