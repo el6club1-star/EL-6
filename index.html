@@ -376,9 +376,12 @@
         const style = document.createElement('style');
         style.id = 'ocultarMasCamarero';
         style.innerHTML = `
-            #card-consumos button:not([onclick*="restar"]):not(:disabled),
-            #card-consumos button {
-                /* Si el botón contiene un + o una palabra de sumar, lo fulminamos por CSS */
+            /* Ocultación instantánea por CSS para evitar ráfagas y parpadeos al redibujar en tiempo real */
+            #card-consumos button[onclick*=", 1)"],
+            #card-consumos button[onclick*=",1)"],
+            #ventanilla-consumos button[onclick*=", 1)"],
+            #ventanilla-consumos button[onclick*=",1)"] {
+                display: none !important;
             }
         `;
         document.head.appendChild(style);
@@ -394,6 +397,7 @@
         }, 100);
     }
 }
+
 // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
     const btnPagar = document.getElementById('btnPagarTarjeta');
