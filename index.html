@@ -785,24 +785,26 @@ function inyectarInterceptosDePago() {
             ctx.beginPath();
         }
         
-        async function guardarFirmaSocio() { 
-            const firmaB64 = canvas.toDataURL();
-            if(origenFirma === 'tarjeta' && socioActual) {
-                await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
-                socioActual.firma_b64 = firmaB64;
-                if(typeof refrescarDatos === 'function') refrescarDatos();
-                alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
-                cerrarFirma(); 
-                abrirTarjeta(socioActual);
-            } else {
-                socioActual = socioActual || {};
-                socioActual.firma_b64 = firmaB64;
-                document.getElementById('checkRGPD').checked = true; 
-                alert("Estatutos aceptados para el nuevo registro.");
-                cerrarFirma();
-            }
-        }
+       async function guardarFirmaSocio() { 
+    const firmaB64 = canvas.toDataURL();
+    if(origenFirma === 'tarjeta' && socioActual) {
+        // Guardamos en local inmediatamente para que no le afecte el parpadeo del tiempo real
+        socioActual.firma_b64 = firmaB64;
         
+        await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
+        
+        if(typeof refrescarDatos === 'function') await refrescarDatos();
+        alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
+        cerrarFirma(); 
+        abrirTarjeta(socioActual);
+    } else {
+        socioActual = socioActual || {};
+        socioActual.firma_b64 = firmaB64;
+        document.getElementById('checkRGPD').checked = true; 
+        alert("Estatutos aceptados para el nuevo registro.");
+        cerrarFirma();
+    }
+}
         function actualizarClave() {
             const t = document.getElementById('tipoClave').value; const n = document.getElementById('nuevaClaveInput').value;
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
