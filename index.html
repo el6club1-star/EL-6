@@ -341,7 +341,7 @@
     inyectarInterceptosDePago();
     refrescarDatos();
 
-    // === ESCUCHA EN TIEMPO REAL (FUSIONADA) ===
+    // === ESCUCHA EN TIEMPO REAL (FUSIONADA Y SINCRONIZADA) ===
     _supabase
         .channel('cambios-en-directo')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
@@ -356,6 +356,13 @@
             if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
                 reAbrir(socioActual.dni); 
+
+                // 🌟 NUEVA INSTRUCCIÓN CLAVE: 🌟
+                // Si el camarero está viendo la burbuja de copas de este socio en este instante,
+                // forzamos la recarga inmediata de los contadores con el cambio del jefe.
+                if (typeof refrescarDatos === 'function') {
+                    refrescarDatos();
+                }
             }
         })
         .subscribe();
