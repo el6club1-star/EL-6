@@ -555,21 +555,24 @@ function inyectarInterceptosDePago() {
     document.getElementById('card-dni').innerText = s.dni;
     document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
     
+   // 🛡️ RECONSTRUCCIÓN SEGURA: Mapeamos los consumos aquí mismo para evitar errores de indefinido
     let consumosSocio = {};
-    productosValidos.forEach(p => consumosSocio[p] = 0);
-    
-    const stringOriginal = String(s.consumiciones || '').trim();
-    
-    if (stringOriginal.includes(':')) {
-        stringOriginal.split(',').forEach(item => {
-            const [prod, cant] = item.split(':');
-            if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
-            }
-        });
+    if (typeof productosValidos !== 'undefined') {
+        productosValidos.forEach(p => consumosSocio[p] = 0);
+        
+        // Extraemos el stringOriginal de forma segura basándonos en el socio 's'
+        const stringOriginal = String(s && s.consumiciones ? s.consumiciones : '').trim();
+        if (stringOriginal.includes(':')) {
+            stringOriginal.split(',').forEach(item => {
+                const [prod, cant] = item.split(':');
+                if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
+                    consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
+                }
+            });
+        }
     }
 
-   let htmlConsumos = `
+    let htmlConsumos = `
         <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
             <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                 ⚡ GESTIONAR CONSUMICIONES ▾
@@ -585,27 +588,11 @@ function inyectarInterceptosDePago() {
         burbujaExterna.id = 'ventanilla-consumos';
         burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
         
-        // Intentamos meterlo en el modal, y si falla, al body directamente para que no desaparezca
         const contenedorPadre = document.getElementById('modalTarjeta') || document.body;
         contenedorPadre.appendChild(burbujaExterna);
     }
     
     burbujaExterna.innerHTML = "";
-
-    // 🛡️ RECONSTRUCCIÓN SEGURA: Mapeamos los consumos aquí mismo para evitar que de error de indefinido
-    let consumosSocio = {};
-    if (typeof productosValidos !== 'undefined') {
-        productosValidos.forEach(p => consumosSocio[p] = 0);
-        const stringOriginal = String(s && s.consumiciones ? s.consumiciones : '').trim();
-        if (stringOriginal.includes(':')) {
-            stringOriginal.split(',').forEach(item => {
-                const [prod, cant] = item.split(':');
-                if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                    consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
-                }
-            });
-        }
-    }
 
     let htmlBurbuja = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
@@ -620,7 +607,7 @@ function inyectarInterceptosDePago() {
             const cantidad = consumosSocio[prod] || 0;
             const miNivel = (typeof nivel !== 'undefined') ? nivel : 'camarero';
             
-            // 🚀 CONTROL ABSOLUTO: Si eres camarero, el botón '+' NO SE ESCRIBE
+            // 🚀 CONTROL ABSOLUTO: Si eres camarero, el botón '+' NO SE ESCRIBE EN ABSOLUTO
             const botonMasHTML = (miNivel === 'camarero') 
                 ? `<div style="width: 26px; height: 26px;"></div>` 
                 : `<button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>`;
@@ -693,8 +680,8 @@ function inyectarInterceptosDePago() {
                 img.src = s.firma_b64;
             }
         }
-    }, 80); // Le damos 80 milisegundos para asegurar que el HTML se ha montado bien
-}
+    }, 80);
+} // <--- Cierre correcto de la función abrirTarjeta
 
 function abrirBurbujaFlotante() {
     const ventanilla = document.getElementById('ventanilla-consumos');
