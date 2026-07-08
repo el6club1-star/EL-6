@@ -544,182 +544,187 @@ function inyectarInterceptosDePago() {
             }
         }
 
-        function abrirTarjeta(s) {
-           socioActual = s;
-            const card = document.getElementById('cardMain');
-            const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
-            card.className = `card-vip cat-${catLimpia}`;
-            
-            document.getElementById('card-id').innerText = "Nº " + s.id;
-            document.getElementById('card-nom').innerText = s.nombre; 
-            document.getElementById('card-dni').innerText = s.dni;
-            document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
-            
-            let consumosSocio = {};
-            productosValidos.forEach(p => consumosSocio[p] = 0);
-            
-            const stringOriginal = String(s.consumiciones || '').trim();
-            
-            if (stringOriginal.includes(':')) {
-                stringOriginal.split(',').forEach(item => {
-                    const [prod, cant] = item.split(':');
-                    if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                        consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
-                    }
-                });
+       function abrirTarjeta(s) {
+    socioActual = s;
+    const card = document.getElementById('cardMain');
+    const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
+    card.className = `card-vip cat-${catLimpia}`;
+    
+    document.getElementById('card-id').innerText = "Nº " + s.id;
+    document.getElementById('card-nom').innerText = s.nombre; 
+    document.getElementById('card-dni').innerText = s.dni;
+    document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
+    
+    let consumosSocio = {};
+    productosValidos.forEach(p => consumosSocio[p] = 0);
+    
+    const stringOriginal = String(s.consumiciones || '').trim();
+    
+    if (stringOriginal.includes(':')) {
+        stringOriginal.split(',').forEach(item => {
+            const [prod, cant] = item.split(':');
+            if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
+                consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
             }
+        });
+    }
 
-            let htmlConsumos = `
-                <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
-                    <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                        ⚡ GESTIONAR CONSUMICIONES ▾
-                    </button>
+    let htmlConsumos = `
+        <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
+            <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                ⚡ GESTIONAR CONSUMICIONES ▾
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('card-consumos').innerHTML = htmlConsumos;
+
+    let burbujaExterna = document.getElementById('ventanilla-consumos');
+    if (!burbujaExterna) {
+        burbujaExterna = document.createElement('div');
+        burbujaExterna.id = 'ventanilla-consumos';
+        burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
+        document.getElementById('modalTarjeta').appendChild(burbujaExterna);
+    }
+    
+    burbujaExterna.innerHTML = "";
+
+    let htmlBurbuja = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
+            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
+            <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+    `;
+
+    productosValidos.forEach(prod => {
+        const cantidad = consumosSocio[prod];
+        
+        // 🚀 CONTROL ABSOLUTO: Si el nivel es camarero, omitimos el HTML del botón más por completo
+        const botonMasHTML = (nivel === 'camarero') 
+            ? `<div style="width: 26px; height: 26px;"></div>` // Espacio vacío idéntico para no descuadrar el diseño
+            : `<button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>`;
+
+        htmlBurbuja += `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
+                <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                    
+                    <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
+                    
+                    ${botonMasHTML}
                 </div>
-            `;
-            
-            document.getElementById('card-consumos').innerHTML = htmlConsumos;
+            </div>
+        `;
+    });
 
-            let burbujaExterna = document.getElementById('ventanilla-consumos');
-            if (!burbujaExterna) {
-                burbujaExterna = document.createElement('div');
-                burbujaExterna.id = 'ventanilla-consumos';
-                burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
-                document.getElementById('modalTarjeta').appendChild(burbujaExterna);
-            }
-            
-            burbujaExterna.innerHTML = "";
+    htmlBurbuja += `</div>`;
+    burbujaExterna.innerHTML = htmlBurbuja;
 
-            let htmlBurbuja = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
-                    <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
-                    <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-            `;
-
-            productosValidos.forEach(prod => {
-                const cantidad = consumosSocio[prod];
-                
-                htmlBurbuja += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
-                        <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
-                            
-                            <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
-                            
-                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            htmlBurbuja += `</div>`;
-            burbujaExterna.innerHTML = htmlBurbuja;
-
-            const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
-            btnsTarjeta.forEach(btn => {
-                const texto = btn.innerText.toUpperCase();
-                if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
-                
-                if (nivel === 'camarero') {
-                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                        btn.style.display = 'none';
-                    } else {
-                        btn.style.display = '';
-                    }
-                } else {
-                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                        btn.style.display = ''; 
-                    }
-                }
-            });
-            
-            const firmaPrev = document.getElementById('previewFirmaSocio');
-            if(s.firma_b64) {
-                firmaPrev.src = s.firma_b64;
-                firmaPrev.style.display = 'block';
+    const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
+    btnsTarjeta.forEach(btn => {
+        const texto = btn.innerText.toUpperCase();
+        if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
+        
+        if (nivel === 'camarero') {
+            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                btn.style.display = 'none';
             } else {
-                firmaPrev.style.display = 'none';
+                btn.style.display = '';
             }
-
-            document.getElementById('qr-space').innerHTML = ""; 
-            const qr = new QRious({value: s.dni, size: 140}); 
-            document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
-            
-            actualizarVisualPago();
-            document.getElementById('cardMain').style.display = 'block';
-            document.getElementById('box-firma').style.display = 'none';
-            document.getElementById('modalTarjeta').style.display = 'flex';
-
-            // === 🌟 PARCHE PARA QUE LA FIRMA NO SE BORRE DEL CUADRADITO 🌟 ===
-            setTimeout(() => {
-                if (s && s.firma_b64) {
-                    const canvasFirma = document.getElementById('canvasFirma');
-                    if (canvasFirma) {
-                        const ctx = canvasFirma.getContext('2d');
-                        const img = new Image();
-                        img.onload = function() {
-                            ctx.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
-                            ctx.drawImage(img, 0, 0);
-                        };
-                        img.src = s.firma_b64;
-                    }
-                }
-            }, 80); // Le damos 80 milisegundos para asegurar que el HTML se ha montado bien
-        }
-
-        function abrirBurbujaFlotante() {
-            const ventanilla = document.getElementById('ventanilla-consumos');
-            if (ventanilla) {
-                ventanilla.style.display = 'block';
+        } else {
+            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                btn.style.display = ''; 
             }
         }
+    });
+    
+    const firmaPrev = document.getElementById('previewFirmaSocio');
+    if(s.firma_b64) {
+        firmaPrev.src = s.firma_b64;
+        firmaPrev.style.display = 'block';
+    } else {
+        firmaPrev.style.display = 'none';
+    }
 
-        async function modificarCantidadDirecta(dni, producto, cambio) {
-            const prodKey = producto.toUpperCase();
-            
-            let socioActivo = null;
-            if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
-            if (!socioActivo) socioActivo = socioActual;
+    document.getElementById('qr-space').innerHTML = ""; 
+    const qr = new QRious({value: s.dni, size: 140}); 
+    document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
+    
+    actualizarVisualPago();
+    document.getElementById('cardMain').style.display = 'block';
+    document.getElementById('box-firma').style.display = 'none';
+    document.getElementById('modalTarjeta').style.display = 'flex';
 
-            let consumos = {};
-            productosValidos.forEach(p => consumos[p] = 0);
-
-            const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
-            if (stringOriginal.includes(':')) {
-                stringOriginal.split(',').forEach(item => {
-                    const [p, c] = item.split(':');
-                    if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
-                });
-            }
-
-            let cantActual = consumos[prodKey] || 0;
-            let nuevaCant = cantActual + cambio;
-            if (nuevaCant < 0) nuevaCant = 0;
-            consumos[prodKey] = nuevaCant;
-
-            const elementoContador = document.getElementById(`v-cant-${producto}`);
-            if (elementoContador) {
-                elementoContador.innerText = nuevaCant;
-                elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
-            }
-
-            let resultadoString = Object.keys(consumos)
-                .filter(p => consumos[p] > 0)
-                .map(p => `${p}:${consumos[p]}`)
-                .join(','); 
-
-            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
-            
-            if (typeof db !== 'undefined') {
-                let idx = db.findIndex(x => x.dni === dni);
-                if (idx !== -1) db[idx].consumiciones = resultadoString;
-            }
-            if (socioActual && socioActual.dni === dni) {
-                socioActual.consumiciones = resultadoString;
+    // === 🌟 PARCHE PARA QUE LA FIRMA NO SE BORRE DEL CUADRADITO 🌟 ===
+    setTimeout(() => {
+        if (s && s.firma_b64) {
+            const canvasFirma = document.getElementById('canvasFirma');
+            if (canvasFirma) {
+                const ctx = canvasFirma.getContext('2d');
+                const img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = s.firma_b64;
             }
         }
+    }, 80); // Le damos 80 milisegundos para asegurar que el HTML se ha montado bien
+}
+
+function abrirBurbujaFlotante() {
+    const ventanilla = document.getElementById('ventanilla-consumos');
+    if (ventanilla) {
+        ventanilla.style.display = 'block';
+    }
+}
+
+async function modificarCantidadDirecta(dni, producto, cambio) {
+    const prodKey = producto.toUpperCase();
+    
+    let socioActivo = null;
+    if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
+    if (!socioActivo) socioActivo = socioActual;
+
+    let consumos = {};
+    productosValidos.forEach(p => consumos[p] = 0);
+
+    const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
+    if (stringOriginal.includes(':')) {
+        stringOriginal.split(',').forEach(item => {
+            const [p, c] = item.split(':');
+            if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+        });
+    }
+
+    let cantActual = consumos[prodKey] || 0;
+    let nuevaCant = cantActual + cambio;
+    if (nuevaCant < 0) nuevaCant = 0;
+    consumos[prodKey] = nuevaCant;
+
+    const elementoContador = document.getElementById(`v-cant-${producto}`);
+    if (elementoContador) {
+        elementoContador.innerText = nuevaCant;
+        elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
+    }
+
+    let resultadoString = Object.keys(consumos)
+        .filter(p => consumos[p] > 0)
+        .map(p => `${p}:${consumos[p]}`)
+        .join(','); 
+
+    await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+    
+    if (typeof db !== 'undefined') {
+        let idx = db.findIndex(x => x.dni === dni);
+        if (idx !== -1) db[idx].consumiciones = resultadoString;
+    }
+    if (socioActual && socioActual.dni === dni) {
+        socioActual.consumiciones = resultadoString;
+    }
+}
 
       // FUNCIÓN DEFINITIVA: Se limpia sola a los 3 segundos para que Make lea el TRUE
         async function descargarTarjeta() { 
