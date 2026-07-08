@@ -323,7 +323,7 @@
         document.getElementById('adminExtra').style.display='flex';
         document.getElementById('configClaves').style.display = 'block';
     }
-   if(nivel === 'camarero') {
+  if(nivel === 'camarero') {
         document.getElementById('cajaRegistro').style.display = 'none';
         document.getElementById('btnReset').style.display = 'none';
         document.getElementById('panelAdmin').style.display = 'none';
@@ -341,6 +341,9 @@
     inyectarInterceptosDePago();
     refrescarDatos();
 
+    // Variable de control interna para evitar ráfagas seguidas en el botón de restar
+    let timeoutRefrescoCamarero = null;
+
     // === ESCUCHA EN TIEMPO REAL (FUSIONADA Y SINCRONIZADA) ===
     _supabase
         .channel('cambios-en-directo')
@@ -356,9 +359,19 @@
             if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
                 
-                // 🌟 PROTECCIÓN ANTI-RÁFAGA: Si es camarero, NO forzamos el reabierto agresivo en caliente
-                // para evitar que los botones y el número de copas parpadeen al restar.
-                if (nivel !== 'camarero') {
+                // 🌟 SOLUCIÓN DEFINITIVA ANTI-RÁFAGAS:
+                // Si es camarero, agrupamos las actualizaciones en un mini-retraso. 
+                // Esto permite abrir la burbuja con el QR al instante, pero evita los parpadeos al restar seguido.
+                if (nivel === 'camarero') {
+                    clearTimeout(timeoutRefrescoCamarero);
+                    timeoutRefrescoCamarero = setTimeout(() => {
+                        reAbrir(socioActual.dni); 
+                        if (typeof abrirTarjeta === 'function') {
+                            abrirTarjeta(socioActual);
+                        }
+                    }, 800); // Da margen suficiente para que el camarero reste sin ráfagas intermedias
+                } else {
+                    // Para el administrador sigue funcionando en tiempo real directo
                     reAbrir(socioActual.dni); 
                     if (typeof abrirTarjeta === 'function') {
                         abrirTarjeta(socioActual);
