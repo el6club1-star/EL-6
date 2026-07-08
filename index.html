@@ -312,71 +312,93 @@
             else alert("CÓDIGO INCORRECTO");
         }
 
-        function entrar() { 
-            document.getElementById('pantallaLogin').style.display='none'; 
-            document.getElementById('principal').style.display='block'; 
-            document.getElementById('btnLogout').style.display='block'; 
-            if(nivel === 'jefe') { 
-                document.getElementById('btnExport').style.display='block'; 
-                document.getElementById('btnReset').style.display='block'; 
-                document.getElementById('panelAdmin').style.display='grid'; 
-                document.getElementById('adminExtra').style.display='flex';
-                document.getElementById('configClaves').style.display = 'block';
+       function entrar() { 
+    document.getElementById('pantallaLogin').style.display='none'; 
+    document.getElementById('principal').style.display='block'; 
+    document.getElementById('btnLogout').style.display='block'; 
+    if(nivel === 'jefe') { 
+        document.getElementById('btnExport').style.display='block'; 
+        document.getElementById('btnReset').style.display='block'; 
+        document.getElementById('panelAdmin').style.display='grid'; 
+        document.getElementById('adminExtra').style.display='flex';
+        document.getElementById('configClaves').style.display = 'block';
+    }
+    if(nivel === 'camarero') {
+        document.getElementById('cajaRegistro').style.display = 'none';
+        document.getElementById('btnReset').style.display = 'none';
+        document.getElementById('panelAdmin').style.display = 'none';
+        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+    }
+
+    const botonCamaraPrincipal = document.getElementById('btnCam');
+    if (botonCamaraPrincipal) {
+        botonCamaraPrincipal.style.display = 'block';
+    }
+
+    // Activamos la escucha del botón pagar justo al entrar
+    inyectarInterceptosDePago();
+    refrescarDatos();
+
+    // === ESCUCHA EN TIEMPO REAL (FUSIONADA) ===
+    _supabase
+        .channel('cambios-en-directo')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
+            // Actualiza la lista en memoria local con el cambio recibido de Supabase
+            db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
+            aforo = db.filter(x => x.dentro).length;
+            
+            // Refresca la tabla visual trasera
+            render();
+            
+            // Si tienes la tarjeta abierta de ese socio, la refresca al instante sin cerrarla
+            if (socioActual && socioActual.dni === payload.new.dni) {
+                socioActual = payload.new;
+                reAbrir(socioActual.dni); 
             }
-            if(nivel === 'camarero') {
-                document.getElementById('cajaRegistro').style.display = 'none';
-                document.getElementById('btnReset').style.display = 'none';
-                document.getElementById('panelAdmin').style.display = 'none';
-                if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-                if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+        })
+        .subscribe();
+
+    // === QUITAR SOLO EL BOTÓN DE MÁS PARA EL CAMARERO ===
+    if (nivel === 'camarero') {
+        const style = document.createElement('style');
+        style.id = 'ocultarMasCamarero';
+        style.innerHTML = `
+            #card-consumos button:not([onclick*="restar"]):not(:disabled),
+            #card-consumos button {
+                /* Si el botón contiene un + o una palabra de sumar, lo fulminamos por CSS */
             }
+        `;
+        document.head.appendChild(style);
 
-            const botonCamaraPrincipal = document.getElementById('btnCam');
-            if (botonCamaraPrincipal) {
-                botonCamaraPrincipal.style.display = 'block';
-            }
+        // Como los botones de las copas se crean al vuelo repetidamente, este intervalo se asegura de borrar el de '+' en cuanto asome
+        setInterval(() => {
+            document.querySelectorAll('#card-consumos button').forEach(btn => {
+                if (btn.innerText.includes('+') || btn.innerText.toLowerCase().includes('sumar') || btn.getAttribute('onclick')?.includes('sumar')) {
+                    btn.style.setProperty('display', 'none', 'important');
+                }
+            });
+        }, 100);
+    }
+}
 
-            // Activamos la escucha del botón pagar justo al entrar
-            inyectarInterceptosDePago();
-            refrescarDatos();
+// NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
+function inyectarInterceptosDePago() {
+    const btnPagar = document.getElementById('btnPagarTarjeta');
+    if (!btnPagar) return;
 
-            // === ESCUCHA EN TIEMPO REAL (FUSIONADA) ===
-            _supabase
-                .channel('cambios-en-directo')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-                    // Actualiza la lista en memoria local con el cambio recibido de Supabase
-                    db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
-                    aforo = db.filter(x => x.dentro).length;
-                    
-                    // Refresca la tabla visual trasera
-                    render();
-                    
-                    // Si tienes la tarjeta abierta de ese socio, la refresca al instante sin cerrarla
-                    if (socioActual && socioActual.dni === payload.new.dni) {
-                        socioActual = payload.new;
-                        reAbrir(socioActual.dni); 
-                    }
-                })
-                .subscribe();
-        }
-
-        // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
-        function inyectarInterceptosDePago() {
-            const btnPagar = document.getElementById('btnPagarTarjeta');
-            if (!btnPagar) return;
-
-            if (!btnPagar.dataset.interceptado) {
-                btnPagar.dataset.interceptado = "true";
-                btnPagar.addEventListener('click', () => {
-                    setTimeout(async () => {
-                        if (typeof refrescarDatos === 'function') {
-                            await refrescarDatos();
-                        }
-                    }, 600);
-                });
-            }
-        }
+    if (!btnPagar.dataset.interceptado) {
+        btnPagar.dataset.interceptado = "true";
+        btnPagar.addEventListener('click', () => {
+            setTimeout(async () => {
+                if (typeof refrescarDatos === 'function') {
+                    await refrescarDatos();
+                }
+            }, 600);
+        });
+    }
+}
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
