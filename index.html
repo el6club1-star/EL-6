@@ -296,7 +296,7 @@
                 document.getElementById('cat').value = "estándar"; document.getElementById('cumple').value = "";
                 document.getElementById('checkRGPD').checked = false; return;
             }
-            const s = db.find(x => x.dni === val);
+          const s = db.find(x => x.dni === val);
             if(s) { 
                 document.getElementById('nom').value = s.nombre; 
                 document.getElementById('mail').value = s.email; 
@@ -306,7 +306,7 @@
             }
         }
 
-     function validarEntrada() {
+function validarEntrada() {
     const p = document.getElementById('passApp').value;
     if (p === CLAVES.jefe) { nivel = "jefe"; entrar(); } 
     else if (p === CLAVES.puerta) { nivel = "personal"; entrar(); } 
@@ -315,29 +315,13 @@
 }
 
 function entrar() { 
-    // Cambios de pantalla principales (Aseguramos que existan)
+    // Asegurar elementos principales
     if (document.getElementById('pantallaLogin')) document.getElementById('pantallaLogin').style.display = 'none'; 
     if (document.getElementById('principal')) document.getElementById('principal').style.display = 'block'; 
     if (document.getElementById('btnLogout')) document.getElementById('btnLogout').style.display = 'block'; 
     
-    // Vistas condicionales de JEFE con comprobación de existencia
-    if (nivel === 'jefe') { 
-        if (document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'block'; 
-        if (document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'block'; 
-        if (document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'grid'; 
-        if (document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'flex';
-        if (document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'block';
-    }
-    
-    // Vistas condicionales de CAMARERO con comprobación de existencia
-    if (nivel === 'camarero') {
-        if (document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'none';
-        if (document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'none';
-        if (document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'none';
-        if (document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-        if (document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-        if (document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
-    }
+    // Control de interfaces por CSS limpio (Adiós al setInterval pesado)
+    gestionarEstilosPorRol();
 
     const botonCamaraPrincipal = document.getElementById('btnCam');
     if (botonCamaraPrincipal) {
@@ -372,34 +356,41 @@ function entrar() {
             })
             .subscribe();
     }
+}
 
-    // === CAPA EXTRA DE OCULTACIÓN PARA EL CAMARERO ===
-    if (nivel === 'camarero') {
-        const style = document.createElement('style');
-        style.id = 'ocultarMasCamarero';
+// Centraliza la ocultación y muestra de elementos de forma eficiente
+function gestionarEstilosPorRol() {
+    // Eliminar estilos previos si re-entra
+    const estiloPrevio = document.getElementById('estilosDinamicosRol');
+    if (estiloPrevio) estiloPrevio.remove();
+
+    const style = document.createElement('style');
+    style.id = 'estilosDinamicosRol';
+
+    if (nivel === 'jefe') {
         style.innerHTML = `
-            #card-consumos button[onclick*=", 1)"],
-            #card-consumos button[onclick*=",1)"],
-            #ventanilla-consumos button[onclick*=", 1)"],
-            #ventanilla-consumos button[onclick*=",1)"],
-            #card-consumos div button:last-of-type,
-            #ventanilla-consumos div button:last-of-type,
-            #card-consumos td button:last-of-type,
-            #ventanilla-consumos td button:last-of-type {
+            #btnExport, #btnReset, #configClaves { display: block !important; }
+            #panelAdmin { display: grid !important; }
+            #adminExtra { display: flex !important; }
+        `;
+    } else if (nivel === 'camarero') {
+        // En lugar de un setInterval, inyectamos CSS que fulmina los botones "+" de raíz
+        style.innerHTML = `
+            #cajaRegistro, #btnReset, #panelAdmin, #adminExtra, #configClaves, #btnExport { display: none !important; }
+            /* Capa extra de seguridad visual para consumos del camarero */
+            [data-role-restricted="plus"],
+            #card-consumos button[onclick*=", 1)"], #card-consumos button[onclick*=",1)"],
+            #ventanilla-consumos button[onclick*=", 1)"], #ventanilla-consumos button[onclick*=",1)"] {
                 display: none !important;
             }
         `;
-        document.head.appendChild(style);
-
-        setInterval(() => {
-            document.querySelectorAll('#card-consumos button, #ventanilla-consumos button').forEach(btn => {
-                const clickAttr = btn.getAttribute('onclick') || '';
-                if (btn.innerText.includes('+') || clickAttr.includes(', 1)') || clickAttr.includes(',1)')) {
-                    btn.style.setProperty('display', 'none', 'important');
-                }
-            });
-        }, 50);
+    } else {
+        // Personal / Puerta por defecto
+        style.innerHTML = `
+            #btnReset, #panelAdmin, #adminExtra, #configClaves { display: none !important; }
+        `;
     }
+    document.head.appendChild(style);
 }
 
 function inyectarInterceptosDePago() {
@@ -450,6 +441,7 @@ function render() {
 }
 
 async function borrarSocio(dni) { 
+    if (nivel !== 'jefe') return alert("🛑 No tienes permisos para borrar socios.");
     if (confirm("¿Borrar socio?")) { 
         await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); 
         refrescarDatos(); 
@@ -457,11 +449,13 @@ async function borrarSocio(dni) {
 }
 
 function exportarBaseDatos() {
+    if (nivel !== 'jefe') return alert("Acceso denegado.");
     const blob = new Blob([JSON.stringify(db)], { type: "application/json" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
 }
 
 async function importarBaseDatos(event) {
+    if (nivel !== 'jefe') return alert("Acceso denegado.");
     const file = event.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = async function (e) {
@@ -491,12 +485,14 @@ function exportarExcel() {
 }
 
 async function toggleEntrada(dni) { 
+    if (nivel === 'camarero') return;
     const s = db.find(x => x.dni === dni); 
     await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); 
     refrescarDatos(); 
 }
 
 async function tVeto(dni) { 
+    if (nivel === 'camarero') return;
     const m = prompt("Motivo:"); 
     if (m) { 
         await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); 
@@ -632,9 +628,10 @@ function abrirTarjeta(s) {
             const cantidad = consumosSocio[prod] || 0;
             const miNivel = (typeof nivel !== 'undefined') ? nivel : 'camarero';
             
+            // Renderizado condicional real: Si es camarero, el botón "+" ni siquiera se escribe en el HTML.
             const botonMasHTML = (miNivel === 'camarero') 
                 ? `<div style="width: 26px; height: 26px;"></div>` 
-                : `<button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>`;
+                : `<button type="button" data-role-restricted="plus" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>`;
 
             htmlBurbuja += `
                 <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
@@ -649,13 +646,10 @@ function abrirTarjeta(s) {
         });
     }
 
-    htmlBurbuja += `
-        </div>
-    `;
-    
+    htmlBurbuja += `</div>`;
     burbujaExterna.innerHTML = htmlBurbuja;
 
-    // === LÓGICA DE OCULTACIÓN DE BOTONES EXTRA (TARJETA) ===
+    // Lógica para ocultar botones extra del modal
     const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
     btnsTarjeta.forEach(btn => {
         const texto = btn.innerText.toUpperCase();
@@ -676,7 +670,6 @@ function abrirTarjeta(s) {
     });
 }
 
-// Función para abrir la ventanilla flotante de consumos
 function abrirBurbujaFlotante() {
     const ventanilla = document.getElementById('ventanilla-consumos');
     if (ventanilla) {
