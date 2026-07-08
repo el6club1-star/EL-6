@@ -646,6 +646,22 @@ function inyectarInterceptosDePago() {
             document.getElementById('cardMain').style.display = 'block';
             document.getElementById('box-firma').style.display = 'none';
             document.getElementById('modalTarjeta').style.display = 'flex';
+
+            // === 🌟 PARCHE PARA QUE LA FIRMA NO SE BORRE DEL CUADRADITO 🌟 ===
+            setTimeout(() => {
+                if (s && s.firma_b64) {
+                    const canvasFirma = document.getElementById('canvasFirma');
+                    if (canvasFirma) {
+                        const ctx = canvasFirma.getContext('2d');
+                        const img = new Image();
+                        img.onload = function() {
+                            ctx.clearRect(0, 0, canvasFirma.width, canvasFirma.height);
+                            ctx.drawImage(img, 0, 0);
+                        };
+                        img.src = s.firma_b64;
+                    }
+                }
+            }, 80); // Le damos 80 milisegundos para asegurar que el HTML se ha montado bien
         }
 
         function abrirBurbujaFlotante() {
