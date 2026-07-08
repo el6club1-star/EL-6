@@ -678,6 +678,69 @@ function abrirBurbujaFlotante() {
         ventanilla.style.display = 'block';
     }
 }
+     burbujaExterna.innerHTML = "";
+
+    let htmlBurbuja = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
+            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
+            <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+    `;
+
+    if (typeof productosValidos !== 'undefined') {
+        productosValidos.forEach(prod => {
+            const cantidad = consumosSocio[prod] || 0;
+            const miNivel = (typeof nivel !== 'undefined') ? nivel : 'camarero';
+            
+            // Renderizado condicional real: Si es camarero, el botón "+" ni siquiera se escribe en el HTML.
+            const botonMasHTML = (miNivel === 'camarero') 
+                ? `<div style="width: 26px; height: 26px;"></div>` 
+                : `<button type="button" data-role-restricted="plus" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>`;
+
+            htmlBurbuja += `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
+                    <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                        <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
+                        ${botonMasHTML}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    htmlBurbuja += `</div>`;
+    burbujaExterna.innerHTML = htmlBurbuja;
+
+    // Lógica para ocultar botones extra del modal
+    const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
+    btnsTarjeta.forEach(btn => {
+        const texto = btn.innerText.toUpperCase();
+        if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
+        
+        const miNivel = (typeof nivel !== 'undefined') ? nivel : 'camarero';
+        if (miNivel === 'camarero') {
+            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = '';
+            }
+        } else {
+            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                btn.style.display = ''; 
+            }
+        }
+    });
+}
+
+function abrirBurbujaFlotante() {
+    const ventanilla = document.getElementById('ventanilla-consumos');
+    if (ventanilla) {
+        ventanilla.style.display = 'block';
+    }
+}
     const firmaPrev = document.getElementById('previewFirmaSocio');
     if(s.firma_b64) {
         firmaPrev.src = s.firma_b64;
