@@ -329,7 +329,7 @@ function entrar() {
     if (botonCamaraPrincipal) {
         botonCamaraPrincipal.style.display = 'block';
     }
-} // <--- ¡Aquí faltaba cerrar esta llave!
+
     inyectarInterceptosDePago();
     refrescarDatos();
 
@@ -358,7 +358,7 @@ function entrar() {
             })
             .subscribe();
     }
-}
+} // <--- Cierre correcto de entrar()
 
 // Centraliza la ocultación y muestra de elementos de forma eficiente
 function gestionarEstilosPorRol() {
@@ -614,7 +614,7 @@ function abrirTarjeta(s) {
         const contenedorPadre = document.getElementById('modalTarjeta') || document.body;
         contenedorPadre.appendChild(burbujaExterna);
     }
-    
+} // <--- Al final de abrirTarjeta también te faltaba cerrar la función
     burbujaExterna.innerHTML = "";
 
     let htmlBurbuja = `
