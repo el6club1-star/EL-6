@@ -320,14 +320,16 @@ function entrar() {
     if (document.getElementById('principal')) document.getElementById('principal').style.display = 'block'; 
     if (document.getElementById('btnLogout')) document.getElementById('btnLogout').style.display = 'block'; 
     
-    // Control de interfaces por CSS limpio (Adiós al setInterval pesado)
-    gestionarEstilosPorRol();
+    // Control de interfaces por CSS limpio
+    if (typeof gestionarEstilosPorRol === "function") {
+        gestionarEstilosPorRol();
+    }
 
     const botonCamaraPrincipal = document.getElementById('btnCam');
     if (botonCamaraPrincipal) {
         botonCamaraPrincipal.style.display = 'block';
     }
-
+} // <--- ¡Aquí faltaba cerrar esta llave!
     inyectarInterceptosDePago();
     refrescarDatos();
 
