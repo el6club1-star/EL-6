@@ -638,15 +638,13 @@ function abrirTarjeta(s) {
         });
     }
 
-    // Cerramos la etiqueta div contenedora de los productos de la burbuja
-    htmlBurbuja += `s\n        </div>`;
+    htmlBurbuja += `
+        </div>
+    `;
     
-    // Inyectamos el string completo generado en el DOM de la ventanilla flotante
-    burbujaExterna.innerHTML = htmlBurbuja;
-}
-    htmlBurbuja += `</div>`;
     burbujaExterna.innerHTML = htmlBurbuja;
 
+    // === LÓGICA DE OCULTACIÓN DE BOTONES EXTRA (TARJETA) ===
     const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
     btnsTarjeta.forEach(btn => {
         const texto = btn.innerText.toUpperCase();
@@ -665,7 +663,15 @@ function abrirTarjeta(s) {
             }
         }
     });
-    
+}
+
+// Función para abrir la ventanilla flotante de consumos
+function abrirBurbujaFlotante() {
+    const ventanilla = document.getElementById('ventanilla-consumos');
+    if (ventanilla) {
+        ventanilla.style.display = 'block';
+    }
+}
     const firmaPrev = document.getElementById('previewFirmaSocio');
     if(s.firma_b64) {
         firmaPrev.src = s.firma_b64;
