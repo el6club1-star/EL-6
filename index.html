@@ -471,41 +471,61 @@ function inyectarInterceptosDePago() {
         async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
         
         async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            const e = document.getElementById('mail').value;
-            const c = document.getElementById('cumple').value;
-            const cat = document.getElementById('cat').value;
-            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            
-            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-                hora: new Date().toLocaleTimeString(), cat: cat 
-            }).select();
-            
-            if (error) {
-                alert("Error al registrar: " + error.message);
-                return;
-            }
+    const d = document.getElementById('dni').value.toUpperCase();
+    const n = document.getElementById('nom').value;
+    const e = document.getElementById('mail').value;
+    const c = document.getElementById('cumple').value;
+    const cat = document.getElementById('cat').value;
+    if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+    
+    // Recuperamos la firma que se dibujó antes de registrar (si la hay)
+    const firmaGuardada = (socioActual && socioActual.firma_b64) ? socioActual.firma_b64 : (firmasCachePorDni[d] || null);
 
-            if(e) {
-                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                    to_name: n, to_email: e, dni: d, categoria: cat
-                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-            }
+    // 1. Enviamos TODOS los datos a Supabase en una sola petición ultrarrápida
+    const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+        dni: d, 
+        nombre: n, 
+        email: e, 
+        cumple: c, 
+        dentro: true, 
+        hora: new Date().toLocaleTimeString(), 
+        cat: cat,
+        firma_b64: firmaGuardada,    // <-- AHORA SÍ GUARDA LA FIRMA
+        reenviar_tarjeta: true      // <-- ACTIVADOR PARA QUE LLEGUE EL EMAIL AL INSTANTE
+    }).select();
+    
+    if (error) {
+        alert("Error al registrar: " + error.message);
+        return;
+    }
 
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
+    // Guardamos la firma en caché para que no desaparezca en pantalla
+    if (firmaGuardada) {
+        firmasCachePorDni[d] = firmaGuardada;
+    }
 
-            await refrescarDatos(); 
-            if(data && data[0]) {
-                abrirTarjeta(data[0]);
-            } else {
-                const recienCreado = db.find(x => x.dni === d);
-                if(recienCreado) abrirTarjeta(recienCreado);
-            }
-        }
+    // 2. Limpieza de campos del formulario
+    document.getElementById('dni').value = ""; 
+    document.getElementById('nom').value = "";
+    document.getElementById('mail').value = ""; 
+    document.getElementById('cumple').value = "";
+    document.getElementById('checkRGPD').checked = false;
+
+    // 3. Refrescar e ir a la tarjeta de inmediato
+    await refrescarDatos(); 
+
+    let socioNuevo = null;
+    if (data && data[0]) {
+        socioNuevo = data[0];
+    } else if (typeof db !== 'undefined') {
+        socioNuevo = db.find(x => x.dni === d);
+    }
+
+    if (socioNuevo) {
+        if (firmaGuardada) socioNuevo.firma_b64 = firmaGuardada;
+        abrirTarjeta(socioNuevo);
+    }
+}
 
         function toggleCamara() {
             const readerDiv = document.getElementById('reader');
