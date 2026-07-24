@@ -808,7 +808,8 @@ function cerrarFirma() {
 async function guardarFirmaSocio() { 
     const firmaB64 = canvas.toDataURL();
 
-    if(origenFirma === 'tarjeta' && socioActual && socioActual.dni) {
+    if (origenFirma === 'tarjeta' && socioActual && socioActual.dni) {
+        // --- CASO 1: SOCIO YA EXISTENTE EN TARJETA ---
         firmasCachePorDni[socioActual.dni] = firmaB64;
         socioActual.firma_b64 = firmaB64;
 
@@ -819,7 +820,7 @@ async function guardarFirmaSocio() {
             if (idx !== -1) db[idx].firma_b64 = firmaB64;
         }
 
-        if(typeof refrescarDatos === 'function') await refrescarDatos();
+        if (typeof refrescarDatos === 'function') await refrescarDatos();
         
         socioActual.firma_b64 = firmaB64;
 
@@ -827,12 +828,21 @@ async function guardarFirmaSocio() {
         cerrarFirma(); 
         abrirTarjeta(socioActual);
     } else {
-        if (socioActual) {
-            socioActual.firma_b64 = firmaB64;
-            if (socioActual.dni) firmasCachePorDni[socioActual.dni] = firmaB64;
+        // --- CASO 2: SOCIO NUEVO (REGISTRO) ---
+        if (!socioActual) socioActual = {};
+        
+        socioActual.firma_b64 = firmaB64;
+        socioActual.reenviar_tarjeta = true; // ACTIVAMOS EL ENVÍO AUTOMÁTICO DE TARJETA
+
+        if (socioActual.dni) {
+            firmasCachePorDni[socioActual.dni] = firmaB64;
         }
+
         const check = document.getElementById('checkRGPD');
-        if (check) check.checked = true; 
+        if (check) {
+            check.checked = true;
+        }
+
         alert("Estatutos aceptados para el nuevo registro.");
         cerrarFirma();
     }
