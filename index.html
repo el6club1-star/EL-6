@@ -541,11 +541,13 @@ let firmaCargadaCache = "";
 function abrirTarjeta(s) {
     if (!s) return;
     
-    // Si el socio trae firma, la guardamos en la memoria de respaldo
+    // Limpiamos la caché de la tarjeta anterior si cambiamos de socio
+    if (!socioActual || socioActual.dni !== s.dni) {
+        firmaCargadaCache = "";
+    }
+
     if (s.firma_b64) {
         firmaCargadaCache = s.firma_b64;
-    } else if (firmaCargadaCache && socioActual && socioActual.dni === s.dni) {
-        s.firma_b64 = firmaCargadaCache;
     }
 
     socioActual = s;
