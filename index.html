@@ -560,16 +560,10 @@ let firmasCachePorDni = {};
 function abrirTarjeta(s) {
     if (!s) return;
 
-    // Vincular la firma estrictamente al DNI del socio actual
-    if (s.firma_b64) {
-        firmasCachePorDni[s.dni] = s.firma_b64;
-    } else if (firmasCachePorDni[s.dni]) {
-        s.firma_b64 = firmasCachePorDni[s.dni];
-    } else {
-        s.firma_b64 = null;
-    }
-
+    // Asignamos únicamente la firma propia de este socio en concreto
     socioActual = s;
+    const firmaPropia = (s.firma_b64 && s.firma_b64.length > 50) ? s.firma_b64 : null;
+    socioActual.firma_b64 = firmaPropia;
 
     const card = document.getElementById('cardMain');
     const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
@@ -660,12 +654,14 @@ function abrirTarjeta(s) {
         }
     });
 
+    // Muestra la firma SOLO si este socio la tiene
     const firmaPrev = document.getElementById('previewFirmaSocio');
     if (firmaPrev) {
-        if (s.firma_b64) {
-            firmaPrev.src = s.firma_b64;
+        if (firmaPropia) {
+            firmaPrev.src = firmaPropia;
             firmaPrev.style.display = 'block';
         } else {
+            firmaPrev.src = '';
             firmaPrev.style.display = 'none';
         }
     }
