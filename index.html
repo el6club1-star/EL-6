@@ -535,17 +535,18 @@ function inyectarInterceptosDePago() {
             }
         }
 
-        // Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
-let firmaCargadaCache = "";
+let firmasCachePorDni = {};
 
 function abrirTarjeta(s) {
     if (!s) return;
-    
-    // Si el socio trae firma, la guardamos en la memoria de respaldo
+
+    // Vincular la firma estrictamente al DNI del socio actual
     if (s.firma_b64) {
-        firmaCargadaCache = s.firma_b64;
-    } else if (firmaCargadaCache && socioActual && socioActual.dni === s.dni) {
-        s.firma_b64 = firmaCargadaCache;
+        firmasCachePorDni[s.dni] = s.firma_b64;
+    } else if (firmasCachePorDni[s.dni]) {
+        s.firma_b64 = firmasCachePorDni[s.dni];
+    } else {
+        s.firma_b64 = null;
     }
 
     socioActual = s;
@@ -639,8 +640,15 @@ function abrirTarjeta(s) {
         }
     });
 
-    // Pinta la firma pequeña asegurando que no desaparece
-    actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
+    const firmaPrev = document.getElementById('previewFirmaSocio');
+    if (firmaPrev) {
+        if (s.firma_b64) {
+            firmaPrev.src = s.firma_b64;
+            firmaPrev.style.display = 'block';
+        } else {
+            firmaPrev.style.display = 'none';
+        }
+    }
 
     document.getElementById('qr-space').innerHTML = ""; 
     const qr = new QRious({value: s.dni, size: 140}); 
@@ -650,19 +658,6 @@ function abrirTarjeta(s) {
     document.getElementById('cardMain').style.display = 'block';
     document.getElementById('box-firma').style.display = 'none';
     document.getElementById('modalTarjeta').style.display = 'flex';
-}
-
-function actualizarVistaPreviaFirma(firmaBase64) {
-    const firmaPrev = document.getElementById('previewFirmaSocio');
-    if (!firmaPrev) return;
-
-    if (firmaBase64 && firmaBase64.length > 50) {
-        firmaPrev.src = firmaBase64;
-        firmaPrev.style.display = 'block';
-    } else {
-        firmaPrev.src = '';
-        firmaPrev.style.display = 'none';
-    }
 }
 
 function abrirBurbujaFlotante() {
@@ -781,7 +776,7 @@ function gestionarEstatutos(origen) {
 
         const btnAceptarFirma = document.querySelector('#box-firma button[onclick="guardarFirmaSocio()"]');
 
-        const firmaDisponible = (socioActual && socioActual.firma_b64) ? socioActual.firma_b64 : firmaCargadaCache;
+        const firmaDisponible = (socioActual && socioActual.dni) ? (socioActual.firma_b64 || firmasCachePorDni[socioActual.dni]) : null;
 
         if (firmaDisponible) {
             const imgFirma = new Image();
@@ -801,7 +796,6 @@ function cerrarFirma() {
     document.getElementById('box-firma').style.display = 'none'; 
     if(origenFirma === 'tarjeta') {
         document.getElementById('cardMain').style.display = 'block'; 
-        if (socioActual) actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
     } else {
         document.getElementById('modalTarjeta').style.display = 'none';
     }
@@ -813,11 +807,12 @@ function cerrarFirma() {
 
 async function guardarFirmaSocio() { 
     const firmaB64 = canvas.toDataURL();
-    firmaCargadaCache = firmaB64;
 
-    if(origenFirma === 'tarjeta' && socioActual) {
-        await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
+    if(origenFirma === 'tarjeta' && socioActual && socioActual.dni) {
+        firmasCachePorDni[socioActual.dni] = firmaB64;
         socioActual.firma_b64 = firmaB64;
+
+        await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
         
         if (typeof db !== 'undefined') {
             let idx = db.findIndex(x => x.dni === socioActual.dni);
@@ -827,13 +822,15 @@ async function guardarFirmaSocio() {
         if(typeof refrescarDatos === 'function') await refrescarDatos();
         
         socioActual.firma_b64 = firmaB64;
-        
+
         alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
         cerrarFirma(); 
         abrirTarjeta(socioActual);
     } else {
-        socioActual = socioActual || {};
-        socioActual.firma_b64 = firmaB64;
+        if (socioActual) {
+            socioActual.firma_b64 = firmaB64;
+            if (socioActual.dni) firmasCachePorDni[socioActual.dni] = firmaB64;
+        }
         const check = document.getElementById('checkRGPD');
         if (check) check.checked = true; 
         alert("Estatutos aceptados para el nuevo registro.");
