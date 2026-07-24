@@ -779,36 +779,7 @@ function cerrar() {
 }
 
 function cerrarSesion() { location.reload(); }
-function gestionarEstatutos(origen) { 
-    origenFirma = origen;
-    document.getElementById('modalTarjeta').style.display = 'flex'; 
-    document.getElementById('box-firma').style.display = 'block'; 
-    document.getElementById('cardMain').style.display = 'none'; 
-
-    if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
-        // 1. Limpiamos el lienzo de cualquier dibujo anterior SIEMPRE
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-
-        const btnAceptarFirma = document.querySelector('#box-firma button[onclick="guardarFirmaSocio()"]');
-
-        // 2. Comprobamos si ESTE socio en concreto tiene firma propia guardada en la base de datos
-        if (socioActual && socioActual.firma_b64 && socioActual.firma_b64.length > 50) {
-            // Si la tiene, se la pintamos en el lienzo para que la vea siempre
-            const imgFirma = new Image();
-            imgFirma.onload = function() {
-                ctx.drawImage(imgFirma, 0, 0, canvas.width, canvas.height);
-            };
-            imgFirma.src = socioActual.firma_b64;
-
-            // Como ya está firmado, ocultamos el botón de guardar
-            if (btnAceptarFirma) btnAceptarFirma.style.display = 'none';
-        } else {
-            // Si este socio NO tiene firma (o es un registro nuevo), el lienzo se queda VACÍO listo para firmar
-            if (btnAceptarFirma) btnAceptarFirma.style.display = 'block';
-        }
-    }
-}
+function gestionarEstatutos(origen) {
 
 function cerrarFirma() { 
     document.getElementById('box-firma').style.display = 'none'; 
