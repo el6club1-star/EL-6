@@ -90,24 +90,24 @@
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-    <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN </button>
+    <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
     
     <div class="container" id="principal">
         <header>
             <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <span style="font-weight:bold; color:var(--gold)"> GESTIÓN DE CLAVES:</span>
+                <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
                 <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
                 <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
                 <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
             </div>
-            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()"> REINICIAR NOCHE</button>
+            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
             <div class="admin-btns" id="adminExtra" style="display:none;">
-                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;"> COPIA SEGURIDAD</button>
-                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;"> RESTAURAR COPIA</button>
+                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
+                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
                 <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
             </div>
-            <button class="btn-excel" id="btnExport" onclick="exportarExcel()"> DESCARGAR EXCEL</button>
-            <h1> CLUB PRIVADO EL 6 </h1>
+            <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
+            <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
         </header>
         
         <div id="panelAdmin" class="stats-container">
@@ -137,8 +137,8 @@
         </div>
         
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
-        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;"> ENCENDER CÁMARA QR</button>
-        <input type="text" id="buscador" class="search-input" placeholder=" BUSCAR SOCIO..." onkeyup="render()">
+        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
+        <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
         
         <table>
             <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
@@ -148,7 +148,7 @@
 
     <div id="modalTarjeta">
         <div class="card-vip" id="cardMain">
-            <div id="selloPagado">PAGADO </div>
+            <div id="selloPagado">PAGADO ✅</div>
             <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
             <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
             <div id="card-categoria-texto" style="font-size:12px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; opacity:0.9;"></div>
@@ -180,7 +180,7 @@
                 <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestations racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
                 <p><strong>8. POLÍTICA DE TOLERANCIA CERO CON SUSTANCIAS ILEGALES:</strong> El Club mantiene una política de tolerancia cero absoluta respecto al consumo, tenencia, introducción, facilitación o tráfico de cualquier tipo de sustancia estupefaciente, droga ilegal o psicotrópica dentro de todo el perímetro de las instalaciones (incluyendo zonas comunes y aseos). La mera detección o sospecha fundada por parte del personal facultará al Club para la retirada permanente de la condición de socio, expulsión inmediata y, en su caso, la correspondiente notificación a las autoridades policiales españolas.</p>
                 <p><strong>9. CONSUMO RESPONSABLE DE ALCOHOL Y SEGURIDAD:</strong> El socio se compromete a mantener un comportamiento cívico y controlado. De acuerdo con la normativa vigente de protección al menor y seguridad pública, el personal del local se reserva el derecho legítimo de negar el servicio de bebidas alcohólicas a cualquier persona que muestre síntomas evidentes de embriaguez o alteración psicológica, procediendo a su desalojo si compromete la tranquilidad del establecimiento.</p>
-                <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda strictly prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
+                <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda estrictamente prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
                 <p><strong>11. EXENCIÓN DE RESPONSABILIDAD POR EFECTOS PERSONALES:</strong> El Club dispone de las medidas de seguridad genéricas exigidas por la ley, pero no se hace responsable en ningún caso de la pérdida, hurto, robo, sustracción o daño material que puedan sufrir los objetos personales, dinero, prendas o dispositivos electrónicos de los socios dentro del establecimiento, siendo responsabilidad exclusiva de cada asistente la custodia diligente de sus pertenencias.</p>
                 <p><strong>12. RESPONSABILIDAD POR DAÑOS MATERIALES, VETO Y JURISDICCIÓN COMPETENTE:</strong> Cualquier daño, rotura o desperfecto causado de forma intencionada o por negligencia en el mobiliario, equipos, decoración o estructura del local generará la obligación de indemnizar económicamente al Club por el coste total de su reparación o sustitución. El incumplimiento de cualquiera de las cláusulas de este documento otorgará a la Dirección la facultad de aplicar el régimen sancionador de veto definitivo. Asimismo, para la resolución de cualquier controversia, litigio, discrepancia o reclamación judicial derivada de la interpretación o ejecución de este contrato y reglamento, <strong>tanto el Club como el socio se someten expresamente, con renuncia formal a cualquier otro fuero o jurisdicción que pudiera corresponderles, a la competencia exclusiva de los Juzgados y Tribunales de Madrid capital.</strong></p>
                 <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN AND COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
@@ -195,16 +195,16 @@
 
     <div id="modalLibroCajas">
         <div class="panel-caja">
-            <h3 class="titulo-caja"> Arqueo y Libro de Cajas</h3>
+            <h3 class="titulo-caja">⚜️ Arqueo y Libro de Cajas</h3>
             <div class="desglose-scroll" id="cajaDesgloseContenido"></div>
             
             <div class="caja-inputs">
                 <div>
-                    <label> Cobrado TPV</label>
+                    <label>💳 Cobrado TPV</label>
                     <input type="number" id="cajaTpvInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
                 </div>
                 <div>
-                    <label> Cobrado Efectivo</label>
+                    <label>💵 Cobrado Efectivo</label>
                     <input type="number" id="cajaEfectivoInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
                 </div>
             </div>
@@ -357,7 +357,7 @@
                 socioActual = payload.new;
                 reAbrir(socioActual.dni); 
 
-                //  NUEVA INSTRUCCIÓN CLAVE: 
+                // 🌟 NUEVA INSTRUCCIÓN CLAVE: 🌟
                 // Si el camarero está viendo la burbuja de copas de este socio en este instante,
                 // forzamos la recarga inmediata de los contadores con el cambio del jefe.
                 if (typeof refrescarDatos === 'function') {
@@ -421,12 +421,12 @@ function inyectarInterceptosDePago() {
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '' : ''}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')"></button>
+                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
                     </td>
                 </tr>`).join('');
         }
@@ -511,14 +511,14 @@ function inyectarInterceptosDePago() {
             const readerDiv = document.getElementById('reader');
             const btn = document.getElementById('btnCam');
             if(!camActiva) {
-                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = " APAGAR CÁMARA";
+                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
                 html5QrCode = new Html5Qrcode("reader");
                 html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
                     async (text) => {
                         btn.click();
                         const socio = db.find(x => x.dni === text.trim().toUpperCase());
                         if(socio) {
-                            if(socio.vetado) { alert(` ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
+                            if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
                             await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
                             refrescarDatos(); abrirTarjeta(socio);
                         } else {
@@ -530,7 +530,7 @@ function inyectarInterceptosDePago() {
                     }, () => {}
                 );
             } else {
-                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = " ENCENDER CÁMARA QR";
+                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
                 if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
             }
         }
@@ -576,7 +576,7 @@ function abrirTarjeta(s) {
     let htmlConsumos = `
         <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
             <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                 GESTIONAR CONSUMICIONES 
+                ⚡ GESTIONAR CONSUMICIONES ▾
             </button>
         </div>
     `;
@@ -596,7 +596,7 @@ function abrirTarjeta(s) {
     let htmlBurbuja = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
             <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
-            <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;"></button>
+            <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
     `;
@@ -621,14 +621,23 @@ function abrirTarjeta(s) {
     htmlBurbuja += `</div>`;
     burbujaExterna.innerHTML = htmlBurbuja;
 
-    const divAcciones = document.getElementById('accionesTarjeta');
-    if (divAcciones) {
+    const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
+    btnsTarjeta.forEach(btn => {
+        const texto = btn.innerText.toUpperCase();
+        if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
+
         if (nivel === 'camarero') {
-            divAcciones.style.display = 'none';
+            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = '';
+            }
         } else {
-            divAcciones.style.display = 'flex';
+            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                btn.style.display = ''; 
+            }
         }
-    }
+    });
 
     // Pinta la firma pequeña asegurando que no desaparece
     actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
@@ -647,10 +656,8 @@ function actualizarVistaPreviaFirma(firmaBase64) {
     const firmaPrev = document.getElementById('previewFirmaSocio');
     if (!firmaPrev) return;
 
-    const firmaFinal = firmaBase64 || (socioActual ? socioActual.firma_b64 : '') || firmaCargadaCache;
-
-    if (firmaFinal && firmaFinal.length > 50) {
-        firmaPrev.src = firmaFinal;
+    if (firmaBase64 && firmaBase64.length > 50) {
+        firmaPrev.src = firmaBase64;
         firmaPrev.style.display = 'block';
     } else {
         firmaPrev.src = '';
@@ -712,12 +719,12 @@ async function modificarCantidadDirecta(dni, producto, cambio) {
 
 async function descargarTarjeta() { 
     if (!socioActual || !socioActual.dni) {
-        alert(" No hay ningún socio seleccionado para enviar la tarjeta.");
+        alert("⚠️ No hay ningún socio seleccionado para enviar la tarjeta.");
         return;
     }
 
     if (!socioActual.email) {
-        alert(" Este socio no tiene un correo electrónico registrado en la base de datos.");
+        alert("⚠️ Este socio no tiene un correo electrónico registrado en la base de datos.");
         return;
     }
 
@@ -730,7 +737,7 @@ async function descargarTarjeta() {
             .update({ reenviar_tarjeta: true })
             .eq('dni', socioActual.dni);
 
-        alert(` Petición enviada con éxito. La tarjeta va en camino a: ${socioActual.email}`);
+        alert(`✉️ Petición enviada con éxito. La tarjeta va en camino a: ${socioActual.email}`);
 
         setTimeout(async () => {
             await _supabase
@@ -741,7 +748,7 @@ async function descargarTarjeta() {
 
     } catch (error) {
         console.error(error);
-        alert(" Hubo un error al intentar comunicar con Supabase.");
+        alert("❌ Hubo un error al intentar comunicar con Supabase.");
     }
 }
 
@@ -905,14 +912,14 @@ function actualizarClave() {
 
             let htmlHTML = `
                 <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
-                <div class="item-desglose"><span> ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
-                <div class="item-desglose"><span> COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
-                <div class="item-desglose"><span> CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
-                <div class="item-desglose"><span> REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
-                <div class="item-desglose"><span> AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
-                <div class="item-desglose"><span> ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
-                <div class="item-desglose"><span> CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
-                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span> RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
+                <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
+                <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
+                <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
+                <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
+                <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
+                <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
+                <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
+                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
             `;
 
             document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
@@ -932,15 +939,15 @@ function actualizarClave() {
             const indicador = document.getElementById('cajaResultadoCéntimo');
             if (indicador) {
                 if (descuadre === 0) {
-                    indicador.innerText = " ¡Caja cuadrada al céntimo! (0.00€)";
+                    indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
                     indicador.style.background = "rgba(34,197,94,0.2)";
                     indicador.style.color = "#22c55e";
                 } else if (descuadre > 0) {
-                    indicador.innerText = ` ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
+                    indicador.innerText = `🟢 ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
                     indicador.style.background = "rgba(34,197,94,0.2)";
                     indicador.style.color = "#22c55e";
                 } else {
-                    indicador.innerText = ` ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`;
+                    indicador.innerText = `🔴 ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`;
                     indicador.style.background = "rgba(239,68,68,0.2)";
                     indicador.style.color = "#ef4444";
                 }
@@ -975,7 +982,7 @@ function actualizarClave() {
 
             if (errorCaja) {
                 console.error("Error al guardar arqueo en Supabase:", errorCaja.message);
-                alert(" Error crítico: No se pudo guardar el arqueo en 'cajas_diarias'. Revisa la consola.");
+                alert("⚠️ Error crítico: No se pudo guardar el arqueo en 'cajas_diarias'. Revisa la consola.");
                 return;
             }
 
@@ -995,7 +1002,7 @@ function actualizarClave() {
 
                 if (errorSocios) {
                     console.error("Error al resetear socios:", errorSocios.message);
-                    alert(" Error parcial: Se guardó el arqueo pero falló la limpieza de socios: " + errorSocios.message);
+                    alert("⚠️ Error parcial: Se guardó el arqueo pero falló la limpieza de socios: " + errorSocios.message);
                     return;
                 }
             }
@@ -1013,7 +1020,7 @@ function actualizarClave() {
             document.getElementById('modalLibroCajas').style.display = 'none';
 
             await refrescarDatos(); 
-            alert(" ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
+            alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
 
         /* --- INYECTOR DEL BOTÓN DE HISTÓRICO PROTEGIDO --- */
@@ -1029,7 +1036,7 @@ function actualizarClave() {
                 btnHist.id = 'btn-historial-seguro';
                 btnHist.type = 'button';
                 btnHist.onclick = mostrarHistoricoCajas;
-                btnHist.innerText = " VER LIBRO HISTÓRICO";
+                btnHist.innerText = "📊 VER LIBRO HISTÓRICO";
                 btnHist.style.cssText = "background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-top: 15px; width: 100%; display: block; text-align: center; letter-spacing: 0.5px; transition: 0.2s;";
                 
                 btnHist.onmouseover = () => { btnHist.style.background = '#d4af37'; btnHist.style.color = '#000'; };
@@ -1061,10 +1068,10 @@ function actualizarClave() {
             let tablaHTML = `
                 <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
-                        <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;"> LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
+                        <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;"> DESCARGAR LIBRO EXCEL (.CSV)</button>
-                            <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: none; border: none; color: #ff4a4a; font-size: 22px; font-weight: bold; cursor: pointer;"></button>
+                            <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">📥 DESCARGAR LIBRO EXCEL (.CSV)</button>
+                            <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: none; border: none; color: #ff4a4a; font-size: 22px; font-weight: bold; cursor: pointer;">✕</button>
                         </div>
                     </div>
                     
@@ -1121,7 +1128,7 @@ function actualizarClave() {
                         <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
                         <td style="padding: 10px; text-align:center;">
-                            <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;"> Borrar</button>
+                            <button onclick="eliminarRegistroCaja('${r.id}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
                         </td>
                     </tr>
                 `;
@@ -1140,7 +1147,7 @@ function actualizarClave() {
 
         /* --- ACCIÓN: BORRAR REGISTRO INDIVIDUAL DE SUPABASE --- */
         async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
-            if (!confirm(` ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
+            if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
 
             const { error } = await _supabase
                 .from('cajas_diarias')
@@ -1155,7 +1162,7 @@ function actualizarClave() {
             const fila = document.getElementById(`fila-caja-${idCaja}`);
             if (fila) fila.remove();
             
-            alert(` Registro del ${fechaVisual} eliminado correctamente.`);
+            alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
         }
 
         /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV --- */
@@ -1224,4 +1231,3 @@ function actualizarClave() {
         }, 1500);
     </script>
 </body>
-</html>
