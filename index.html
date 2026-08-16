@@ -369,26 +369,37 @@
 
     // === QUITAR SOLO EL BOTÓN DE MÁS PARA EL CAMARERO ===
     if (nivel === 'camarero') {
-        const style = document.createElement('style');
-        style.id = 'ocultarMasCamarero';
+        // 1. Inyección de CSS global definitivo para ocultar botones con el símbolo +
+        let style = document.getElementById('ocultarMasCamarero');
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'ocultarMasCamarero';
+            document.head.appendChild(style);
+        }
         style.innerHTML = `
-            #card-consumos button:not([onclick*="restar"]):not(:disabled),
-            #card-consumos button {
-                /* Si el botón contiene un + o una palabra de sumar, lo fulminamos por CSS */
+            /* Oculta cualquier botón de sumar dentro de la tarjeta o del contenedor de consumos */
+            #card-consumos button.btn-sumar,
+            .tarjeta-socio button.btn-sumar,
+            #modalTarjeta button.btn-sumar {
+                display: none !important;
             }
         `;
-        document.head.appendChild(style);
 
-        // Como los botones de las copas se crean al vuelo repetidamente, este intervalo se asegura de borrar el de '+' en cuanto asome
+        // 2. Intervalo de respaldo directo por JS
         setInterval(() => {
-            document.querySelectorAll('#card-consumos button').forEach(btn => {
-                if (btn.innerText.includes('+') || btn.innerText.toLowerCase().includes('sumar') || btn.getAttribute('onclick')?.includes('sumar')) {
-                    btn.style.setProperty('display', 'none', 'important');
+            document.querySelectorAll('button').forEach(btn => {
+                const texto = btn.innerText.trim();
+                const accion = btn.getAttribute('onclick') || '';
+                
+                // Si es un botón de sumar o contiene un '+', lo ocultamos al instante
+                if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
+                    if (!accion.includes('restar')) {
+                        btn.style.setProperty('display', 'none', 'important');
+                    }
                 }
             });
         }, 100);
     }
-}
 
 // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
