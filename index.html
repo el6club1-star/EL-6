@@ -400,12 +400,12 @@
             });
         }, 100);
     }
+}
 
 // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
     const btnPagar = document.getElementById('btnPagarTarjeta');
     if (!btnPagar) return;
-
     if (!btnPagar.dataset.interceptado) {
         btnPagar.dataset.interceptado = "true";
         btnPagar.addEventListener('click', () => {
