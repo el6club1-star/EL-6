@@ -349,10 +349,10 @@
             db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
             aforo = db.filter(x => x.dentro).length;
             
-            // Refresca la tabla trasera
+            // Refresca la tabla trasera de la aplicación
             render();
             
-            // Si la tarjeta abierta es la de este socio, actualizamos los contadores sin destruir el HTML
+            // Si la tarjeta abierta es la de este socio, actualizamos solo los números sin redibujar la pantalla
             if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
 
@@ -369,6 +369,7 @@
                     });
                 }
 
+                // Actualiza directamente las cifras visuales de los contadores
                 productosValidos.forEach(prod => {
                     const el = document.getElementById(`v-cant-${prod}`);
                     if (el) {
@@ -380,7 +381,6 @@
             }
         })
         .subscribe();
-
    // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
     if (nivel === 'camarero') {
         let style = document.getElementById('ocultarMasCamarero');
