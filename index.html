@@ -341,28 +341,42 @@
     inyectarInterceptosDePago();
     refrescarDatos();
 
-    // === ESCUCHA EN TIEMPO REAL (FUSIONADA Y SINCRONIZADA) ===
+    // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
     _supabase
         .channel('cambios-en-directo')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-            // Actualiza la lista en memoria local con el cambio recibido de Supabase
+            // Actualiza la lista en memoria local
             db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
             aforo = db.filter(x => x.dentro).length;
             
-            // Refresca la tabla visual trasera
+            // Refresca la tabla trasera
             render();
             
-            // Si tienes la tarjeta abierta de ese socio, la refresca al instante sin cerrarla
+            // Si la tarjeta abierta es la de este socio, actualizamos los contadores sin destruir el HTML
             if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
-                reAbrir(socioActual.dni); 
 
-                // 🌟 NUEVA INSTRUCCIÓN CLAVE: 🌟
-                // Si el camarero está viendo la burbuja de copas de este socio en este instante,
-                // forzamos la recarga inmediata de los contadores con el cambio del jefe.
-                if (typeof refrescarDatos === 'function') {
-                    refrescarDatos();
+                const stringNuevas = String(payload.new.consumiciones || '').trim();
+                let consumosNuevos = {};
+                productosValidos.forEach(p => consumosNuevos[p] = 0);
+
+                if (stringNuevas.includes(':')) {
+                    stringNuevas.split(',').forEach(item => {
+                        const [p, c] = item.split(':');
+                        if (p && productosValidos.includes(p.trim().toUpperCase())) {
+                            consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                        }
+                    });
                 }
+
+                productosValidos.forEach(prod => {
+                    const el = document.getElementById(`v-cant-${prod}`);
+                    if (el) {
+                        const cant = consumosNuevos[prod] || 0;
+                        el.innerText = cant;
+                        el.style.color = cant > 0 ? '#d4af37' : '#fff';
+                    }
+                });
             }
         })
         .subscribe();
