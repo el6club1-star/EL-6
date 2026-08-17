@@ -341,18 +341,21 @@
     inyectarInterceptosDePago();
     refrescarDatos();
 
-    // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
+   // === ESCUCHA EN TIEMPO REAL (SIN REABRIR Y SIN MICROPARPADEO) ===
     _supabase
         .channel('cambios-en-directo')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-            // Actualiza la lista en memoria local
+            // 1. Actualiza los datos en la memoria
             db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
             aforo = db.filter(x => x.dentro).length;
             
-            // Refresca la tabla trasera de la aplicación
-            render();
+            // 2. Solo repinta el fondo SI NO hay una tarjeta abierta de este socio
+            // (esto elimina por completo el microparpadeo)
+            if (!socioActual || socioActual.dni !== payload.new.dni) {
+                render();
+            }
             
-            // Si la tarjeta abierta es la de este socio, actualizamos solo los números sin redibujar la pantalla
+            // 3. Si la tarjeta abierta es la de este socio, actualiza SOLO las cifras sin tocar la pantalla
             if (socioActual && socioActual.dni === payload.new.dni) {
                 socioActual = payload.new;
 
@@ -369,7 +372,6 @@
                     });
                 }
 
-                // Actualiza directamente las cifras visuales de los contadores
                 productosValidos.forEach(prod => {
                     const el = document.getElementById(`v-cant-${prod}`);
                     if (el) {
