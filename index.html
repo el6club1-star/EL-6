@@ -964,10 +964,25 @@ function actualizarClave() {
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const totalReal = tpv + efectivo;
+            const roperoInput = document.getElementById('cajaRoperoInput');
+            const ropero = roperoInput ? (parseFloat(roperoInput.value) || 0) : 0;
+            
+            const totalReal = tpv + efectivo + ropero;
             const descuadre = totalReal - datosCajaGlobal.recaudacionEsperada;
 
             const indicador = document.getElementById('cajaResultadoCéntimo');
+            
+            // Ocultar información si el usuario NO es jefe
+            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
+                if (indicador) {
+                    indicador.innerText = "🔒 Recaudación lista para entrega";
+                    indicador.style.background = "rgba(255,255,255,0.05)";
+                    indicador.style.color = "#ccc";
+                }
+                return;
+            }
+
+            // Vista para el JEFE
             if (indicador) {
                 if (descuadre === 0) {
                     indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
@@ -990,10 +1005,13 @@ function actualizarClave() {
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const totalEfectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const totalCajaReal = totalTPV + totalEfectivo;
+            const roperoInput = document.getElementById('cajaRoperoInput');
+            const totalRopero = roperoInput ? (parseFloat(roperoInput.value) || 0) : 0;
+
+            const totalCajaReal = totalTPV + totalEfectivo + totalRopero;
             const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
 
-            // Guardamos en Supabase
+            // Guardamos en Supabase manteniendo exactamente tus campos + ropero opcional
             const { error: errorCaja } = await _supabase
                 .from('cajas_diarias')
                 .insert([{ 
@@ -1002,6 +1020,7 @@ function actualizarClave() {
                     recaudacion_esperada: datosCajaGlobal.recaudacionEsperada,
                     pagado_efectivo: totalEfectivo,
                     pagado_tpv: totalTPV,
+                    ropero: totalRopero,
                     descuadre: descuadre,
                     copas_vendidas: datosCajaGlobal.totalCopas,
                     cervezas_vendidas: datosCajaGlobal.totalCervezas,
@@ -1043,7 +1062,6 @@ function actualizarClave() {
                 if (el) el.innerText = "0";
             });
 
-            // CORRECCIÓN CLAVE: Reseteamos socioActual y cerramos modales para evitar que salte la tarjeta
             socioActual = null;
             if (document.getElementById('modalTarjeta')) {
                 document.getElementById('modalTarjeta').style.display = 'none';
@@ -1054,8 +1072,15 @@ function actualizarClave() {
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
 
-        /* --- INYECTOR DEL BOTÓN DE HISTÓRICO PROTEGIDO --- */
+        /* --- INYECTOR DEL BOTÓN DE HISTÓRICO PROTEGIDO POR ROL --- */
         function inyectarBotonHistorialEnArqueo() {
+            // Oculta componentes de detalle si el rol no es jefe
+            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
+                const elementosSensibles = document.querySelectorAll('.datos-sensibles-caja, .desglose-productos-caja');
+                elementosSensibles.forEach(el => el.style.display = 'none');
+                return;
+            }
+
             const contenedorModal = document.getElementById('modalLibroCajas');
             if (!contenedorModal) return;
 
@@ -1077,8 +1102,13 @@ function actualizarClave() {
             }
         }
 
-        /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
+        /* --- PANTALLA VISUAL: LIBRO HISTÓRICO PROTEGIDO PARA JEFE --- */
         async function mostrarHistoricoCajas() {
+            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
+                alert("⛔ Acceso denegado: Solo la dirección puede acceder al libro histórico.");
+                return;
+            }
+
             const viejo = document.getElementById('modalHistoricoCajas');
             if(viejo) viejo.remove();
 
@@ -1097,7 +1127,7 @@ function actualizarClave() {
             modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
 
             let tablaHTML = `
-                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
+                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1200px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
                         <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
                         <div style="display: flex; gap: 12px; align-items: center;">
@@ -1107,7 +1137,7 @@ function actualizarClave() {
                     </div>
                     
                     <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1000px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1050px;">
                             <thead>
                                 <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
                                     <th style="padding: 12px 10px;">FECHA</th>
@@ -1120,6 +1150,7 @@ function actualizarClave() {
                                     <th style="padding: 12px 10px; text-align:right; background: rgba(255,255,255,0.03);">TOTAL CAJA</th>
                                     <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
                                     <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
+                                    <th style="padding: 12px 10px; text-align:right;">ROPERO</th>
                                     <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
                                     <th style="padding: 12px 10px; text-align:center; color: #ff4a4a; background: rgba(239,68,68,0.05);">ACCIONES</th>
                                 </tr>
@@ -1128,7 +1159,7 @@ function actualizarClave() {
             `;
 
             registros.forEach(r => {
-                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0) + (parseFloat(r.ropero) || 0);
                 const desc = parseFloat(r.descuadre) || 0;
                 let estadoBadge = "";
                 
@@ -1146,7 +1177,7 @@ function actualizarClave() {
                 }
 
                 tablaHTML += `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <tr id="fila-caja-${r.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <td style="padding: 10px;">${fInvertida}</td>
                         <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
                         <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
@@ -1157,9 +1188,10 @@ function actualizarClave() {
                         <td style="padding: 10px; text-align:right; font-weight:bold; color:#d4af37;">${totalCajaCalculado.toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:right;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
+                        <td style="padding: 10px; text-align:right;">${(r.ropero || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
                         <td style="padding: 10px; text-align:center;">
-                            <button onclick="eliminarRegistroCaja('${r.id}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
+                            <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
                         </td>
                     </tr>
                 `;
@@ -1178,6 +1210,11 @@ function actualizarClave() {
 
         /* --- ACCIÓN: BORRAR REGISTRO INDIVIDUAL DE SUPABASE --- */
         async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
+            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
+                alert("⛔ Solo el jefe puede eliminar registros de caja.");
+                return;
+            }
+
             if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
 
             const { error } = await _supabase
@@ -1196,8 +1233,13 @@ function actualizarClave() {
             alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
         }
 
-        /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV --- */
+        /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV PROTEGIDO --- */
         async function descargarExcelUnificado() {
+            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
+                alert("⛔ Solo el perfil de jefe puede descargar los datos financieros.");
+                return;
+            }
+
             const { data: registros, error } = await _supabase
                 .from('cajas_diarias')
                 .select('*')
@@ -1206,12 +1248,12 @@ function actualizarClave() {
             if(error || !registros) return;
 
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
+            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;ROPERO;DESCUADRE\n";
 
             registros.forEach(r => {
-                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0) + (parseFloat(r.ropero) || 0);
                 const chups = r.chupitos_vendidas || r.chupitos || 0;
-                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
+                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.ropero || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
