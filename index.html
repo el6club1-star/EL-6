@@ -1264,7 +1264,71 @@ function actualizarClave() {
             link.click();
             link.remove();
         }
+/* =========================================
+           PEGA EL CÓDIGO DE LA CAJA AQUÍ MISMO
+           ========================================= */
 
+        function actualizarClave() {
+            const t = document.getElementById('tipoClave').value; 
+            const n = document.getElementById('nuevaClaveInput').value;
+            if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
+        }
+
+        function prepararCierreCaja() {
+            // ... resto del código de la caja ...
+        }
+
+        function calcularDescuadreEnTiempoReal() { ... }
+        function ejecutarCierreResetFinal() { ... }
+        function inyectarBotonHistorialEnArqueo() { ... }
+        function mostrarHistoricoCajas() { ... }
+        function borrarRegistroCajaIndividual(idCaja, fechaVisual) { ... }
+        function descargarExcelUnificado() { ... }
+
+        /* =========================================
+           AQUÍ EMPIEZA LO QUE YA TENÍAS
+           ========================================= */
+
+        // Eventos del Lienzo Signature Canvas
+        function obtenerPosicion(e) {
+            const r = canvas.getBoundingClientRect();
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clienteX - r.left, y: clienteY - r.top };
+        }
+
+        function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
+        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
+        function pautarDibujo(e) {
+            if (!dibujando) return;
+            e.preventDefault();
+            const pos = obtenerPosicion(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        window.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mousemove', pautarDibujo);
+
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        window.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchmove', pautarDibujo);
+
+        // Arranque inicial y bucles en segundo plano
+        refrescarDatos();
+
+        setInterval(() => {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
+                refrescarDatos();
+            }
+            if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
+                inyectarBotonHistorialEnArqueo();
+            }
+        }, 1500);
+    </script>
+</body>
+</html>
         // Eventos del Lienzo Signature Canvas
         function obtenerPosicion(e) {
             const r = canvas.getBoundingClientRect();
