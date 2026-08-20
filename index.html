@@ -1233,7 +1233,7 @@ function actualizarClave() {
             alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
         }
 
-        /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV PROTEGIDO --- */
+       /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV PROTEGIDO --- */
         async function descargarExcelUnificado() {
             if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
                 alert("⛔ Solo el perfil de jefe puede descargar los datos financieros.");
@@ -1245,7 +1245,7 @@ function actualizarClave() {
                 .select('*')
                 .order('fecha', { ascending: true });
 
-            if(error || !registros) return;
+            if (error || !registros) return;
 
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
             csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;ROPERO;DESCUADRE\n";
@@ -1264,33 +1264,21 @@ function actualizarClave() {
             link.click();
             link.remove();
         }
-/* =========================================
-           PEGA EL CÓDIGO DE LA CAJA AQUÍ MISMO
-           ========================================= */
 
+        /* --- ACTUALIZAR CLAVE --- */
         function actualizarClave() {
             const t = document.getElementById('tipoClave').value; 
             const n = document.getElementById('nuevaClaveInput').value;
-            if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
+            if (n) { 
+                CLAVES[t] = n; 
+                localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); 
+                alert("Actualizado"); 
+            }
         }
 
-        function prepararCierreCaja() {
-            // ... resto del código de la caja ...
-        }
-
-        function calcularDescuadreEnTiempoReal() { ... }
-        function ejecutarCierreResetFinal() { ... }
-        function inyectarBotonHistorialEnArqueo() { ... }
-        function mostrarHistoricoCajas() { ... }
-        function borrarRegistroCajaIndividual(idCaja, fechaVisual) { ... }
-        function descargarExcelUnificado() { ... }
-
-        /* =========================================
-           AQUÍ EMPIEZA LO QUE YA TENÍAS
-           ========================================= */
-
-        // Eventos del Lienzo Signature Canvas
+        /* --- EVENTOS DEL LIENZO SIGNATURE CANVAS --- */
         function obtenerPosicion(e) {
+            if (typeof canvas === 'undefined' || !canvas) return { x: 0, y: 0 };
             const r = canvas.getBoundingClientRect();
             const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
             const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -1298,73 +1286,45 @@ function actualizarClave() {
         }
 
         function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
-        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
+        function terminarDibujo() { dibujando = false; if (typeof ctx !== 'undefined' && ctx) ctx.beginPath(); }
         function pautarDibujo(e) {
-            if (!dibujando) return;
+            if (typeof dibujando === 'undefined' || !dibujando) return;
             e.preventDefault();
             const pos = obtenerPosicion(e);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
+            if (typeof ctx !== 'undefined' && ctx) {
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            }
         }
 
-        canvas.addEventListener('mousedown', iniciarDibujo);
-        window.addEventListener('mouseup', terminarDibujo);
-        canvas.addEventListener('mousemove', pautarDibujo);
+        if (typeof canvas !== 'undefined' && canvas) {
+            canvas.addEventListener('mousedown', iniciarDibujo);
+            window.addEventListener('mouseup', terminarDibujo);
+            canvas.addEventListener('mousemove', pautarDibujo);
 
-        canvas.addEventListener('touchstart', iniciarDibujo);
-        window.addEventListener('touchend', terminarDibujo);
-        canvas.addEventListener('touchmove', pautarDibujo);
+            canvas.addEventListener('touchstart', iniciarDibujo);
+            window.addEventListener('touchend', terminarDibujo);
+            canvas.addEventListener('touchmove', pautarDibujo);
+        }
 
-        // Arranque inicial y bucles en segundo plano
-        refrescarDatos();
+        /* --- ARRANQUE INICIAL Y BUCLES EN SEGUNDO PLANO --- */
+        if (typeof refrescarDatos === 'function') refrescarDatos();
 
         setInterval(() => {
-            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
+            const modalTarj = document.getElementById('modalTarjeta');
+            const modalCaj = document.getElementById('modalLibroCajas');
+            const modalHist = document.getElementById('modalHistoricoCajas');
+
+            const tarjVis = modalTarj && modalTarj.style.display === 'flex';
+            const cajVis = modalCaj && modalCaj.style.display === 'flex';
+
+            if (typeof refrescarDatos === 'function' && !tarjVis && !cajVis && !modalHist) {
                 refrescarDatos();
             }
-            if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
+            if (cajVis && typeof inyectarBotonHistorialEnArqueo === 'function') {
                 inyectarBotonHistorialEnArqueo();
             }
         }, 1500);
     </script>
 </body>
 </html>
-        // Eventos del Lienzo Signature Canvas
-        function obtenerPosicion(e) {
-            const r = canvas.getBoundingClientRect();
-            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clienteX - r.left, y: clienteY - r.top };
-        }
-
-        function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
-        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
-        function pautarDibujo(e) {
-            if (!dibujando) return;
-            e.preventDefault();
-            const pos = obtenerPosicion(e);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
-
-        canvas.addEventListener('mousedown', iniciarDibujo);
-        window.addEventListener('mouseup', terminarDibujo);
-        canvas.addEventListener('mousemove', pautarDibujo);
-
-        canvas.addEventListener('touchstart', iniciarDibujo);
-        window.addEventListener('touchend', terminarDibujo);
-        canvas.addEventListener('touchmove', pautarDibujo);
-
-        // Arranque inicial y bucles en segundo plano
-        refrescarDatos();
-
-        setInterval(() => {
-            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
-                refrescarDatos();
-            }
-            if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
-                inyectarBotonHistorialEnArqueo();
-            }
-        }, 1500);
-    </script>
-</body>
