@@ -877,17 +877,32 @@ function actualizarClave() {
     const n = document.getElementById('nuevaClaveInput').value;
     if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
 }
-
+<script>
         /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
-        function prepararCierreCaja() { 
-            const PRECIO_ENTRADA = 20;
-            const PRECIO_COPA = 10;
-            const PRECIO_CERVEZA = 5;
-            const PRECIO_REFRESCO = 5;
-            const PRECIO_AGUA = 5;
-            const PRECIO_ENERGETICO = 5;
-            const PRECIO_CHUPITO = 5;
 
+        // Precios configurables (El jefe los puede cambiar)
+        var PRECIOS = JSON.parse(localStorage.getItem('precios_el6')) || {
+            entrada: 20,
+            copa: 10,
+            cerveza: 5,
+            refresco: 5,
+            agua: 5,
+            energetico: 5,
+            chupito: 5
+        };
+
+        // Función para que el Jefe actualice los precios de la noche
+        function guardarNuevosPrecios(nuevosPrecios) {
+            if (typeof nivel === 'undefined' || nivel !== 'jefe') {
+                alert("⛔ Solo el jefe puede modificar la lista de precios.");
+                return;
+            }
+            PRECIOS = { ...PRECIOS, ...nuevosPrecios };
+            localStorage.setItem('precios_el6', JSON.stringify(PRECIOS));
+            alert("✅ Lista de precios actualizada correctamente.");
+        }
+
+        function prepararCierreCaja() { 
             let totalAsistentes = 0;
             let totalCopas = 0;
             let totalCervezas = 0;
@@ -900,7 +915,7 @@ function actualizarClave() {
             db.forEach(s => {
                 if (s.dentro || s.hora) {
                     totalAsistentes++;
-                    recaudacionEsperada += PRECIO_ENTRADA;
+                    recaudacionEsperada += PRECIOS.entrada;
 
                     let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
                     const stringConsumos = String(s.consumiciones || '').trim();
@@ -920,42 +935,68 @@ function actualizarClave() {
                     totalEnergeticos += consumosMap['ENERGÉTICO'];
                     totalChupitos += consumosMap['CHUPITO'];
 
-                    recaudacionEsperada += (consumosMap['COPA'] * PRECIO_COPA);
-                    recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIO_CERVEZA);
-                    recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
-                    recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
-                    recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
-                    recaudacionEsperada += (consumosMap['CHUPITO'] * PRECIO_CHUPITO);
+                    recaudacionEsperada += (consumosMap['COPA'] * PRECIOS.copa);
+                    recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIOS.cerveza);
+                    recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIOS.refresco);
+                    recaudacionEsperada += (consumosMap['AGUA'] * PRECIOS.agua);
+                    recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIOS.energetico);
+                    recaudacionEsperada += (consumosMap['CHUPITO'] * PRECIOS.chupito);
                 }
             });
 
             datosCajaGlobal = {
                 totalAsistentes, recaudacionEsperada,
                 totalCopas, totalCervezas, totalRefrescos, totalAguas, totalEnergeticos, totalChupitos,
-                dineroEntradas: totalAsistentes * PRECIO_ENTRADA,
-                dineroCopas: totalCopas * PRECIO_COPA,
-                dineroCervezas: totalCervezas * PRECIO_CERVEZA,
-                dineroRefrescos: totalRefrescos * PRECIO_REFRESCO,
-                dineroAguas: totalAguas * PRECIO_AGUA,
-                dineroEnergeticos: totalEnergeticos * PRECIO_ENERGETICO,
-                dineroChupitos: totalChupitos * PRECIO_CHUPITO
+                dineroEntradas: totalAsistentes * PRECIOS.entrada,
+                dineroCopas: totalCopas * PRECIOS.copa,
+                dineroCervezas: totalCervezas * PRECIOS.cerveza,
+                dineroRefrescos: totalRefrescos * PRECIOS.refresco,
+                dineroAguas: totalAguas * PRECIOS.agua,
+                dineroEnergeticos: totalEnergeticos * PRECIOS.energetico,
+                dineroChupitos: totalChupitos * PRECIOS.chupito
             };
 
-            let htmlHTML = `
-                <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
-                <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
-                <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
-                <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
-                <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
-                <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
-                <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
-                <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
-                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
-            `;
+            let htmlHTML = '';
 
-            document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
-            document.getElementById('cajaTpvInput').value = 0;
-            document.getElementById('cajaEfectivoInput').value = 0;
+            // VISTA PARA PUERTA / BARRA (Cierre a Ciegas)
+            if (typeof nivel === 'undefined' || nivel !== 'jefe') {
+                htmlHTML = `
+                    <div style="text-align: center; padding: 10px; color: #d4af37; font-weight: bold; background: rgba(212,175,55,0.08); border-radius: 8px; border: 1px solid #d4af37; margin-bottom: 12px;">
+                        📋 PRECIOS OFICIALES DE LA NOCHE Y ARQUEO A CIEGAS
+                    </div>
+                    <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>PRECIO UNITARIO</span></div>
+                    <div class="item-desglose"><span>🎫 ENTRADA GENERAL</span><span><strong>${PRECIOS.entrada}€</strong></span></div>
+                    <div class="item-desglose"><span>🍹 COPA</span><span><strong>${PRECIOS.copa}€</strong></span></div>
+                    <div class="item-desglose"><span>🍺 CERVEZA</span><span><strong>${PRECIOS.cerveza}€</strong></span></div>
+                    <div class="item-desglose"><span>🥤 REFRESCO</span><span><strong>${PRECIOS.refresco}€</strong></span></div>
+                    <div class="item-desglose"><span>💧 AGUA</span><span><strong>${PRECIOS.agua}€</strong></span></div>
+                    <div class="item-desglose"><span>⚡ ENERGÉTICO</span><span><strong>${PRECIOS.energetico}€</strong></span></div>
+                    <div class="item-desglose"><span>🥃 CHUPITO</span><span><strong>${PRECIOS.chupito}€</strong></span></div>
+                    <div style="font-size: 12px; color: #ccc; text-align: center; margin-top: 12px; font-style: italic;">
+                        Introduce el recuento del dinero recaudado en TPV, Efectivo y Ropero.
+                    </div>
+                `;
+            } else {
+                // VISTA PARA EL JEFE (Cálculos visibles y recaudación esperada)
+                htmlHTML = `
+                    <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
+                    <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x ${PRECIOS.entrada}€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
+                    <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x ${PRECIOS.copa}€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
+                    <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x ${PRECIOS.cerveza}€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
+                    <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x ${PRECIOS.refresco}€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
+                    <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x ${PRECIOS.agua}€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
+                    <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x ${PRECIOS.energetico}€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
+                    <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x ${PRECIOS.chupito}€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
+                    <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
+                `;
+            }
+
+            const desgloseContenedor = document.getElementById('cajaDesgloseContenido');
+            if (desgloseContenedor) desgloseContenedor.innerHTML = htmlHTML;
+
+            if (document.getElementById('cajaTpvInput')) document.getElementById('cajaTpvInput').value = 0;
+            if (document.getElementById('cajaEfectivoInput')) document.getElementById('cajaEfectivoInput').value = 0;
+            if (document.getElementById('cajaRoperoInput')) document.getElementById('cajaRoperoInput').value = 0;
             
             calcularDescuadreEnTiempoReal();
             document.getElementById('modalLibroCajas').style.display = 'flex';
@@ -964,17 +1005,32 @@ function actualizarClave() {
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const totalReal = tpv + efectivo;
+            const roperoInput = document.getElementById('cajaRoperoInput');
+            const ropero = roperoInput ? (parseFloat(roperoInput.value) || 0) : 0;
+
+            const totalReal = tpv + efectivo + ropero;
             const descuadre = totalReal - datosCajaGlobal.recaudacionEsperada;
 
             const indicador = document.getElementById('cajaResultadoCéntimo');
+            
+            // Si NO ES JEFE, oculta descuadres y totales exactos
+            if (typeof nivel === 'undefined' || nivel !== 'jefe') {
+                if (indicador) {
+                    indicador.innerText = "🔒 Recaudación introducida correctamente";
+                    indicador.style.background = "rgba(212,175,55,0.15)";
+                    indicador.style.color = "#d4af37";
+                }
+                return;
+            }
+
+            // Si ES JEFE, muestra el cálculo exacto
             if (indicador) {
                 if (descuadre === 0) {
                     indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
                     indicador.style.background = "rgba(34,197,94,0.2)";
                     indicador.style.color = "#22c55e";
                 } else if (descuadre > 0) {
-                    indicador.innerText = `🟢 ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
+                    indicador.innerText = `🟢 ¡Sobra dinero! Sobrante: +${descuadre.toFixed(2)}€`;
                     indicador.style.background = "rgba(34,197,94,0.2)";
                     indicador.style.color = "#22c55e";
                 } else {
@@ -990,7 +1046,10 @@ function actualizarClave() {
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const totalEfectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const totalCajaReal = totalTPV + totalEfectivo;
+            const roperoInput = document.getElementById('cajaRoperoInput');
+            const totalRopero = roperoInput ? (parseFloat(roperoInput.value) || 0) : 0;
+
+            const totalCajaReal = totalTPV + totalEfectivo + totalRopero;
             const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
 
             // Guardamos en Supabase
@@ -1002,6 +1061,7 @@ function actualizarClave() {
                     recaudacion_esperada: datosCajaGlobal.recaudacionEsperada,
                     pagado_efectivo: totalEfectivo,
                     pagado_tpv: totalTPV,
+                    pagado_ropero: totalRopero,
                     descuadre: descuadre,
                     copas_vendidas: datosCajaGlobal.totalCopas,
                     cervezas_vendidas: datosCajaGlobal.totalCervezas,
@@ -1043,7 +1103,6 @@ function actualizarClave() {
                 if (el) el.innerText = "0";
             });
 
-            // CORRECCIÓN CLAVE: Reseteamos socioActual y cerramos modales para evitar que salte la tarjeta
             socioActual = null;
             if (document.getElementById('modalTarjeta')) {
                 document.getElementById('modalTarjeta').style.display = 'none';
@@ -1128,7 +1187,7 @@ function actualizarClave() {
             `;
 
             registros.forEach(r => {
-                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0) + (parseFloat(r.pagado_ropero) || 0);
                 const desc = parseFloat(r.descuadre) || 0;
                 let estadoBadge = "";
                 
@@ -1146,7 +1205,7 @@ function actualizarClave() {
                 }
 
                 tablaHTML += `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <tr id="fila-caja-${r.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <td style="padding: 10px;">${fInvertida}</td>
                         <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
                         <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
@@ -1159,7 +1218,7 @@ function actualizarClave() {
                         <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
                         <td style="padding: 10px; text-align:center;">
-                            <button onclick="eliminarRegistroCaja('${r.id}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
+                            <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
                         </td>
                     </tr>
                 `;
@@ -1206,12 +1265,12 @@ function actualizarClave() {
             if(error || !registros) return;
 
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
+            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;ROPERO;DESCUADRE\n";
 
             registros.forEach(r => {
-                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0) + (parseFloat(r.pagado_ropero) || 0);
                 const chups = r.chupitos_vendidas || r.chupitos || 0;
-                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
+                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.pagado_ropero || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
