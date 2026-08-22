@@ -319,6 +319,21 @@
         alert("CÓDIGO INCORRECTO");
     }
 }
+function validarEntrada() {
+    const p = document.getElementById('passApp').value;
+    if (p === CLAVES.jefe) { 
+        nivel = "jefe"; 
+        entrar(); 
+    } else if (p === CLAVES.puerta) { 
+        nivel = "puerta"; // CORREGIDO: antes decía "personal"
+        entrar(); 
+    } else if (p === CLAVES.camarero) { 
+        nivel = "camarero"; 
+        entrar(); 
+    } else {
+        alert("CÓDIGO INCORRECTO");
+    }
+}
 
 function entrar() { 
     document.getElementById('pantallaLogin').style.display = 'none'; 
@@ -645,7 +660,7 @@ function abrirTarjeta(s) {
             }
         });
     }
-
+}
     let htmlConsumos = `
         <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
             <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
