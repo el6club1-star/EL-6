@@ -879,88 +879,105 @@ function actualizarClave() {
 }
 
         /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
-        function prepararCierreCaja() { 
-            const PRECIO_ENTRADA = 20;
-            const PRECIO_COPA = 10;
-            const PRECIO_CERVEZA = 5;
-            const PRECIO_REFRESCO = 5;
-            const PRECIO_AGUA = 5;
-            const PRECIO_ENERGETICO = 5;
-            const PRECIO_CHUPITO = 5;
+function prepararCierreCaja() { 
+    const PRECIO_ENTRADA = 20;
+    const PRECIO_COPA = 10;
+    const PRECIO_CERVEZA = 5;
+    const PRECIO_REFRESCO = 5;
+    const PRECIO_AGUA = 5;
+    const PRECIO_ENERGETICO = 5;
+    const PRECIO_CHUPITO = 5;
 
-            let totalAsistentes = 0;
-            let totalCopas = 0;
-            let totalCervezas = 0;
-            let totalRefrescos = 0;
-            let totalAguas = 0;
-            let totalEnergeticos = 0;
-            let totalChupitos = 0;
-            let recaudacionEsperada = 0;
+    let totalAsistentes = 0;
+    let totalCopas = 0;
+    let totalCervezas = 0;
+    let totalRefrescos = 0;
+    let totalAguas = 0;
+    let totalEnergeticos = 0;
+    let totalChupitos = 0;
+    let recaudacionEsperada = 0;
 
-            db.forEach(s => {
-                if (s.dentro || s.hora) {
-                    totalAsistentes++;
-                    recaudacionEsperada += PRECIO_ENTRADA;
+    db.forEach(s => {
+        if (s.dentro || s.hora) {
+            totalAsistentes++;
+            recaudacionEsperada += PRECIO_ENTRADA;
 
-                    let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
-                    const stringConsumos = String(s.consumiciones || '').trim();
-                    if (stringConsumos.includes(':')) {
-                        stringConsumos.split(',').forEach(item => {
-                            const [p, c] = item.split(':');
-                            if (p && typeof consumosMap[p.trim().toUpperCase()] !== 'undefined') {
-                                consumosMap[p.trim().toUpperCase()] = parseInt(c) || 0;
-                            }
-                        });
+            let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
+            const stringConsumos = String(s.consumiciones || '').trim();
+            if (stringConsumos.includes(':')) {
+                stringConsumos.split(',').forEach(item => {
+                    const [p, c] = item.split(':');
+                    if (p && typeof consumosMap[p.trim().toUpperCase()] !== 'undefined') {
+                        consumosMap[p.trim().toUpperCase()] = parseInt(c) || 0;
                     }
+                });
+            }
 
-                    totalCopas += consumosMap['COPA'];
-                    totalCervezas += consumosMap['CERVEZA'];
-                    totalRefrescos += consumosMap['REFRESCO'];
-                    totalAguas += consumosMap['AGUA'];
-                    totalEnergeticos += consumosMap['ENERGÉTICO'];
-                    totalChupitos += consumosMap['CHUPITO'];
+            totalCopas += consumosMap['COPA'];
+            totalCervezas += consumosMap['CERVEZA'];
+            totalRefrescos += consumosMap['REFRESCO'];
+            totalAguas += consumosMap['AGUA'];
+            totalEnergeticos += consumosMap['ENERGÉTICO'];
+            totalChupitos += consumosMap['CHUPITO'];
 
-                    recaudacionEsperada += (consumosMap['COPA'] * PRECIO_COPA);
-                    recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIO_CERVEZA);
-                    recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
-                    recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
-                    recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
-                    recaudacionEsperada += (consumosMap['CHUPITO'] * PRECIO_CHUPITO);
-                }
-            });
-
-            datosCajaGlobal = {
-                totalAsistentes, recaudacionEsperada,
-                totalCopas, totalCervezas, totalRefrescos, totalAguas, totalEnergeticos, totalChupitos,
-                dineroEntradas: totalAsistentes * PRECIO_ENTRADA,
-                dineroCopas: totalCopas * PRECIO_COPA,
-                dineroCervezas: totalCervezas * PRECIO_CERVEZA,
-                dineroRefrescos: totalRefrescos * PRECIO_REFRESCO,
-                dineroAguas: totalAguas * PRECIO_AGUA,
-                dineroEnergeticos: totalEnergeticos * PRECIO_ENERGETICO,
-                dineroChupitos: totalChupitos * PRECIO_CHUPITO
-            };
-
-            let htmlHTML = `
-                <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
-                <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
-                <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
-                <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
-                <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
-                <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
-                <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
-                <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
-                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
-            `;
-
-            document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
-            document.getElementById('cajaTpvInput').value = 0;
-            document.getElementById('cajaEfectivoInput').value = 0;
-            
-            calcularDescuadreEnTiempoReal();
-            document.getElementById('modalLibroCajas').style.display = 'flex';
+            recaudacionEsperada += (consumosMap['COPA'] * PRECIO_COPA);
+            recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIO_CERVEZA);
+            recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
+            recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
+            recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
+            recaudacionEsperada += (consumosMap['CHUPITO'] * PRECIO_CHUPITO);
         }
+    });
 
+    datosCajaGlobal = {
+        totalAsistentes, recaudacionEsperada,
+        totalCopas, totalCervezas, totalRefrescos, totalAguas, totalEnergeticos, totalChupitos,
+        dineroEntradas: totalAsistentes * PRECIO_ENTRADA,
+        dineroCopas: totalCopas * PRECIO_COPA,
+        dineroCervezas: totalCervezas * PRECIO_CERVEZA,
+        dineroRefrescos: totalRefrescos * PRECIO_REFRESCO,
+        dineroAguas: totalAguas * PRECIO_AGUA,
+        dineroEnergeticos: totalEnergeticos * PRECIO_ENERGETICO,
+        dineroChupitos: totalChupitos * PRECIO_CHUPITO
+    };
+
+    let htmlHTML = '';
+
+    // Si es del equipo de puerta (o camarero), no ve los números esperados
+    if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
+        htmlHTML = `
+            <div style="text-align: center; padding: 15px; color: #d4af37; font-weight: bold; background: rgba(212,175,55,0.05); border-radius: 8px;">
+                🔒 CIERRE A CIEGAS (PUERTA)
+                <div style="font-size: 11px; color: #ccc; font-weight: normal; margin-top: 4px;">
+                    Introduce únicamente la recaudación física cobrada en TPV, Efectivo y Ropero.
+                </div>
+            </div>
+        `;
+    } else {
+        // El perfil 'jefe' ve el desglose financiero completo
+        htmlHTML = `
+            <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
+            <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
+            <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
+            <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
+            <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
+            <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
+            <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
+            <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
+            <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
+        `;
+    }
+
+    document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
+
+    // Reseteo de inputs (TPV, Efectivo y Ropero)
+    if (document.getElementById('cajaTpvInput')) document.getElementById('cajaTpvInput').value = 0;
+    if (document.getElementById('cajaEfectivoInput')) document.getElementById('cajaEfectivoInput').value = 0;
+    if (document.getElementById('cajaRoperoInput')) document.getElementById('cajaRoperoInput').value = 0;
+
+    calcularDescuadreEnTiempoReal();
+    document.getElementById('modalLibroCajas').style.display = 'flex';
+}
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
