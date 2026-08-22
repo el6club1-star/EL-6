@@ -985,10 +985,79 @@ async function guardarFirmaSocio() {
     }
 }
 
+// 1. DICCIONARIO DE CLAVES (Tus 3 contraseñas originales)
+var CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || {
+    jefe: "12345",      // Control total y facturación
+    puerta: "2222",     // Solo arqueo a ciegas (Efectivo, TPV, Ropero)
+    camarero: "0000"    // Solo barra
+};
+
+var nivel = ""; // Guarda el rol actual ('jefe', 'puerta', 'camarero')
+
+// 2. FUNCIÓN PARA ACCEDER A LA APP
+function accederApp() {
+    // Capturamos el rol y la clave del formulario
+    const selectRol = document.getElementById('tipoClave') || document.getElementById('selectRolLogin');
+    const inputPass = document.getElementById('nuevaClaveInput') || document.getElementById('inputPassLogin');
+
+    if (!selectRol || !inputPass) {
+        alert("Error: No se encontraron los campos del formulario de login.");
+        return;
+    }
+
+    const rolSeleccionado = selectRol.value.toLowerCase().trim();
+    const claveIngresada = inputPass.value.trim();
+
+    // Verificación
+    if (CLAVES[rolSeleccionado] && CLAVES[rolSeleccionado] === claveIngresada) {
+        nivel = rolSeleccionado; // Asignamos el nivel de acceso
+        
+        // Ocultamos la pantalla de login
+        const modalLogin = document.getElementById('modalLogin') || document.getElementById('pantallaLogin');
+        if (modalLogin) modalLogin.style.display = 'none';
+
+        // Aplicamos las restricciones visuales según el rol
+        aplicarRestriccionesPorRol();
+
+        // Refrescamos datos si la función existe
+        if (typeof refrescarDatos === 'function') {
+            refrescarDatos();
+        }
+    } else {
+        alert("🔑 Contraseña incorrecta para el rol seleccionado.");
+    }
+}
+
+// 3. APLICAR RESTRICCIONES DE PRIVACIDAD (Facturación e Históricos)
+function aplicarRestriccionesPorRol() {
+    // Si NO es Jefe (Puerta o Camarero), ocultamos facturación y totales
+    if (nivel !== 'jefe') {
+        // Ocultar histórico de cajas
+        const btnHistorico = document.getElementById('btnHistoricoCajas');
+        if (btnHistorico) btnHistorico.style.display = 'none';
+
+        // Ocultar botones de borrar o editar precios/ajustes
+        const elementosPrivados = document.querySelectorAll('.solo-jefe, .facturacion-total');
+        elementosPrivados.forEach(el => el.style.display = 'none');
+    } else {
+        // Si es JEFE, mostramos todo
+        const btnHistorico = document.getElementById('btnHistoricoCajas');
+        if (btnHistorico) btnHistorico.style.display = 'inline-block';
+
+        const elementosPrivados = document.querySelectorAll('.solo-jefe, .facturacion-total');
+        elementosPrivados.forEach(el => el.style.display = 'block');
+    }
+}
+
+// 4. ACTUALIZACIÓN DE CLAVES DESDE EL PANEL
 function actualizarClave() {
-    const t = document.getElementById('tipoClave').value; 
-    const n = document.getElementById('nuevaClaveInput').value;
-    if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
+    const t = document.getElementById('tipoClave').value.toLowerCase().trim(); 
+    const n = document.getElementById('nuevaClaveInput').value.trim();
+    if (n) { 
+        CLAVES[t] = n; 
+        localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); 
+        alert("Contraseña actualizada correctamente para el rol: " + t.toUpperCase()); 
+    }
 }
 
         /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
