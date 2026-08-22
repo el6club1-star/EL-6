@@ -763,6 +763,9 @@ async function modificarCantidadDirecta(dni, producto, cambio) {
         });
     }
 
+    // === CÓDIGO CORREGIDO ===
+async function cambiarConsumo(dni, producto, cambio) {
+    const prodKey = producto.trim().toUpperCase();
     let cantActual = consumos[prodKey] || 0;
     let nuevaCant = cantActual + cambio;
     if (nuevaCant < 0) nuevaCant = 0;
