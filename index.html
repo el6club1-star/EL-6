@@ -1327,16 +1327,7 @@ function prepararCierreCaja() {
             link.remove();
         }
 
-        /* --- ACTUALIZAR CLAVE --- */
-        function actualizarClave() {
-            const t = document.getElementById('tipoClave').value; 
-            const n = document.getElementById('nuevaClaveInput').value;
-            if (n) { 
-                CLAVES[t] = n; 
-                localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); 
-                alert("Actualizado"); 
-            }
-        }
+       
 
         /* --- EVENTOS DEL LIENZO SIGNATURE CANVAS --- */
         function obtenerPosicion(e) {
