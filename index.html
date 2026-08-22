@@ -335,6 +335,22 @@ function validarEntrada() {
     }
 }
 
+function validarEntrada() {
+    const p = document.getElementById('passApp').value;
+    if (p === CLAVES.jefe) { 
+        nivel = "jefe"; 
+        entrar(); 
+    } else if (p === CLAVES.puerta) { 
+        nivel = "puerta"; 
+        entrar(); 
+    } else if (p === CLAVES.camarero) { 
+        nivel = "camarero"; 
+        entrar(); 
+    } else {
+        alert("CÓDIGO INCORRECTO");
+    }
+}
+
 function entrar() { 
     document.getElementById('pantallaLogin').style.display = 'none'; 
     document.getElementById('principal').style.display = 'block'; 
@@ -353,7 +369,6 @@ function entrar() {
     // PERFIL PUERTA
     if (nivel === 'puerta') {
         if(document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'flex';
-        
         if(document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'none';
         if(document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'none';
         if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
@@ -450,7 +465,6 @@ if (nivel === 'camarero') {
         document.head.appendChild(style);
     }
         
-        // Regla CSS pura: Oculta de forma instantánea cualquier botón de sumar sin importar cuántas veces se redibuje la tarjeta
         style.innerHTML = `
             #card-consumos button:nth-child(2),
             #card-consumos button.btn-sumar,
@@ -461,13 +475,12 @@ if (nivel === 'camarero') {
             }
         `;
 
-        // 2. Intervalo de respaldo directo por JS
+        // Intervalo de respaldo directo por JS
         setInterval(() => {
             document.querySelectorAll('button').forEach(btn => {
                 const texto = btn.innerText.trim();
                 const accion = btn.getAttribute('onclick') || '';
                 
-                // Si es un botón de sumar o contiene un '+', lo ocultamos al instante
                 if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
                     if (!accion.includes('restar')) {
                         btn.style.setProperty('display', 'none', 'important');
@@ -475,9 +488,8 @@ if (nivel === 'camarero') {
                 }
             });
         }, 100);
-    }
+}
 
-// NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
     const btnPagar = document.getElementById('btnPagarTarjeta');
     if (!btnPagar) return;
@@ -492,136 +504,139 @@ function inyectarInterceptosDePago() {
         });
     }
 }
-        function formatearDNI(dni) {
-            if(!dni || dni.length < 3) return dni;
-            return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
-        }
 
-        function render() {
-            const b = document.getElementById('buscador').value.toLowerCase();
-            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
-            document.getElementById('st-total').innerText = db.length; 
-            document.getElementById('st-aforo').innerText = aforo; 
-            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-            document.getElementById('lista').innerHTML = f.map(s => `
-                <tr class="${s.vetado ? 'fila-vetada' : ''}">
-                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
-                    </td>
-                </tr>`).join('');
-        }
+function formatearDNI(dni) {
+    if(!dni || dni.length < 3) return dni;
+    return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
+}
 
-        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
+function render() {
+    const b = document.getElementById('buscador').value.toLowerCase();
+    let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+    // Corrección para incluir nivel 'puerta' además de 'personal'
+    if((nivel === "puerta" || nivel === "personal" || nivel === "camarero") && b === "") f = [];
+    
+    document.getElementById('st-total').innerText = db.length; 
+    document.getElementById('st-aforo').innerText = aforo; 
+    document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+    document.getElementById('lista').innerHTML = f.map(s => `
+        <tr class="${s.vetado ? 'fila-vetada' : ''}">
+            <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+            <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+            <td>
+                <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
+                <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+            </td>
+        </tr>`).join('');
+}
 
-        function exportarBaseDatos() {
-            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
-        }
+async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
 
-        async function importarBaseDatos(event) {
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const datos = JSON.parse(e.target.result);
-                    if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
-                        for(let s of datos) {
-                            delete s.created_at;
-                            await _supabase.from(NOMBRE_TABLA).upsert(s);
-                        }
-                        alert("Importación completada"); refrescarDatos();
-                    }
-                } catch(err) { alert("Archivo no válido"); }
-            };
-            reader.readAsText(file);
-        }
+function exportarBaseDatos() {
+    const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
+}
 
-        function exportarExcel() {
-            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
-            db.forEach(s => {
-                if (s.dentro || s.hora || s.consumiciones) {
-                    csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
+async function importarBaseDatos(event) {
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const datos = JSON.parse(e.target.result);
+            if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
+                for(let s of datos) {
+                    delete s.created_at;
+                    await _supabase.from(NOMBRE_TABLA).upsert(s);
                 }
-            });
-            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+                alert("Importación completada"); refrescarDatos();
+            }
+        } catch(err) { alert("Archivo no válido"); }
+    };
+    reader.readAsText(file);
+}
+
+function exportarExcel() {
+    let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
+    db.forEach(s => {
+        if (s.dentro || s.hora || s.consumiciones) {
+            csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
         }
+    });
+    const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+}
 
-        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
-        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
-        
-        async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            const e = document.getElementById('mail').value;
-            const c = document.getElementById('cumple').value;
-            const cat = document.getElementById('cat').value;
-            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            
-            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-                hora: new Date().toLocaleTimeString(), cat: cat 
-            }).select();
-            
-            if (error) {
-                alert("Error al registrar: " + error.message);
-                return;
-            }
+async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
+async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
 
-            if(e) {
-                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                    to_name: n, to_email: e, dni: d, categoria: cat
-                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-            }
+async function registrar() {
+    const d = document.getElementById('dni').value.toUpperCase();
+    const n = document.getElementById('nom').value;
+    const e = document.getElementById('mail').value;
+    const c = document.getElementById('cumple').value;
+    const cat = document.getElementById('cat').value;
+    if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+    
+    const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+        dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+        hora: new Date().toLocaleTimeString(), cat: cat 
+    }).select();
+    
+    if (error) {
+        alert("Error al registrar: " + error.message);
+        return;
+    }
 
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
+    if(e) {
+        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+            to_name: n, to_email: e, dni: d, categoria: cat
+        }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
+    }
 
-            await refrescarDatos(); 
-            if(data && data[0]) {
-                abrirTarjeta(data[0]);
-            } else {
-                const recienCreado = db.find(x => x.dni === d);
-                if(recienCreado) abrirTarjeta(recienCreado);
-            }
-        }
+    document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+    document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+    document.getElementById('checkRGPD').checked = false;
 
-        function toggleCamara() {
-            const readerDiv = document.getElementById('reader');
-            const btn = document.getElementById('btnCam');
-            if(!camActiva) {
-                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-                    async (text) => {
-                        btn.click();
-                        const socio = db.find(x => x.dni === text.trim().toUpperCase());
-                        if(socio) {
-                            if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
-                            await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
-                            refrescarDatos(); abrirTarjeta(socio);
-                        } else {
-                            if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
-                                document.getElementById('dni').value = text.trim().toUpperCase();
-                                document.getElementById('nom').focus();
-                            }
-                        }
-                    }, () => {}
-                );
-            } else {
-                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
-                if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
-            }
-        }
+    await refrescarDatos(); 
+    if(data && data[0]) {
+        abrirTarjeta(data[0]);
+    } else {
+        const recienCreado = db.find(x => x.dni === d);
+        if(recienCreado) abrirTarjeta(recienCreado);
+    }
+}
 
-        // Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
+function toggleCamara() {
+    const readerDiv = document.getElementById('reader');
+    const btn = document.getElementById('btnCam');
+    if(!camActiva) {
+        readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+            async (text) => {
+                btn.click();
+                const socio = db.find(x => x.dni === text.trim().toUpperCase());
+                if(socio) {
+                    if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
+                    await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
+                    refrescarDatos(); abrirTarjeta(socio);
+                } else {
+                    if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
+                        document.getElementById('dni').value = text.trim().toUpperCase();
+                        document.getElementById('nom').focus();
+                    }
+                }
+            }, () => {}
+        );
+    } else {
+        readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
+        if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
+    }
+}
+
+// Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
 let firmaCargadaCache = "";
 
 function abrirTarjeta(s) {
@@ -660,6 +675,44 @@ function abrirTarjeta(s) {
             }
         });
     }
+
+    // Renderizado de lista de productos dentro de la tarjeta
+    const contenedorConsumos = document.getElementById('card-consumos');
+    if (contenedorConsumos) {
+        contenedorConsumos.innerHTML = productosValidos.map(prod => {
+            const cant = consumosSocio[prod] || 0;
+            return `
+                <div class="item-consumo">
+                    <span>${prod}</span>
+                    <div class="ctrl-consumo">
+                        <button onclick="modificarConsumo('${prod}', -1)">-</button>
+                        <span id="v-cant-${prod}" style="color: ${cant > 0 ? '#d4af37' : '#fff'};">${cant}</span>
+                        <button class="btn-sumar" style="${nivel==='camarero'?'display:none !important':''}" onclick="modificarConsumo('${prod}', 1)">+</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Generar código QR del DNI del socio
+    const qrDiv = document.getElementById('card-qr');
+    if (qrDiv) {
+        qrDiv.innerHTML = "";
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrDiv, {
+                text: s.dni,
+                width: 90,
+                height: 90,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+    }
+
+    // Mostrar modal
+    const modal = document.getElementById('modalTarjeta');
+    if (modal) modal.style.display = 'flex';
 }
     let htmlConsumos = `
         <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
