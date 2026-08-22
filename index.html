@@ -316,12 +316,39 @@
     document.getElementById('pantallaLogin').style.display='none'; 
     document.getElementById('principal').style.display='block'; 
     document.getElementById('btnLogout').style.display='block'; 
-    if(nivel === 'jefe') { 
-        document.getElementById('btnExport').style.display='block'; 
-        document.getElementById('btnReset').style.display='block'; 
-        document.getElementById('panelAdmin').style.display='grid'; 
-        document.getElementById('adminExtra').style.display='flex';
-        document.getElementById('configClaves').style.display = 'block';
+  if(nivel === 'jefe') { 
+        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display='block'; 
+        if(document.getElementById('btnReset')) document.getElementById('btnReset').style.display='block'; 
+        if(document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display='grid'; 
+        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display='flex';
+        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'block';
+        if(document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'flex';
+    }
+    
+    if(nivel === 'puerta') {
+        // Muestra la sección de arqueo/cierre de caja para puerta
+        if(document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'flex';
+        
+        // Oculta funciones avanzadas reservadas para el jefe
+        if(document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'none';
+        if(document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'none';
+        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+    }
+
+    if(nivel === 'camarero') {
+        if(document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'none';
+        if(document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'none';
+        if(document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'none';
+        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+    }
+
+    const botonCamaraPrincipal = document.getElementById('btnCam');
+    if (botonCamaraPrincipal) {
+        botonCamaraPrincipal.style.display = 'block';
     }
     if(nivel === 'camarero') {
         document.getElementById('cajaRegistro').style.display = 'none';
