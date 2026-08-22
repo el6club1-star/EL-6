@@ -413,7 +413,7 @@ _supabase
                 });
             }
 
-            productosValidos.forEach(prod => {
+           productosValidos.forEach(prod => {
                 const el = document.getElementById(`v-cant-${prod}`);
                 if (el) {
                     const cant = consumosNuevos[prod] || 0;
@@ -424,15 +424,16 @@ _supabase
         }
     })
     .subscribe();
-        }
-   // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
-    if (nivel === 'camarero') {
-        let style = document.getElementById('ocultarMasCamarero');
-        if (!style) {
-            style = document.createElement('style');
-            style.id = 'ocultarMasCamarero';
-            document.head.appendChild(style);
-        }
+}
+
+// === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
+if (nivel === 'camarero') {
+    let style = document.getElementById('ocultarMasCamarero');
+    if (!style) {
+        style = document.createElement('style');
+        style.id = 'ocultarMasCamarero';
+        document.head.appendChild(style);
+    }
         
         // Regla CSS pura: Oculta de forma instantánea cualquier botón de sumar sin importar cuántas veces se redibuje la tarjeta
         style.innerHTML = `
