@@ -304,13 +304,22 @@
             }
         }
 
-        function validarEntrada() {
-            const p = document.getElementById('passApp').value;
-            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
-        }
+       // Función para verificar la contraseña al pulsar ACCEDER
+function validarEntrada() {
+    // Reemplaza 'inputPassword' por el ID real del campo de texto de tu contraseña
+    const passwordInput = document.getElementById('inputPassword'); 
+    const password = passwordInput ? passwordInput.value : '';
+
+    // Aquí defines tus contraseñas y accesos (ejemplo para 'jefe' o 'puerta')
+    if (password === '12345') { // Cambia '12345' por tu contraseña real
+        nivel = 'jefe';
+        alert("✅ Acceso concedido como Jefe");
+        // Ocultar pantalla de login y mostrar el panel principal
+        document.getElementById('modalLogin').style.display = 'none'; 
+    } else {
+        alert("❌ Contraseña incorrecta");
+    }
+}
 
        function entrar() { 
     document.getElementById('pantallaLogin').style.display='none'; 
