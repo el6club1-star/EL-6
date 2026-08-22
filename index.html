@@ -305,14 +305,22 @@
         }
 
         function validarEntrada() {
-            const p = document.getElementById('passApp').value;
-            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
-        }
+    const p = document.getElementById('passApp').value;
+    if (p === CLAVES.jefe) { 
+        nivel = "jefe"; 
+        entrar(); 
+    } else if (p === CLAVES.puerta) { 
+        nivel = "puerta"; // CORREGIDO: antes decía "personal"
+        entrar(); 
+    } else if (p === CLAVES.camarero) { 
+        nivel = "camarero"; 
+        entrar(); 
+    } else {
+        alert("CÓDIGO INCORRECTO");
+    }
+}
 
-      function entrar() { 
+function entrar() { 
     document.getElementById('pantallaLogin').style.display = 'none'; 
     document.getElementById('principal').style.display = 'block'; 
     document.getElementById('btnLogout').style.display = 'block'; 
@@ -346,59 +354,76 @@
         if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
         if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
         if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+        
+        // Aplica reglas CSS de visualización para camarero al entrar
+        let style = document.getElementById('ocultarMasCamarero');
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'ocultarMasCamarero';
+            document.head.appendChild(style);
+        }
+        style.innerHTML = `
+            #card-consumos button:nth-child(2),
+            #card-consumos button.btn-sumar,
+            .tarjeta-socio button.btn-sumar,
+            #modalTarjeta button.btn-sumar,
+            button[onclick*="sumar"] {
+                display: none !important;
+            }
+        `;
     }
 
     const botonCamaraPrincipal = document.getElementById('btnCam');
     if (botonCamaraPrincipal) {
         botonCamaraPrincipal.style.display = 'block';
     }
+
+    // Inicializaciones dentro de entrar()
+    if (typeof inyectarInterceptosDePago === 'function') inyectarInterceptosDePago();
+    if (typeof refrescarDatos === 'function') refrescarDatos();
 }
-    // Activamos la escucha del botón pagar justo al entrar
-    inyectarInterceptosDePago();
-    refrescarDatos();
 
-   // === ESCUCHA EN TIEMPO REAL (SIN REABRIR Y SIN MICROPARPADEO) ===
-    _supabase
-        .channel('cambios-en-directo')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-            // 1. Actualiza los datos en la memoria
-            db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
-            aforo = db.filter(x => x.dentro).length;
-            
-            // 2. Solo repinta el fondo SI NO hay una tarjeta abierta de este socio
-            // (esto elimina por completo el microparpadeo)
-            if (!socioActual || socioActual.dni !== payload.new.dni) {
-                render();
-            }
-            
-            // 3. Si la tarjeta abierta es la de este socio, actualiza SOLO las cifras sin tocar la pantalla
-            if (socioActual && socioActual.dni === payload.new.dni) {
-                socioActual = payload.new;
+// === ESCUCHA EN TIEMPO REAL (SIN REABRIR Y SIN MICROPARPADEO) ===
+_supabase
+    .channel('cambios-en-directo')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
+        // 1. Actualiza los datos en la memoria
+        db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
+        aforo = db.filter(x => x.dentro).length;
+        
+        // 2. Solo repinta el fondo SI NO hay una tarjeta abierta de este socio
+        if (!socioActual || socioActual.dni !== payload.new.dni) {
+            render();
+        }
+        
+        // 3. Si la tarjeta abierta es la de este socio, actualiza SOLO las cifras sin tocar la pantalla
+        if (socioActual && socioActual.dni === payload.new.dni) {
+            socioActual = payload.new;
 
-                const stringNuevas = String(payload.new.consumiciones || '').trim();
-                let consumosNuevos = {};
-                productosValidos.forEach(p => consumosNuevos[p] = 0);
+            const stringNuevas = String(payload.new.consumiciones || '').trim();
+            let consumosNuevos = {};
+            productosValidos.forEach(p => consumosNuevos[p] = 0);
 
-                if (stringNuevas.includes(':')) {
-                    stringNuevas.split(',').forEach(item => {
-                        const [p, c] = item.split(':');
-                        if (p && productosValidos.includes(p.trim().toUpperCase())) {
-                            consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
-                        }
-                    });
-                }
-
-                productosValidos.forEach(prod => {
-                    const el = document.getElementById(`v-cant-${prod}`);
-                    if (el) {
-                        const cant = consumosNuevos[prod] || 0;
-                        el.innerText = cant;
-                        el.style.color = cant > 0 ? '#d4af37' : '#fff';
+            if (stringNuevas.includes(':')) {
+                stringNuevas.split(',').forEach(item => {
+                    const [p, c] = item.split(':');
+                    if (p && productosValidos.includes(p.trim().toUpperCase())) {
+                        consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
                     }
                 });
             }
-        })
-        .subscribe();
+
+            productosValidos.forEach(prod => {
+                const el = document.getElementById(`v-cant-${prod}`);
+                if (el) {
+                    const cant = consumosNuevos[prod] || 0;
+                    el.innerText = cant;
+                    el.style.color = cant > 0 ? '#d4af37' : '#fff';
+                }
+            });
+        }
+    })
+    .subscribe();
    // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
     if (nivel === 'camarero') {
         let style = document.getElementById('ocultarMasCamarero');
