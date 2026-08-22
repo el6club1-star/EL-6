@@ -305,102 +305,31 @@
         }
 
         function validarEntrada() {
-    const p = document.getElementById('passApp').value;
-    if (p === CLAVES.jefe) { 
-        nivel = "jefe"; 
-        entrar(); 
-    } else if (p === CLAVES.puerta) { 
-        nivel = "puerta"; // CORREGIDO: antes decía "personal"
-        entrar(); 
-    } else if (p === CLAVES.camarero) { 
-        nivel = "camarero"; 
-        entrar(); 
-    } else {
-        alert("CÓDIGO INCORRECTO");
-    }
-}
-function validarEntrada() {
-    const p = document.getElementById('passApp').value;
-    if (p === CLAVES.jefe) { 
-        nivel = "jefe"; 
-        entrar(); 
-    } else if (p === CLAVES.puerta) { 
-        nivel = "puerta"; // CORREGIDO: antes decía "personal"
-        entrar(); 
-    } else if (p === CLAVES.camarero) { 
-        nivel = "camarero"; 
-        entrar(); 
-    } else {
-        alert("CÓDIGO INCORRECTO");
-    }
-}
-
-function validarEntrada() {
-    const p = document.getElementById('passApp').value;
-    if (p === CLAVES.jefe) { 
-        nivel = "jefe"; 
-        entrar(); 
-    } else if (p === CLAVES.puerta) { 
-        nivel = "puerta"; 
-        entrar(); 
-    } else if (p === CLAVES.camarero) { 
-        nivel = "camarero"; 
-        entrar(); 
-    } else {
-        alert("CÓDIGO INCORRECTO");
-    }
-}
-
-function entrar() { 
-    document.getElementById('pantallaLogin').style.display = 'none'; 
-    document.getElementById('principal').style.display = 'block'; 
-    document.getElementById('btnLogout').style.display = 'block'; 
-
-    // PERFIL JEFE
-    if (nivel === 'jefe') { 
-        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'block'; 
-        if(document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'block'; 
-        if(document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'grid'; 
-        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'flex';
-        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'block';
-        if(document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'flex';
-    }
-    
-    // PERFIL PUERTA
-    if (nivel === 'puerta') {
-        if(document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'flex';
-        if(document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'none';
-        if(document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'none';
-        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
-    }
-
-    // PERFIL CAMARERO
-    if (nivel === 'camarero') {
-        if(document.getElementById('cajaRegistro')) document.getElementById('cajaRegistro').style.display = 'none';
-        if(document.getElementById('btnReset')) document.getElementById('btnReset').style.display = 'none';
-        if(document.getElementById('panelAdmin')) document.getElementById('panelAdmin').style.display = 'none';
-        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
-        
-        // Aplica reglas CSS de visualización para camarero al entrar
-        let style = document.getElementById('ocultarMasCamarero');
-        if (!style) {
-            style = document.createElement('style');
-            style.id = 'ocultarMasCamarero';
-            document.head.appendChild(style);
+            const p = document.getElementById('passApp').value;
+            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
+            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
+            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
+            else alert("CÓDIGO INCORRECTO");
         }
-        style.innerHTML = `
-            #card-consumos button:nth-child(2),
-            #card-consumos button.btn-sumar,
-            .tarjeta-socio button.btn-sumar,
-            #modalTarjeta button.btn-sumar,
-            button[onclick*="sumar"] {
-                display: none !important;
-            }
-        `;
+
+       function entrar() { 
+    document.getElementById('pantallaLogin').style.display='none'; 
+    document.getElementById('principal').style.display='block'; 
+    document.getElementById('btnLogout').style.display='block'; 
+    if(nivel === 'jefe') { 
+        document.getElementById('btnExport').style.display='block'; 
+        document.getElementById('btnReset').style.display='block'; 
+        document.getElementById('panelAdmin').style.display='grid'; 
+        document.getElementById('adminExtra').style.display='flex';
+        document.getElementById('configClaves').style.display = 'block';
+    }
+    if(nivel === 'camarero') {
+        document.getElementById('cajaRegistro').style.display = 'none';
+        document.getElementById('btnReset').style.display = 'none';
+        document.getElementById('panelAdmin').style.display = 'none';
+        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
     }
 
     const botonCamaraPrincipal = document.getElementById('btnCam');
@@ -408,63 +337,62 @@ function entrar() {
         botonCamaraPrincipal.style.display = 'block';
     }
 
-    // Inicializaciones dentro de entrar()
-    if (typeof inyectarInterceptosDePago === 'function') inyectarInterceptosDePago();
-    if (typeof refrescarDatos === 'function') refrescarDatos();
-}
+    // Activamos la escucha del botón pagar justo al entrar
+    inyectarInterceptosDePago();
+    refrescarDatos();
 
-// === ESCUCHA EN TIEMPO REAL (SIN REABRIR Y SIN MICROPARPADEO) ===
-_supabase
-    .channel('cambios-en-directo')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-        // 1. Actualiza los datos en la memoria
-        db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
-        aforo = db.filter(x => x.dentro).length;
-        
-        // 2. Solo repinta el fondo SI NO hay una tarjeta abierta de este socio
-        if (!socioActual || socioActual.dni !== payload.new.dni) {
-            render();
-        }
-        
-        // 3. Si la tarjeta abierta es la de este socio, actualiza SOLO las cifras sin tocar la pantalla
-        if (socioActual && socioActual.dni === payload.new.dni) {
-            socioActual = payload.new;
+   // === ESCUCHA EN TIEMPO REAL (SIN REABRIR Y SIN MICROPARPADEO) ===
+    _supabase
+        .channel('cambios-en-directo')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
+            // 1. Actualiza los datos en la memoria
+            db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
+            aforo = db.filter(x => x.dentro).length;
+            
+            // 2. Solo repinta el fondo SI NO hay una tarjeta abierta de este socio
+            // (esto elimina por completo el microparpadeo)
+            if (!socioActual || socioActual.dni !== payload.new.dni) {
+                render();
+            }
+            
+            // 3. Si la tarjeta abierta es la de este socio, actualiza SOLO las cifras sin tocar la pantalla
+            if (socioActual && socioActual.dni === payload.new.dni) {
+                socioActual = payload.new;
 
-            const stringNuevas = String(payload.new.consumiciones || '').trim();
-            let consumosNuevos = {};
-            productosValidos.forEach(p => consumosNuevos[p] = 0);
+                const stringNuevas = String(payload.new.consumiciones || '').trim();
+                let consumosNuevos = {};
+                productosValidos.forEach(p => consumosNuevos[p] = 0);
 
-            if (stringNuevas.includes(':')) {
-                stringNuevas.split(',').forEach(item => {
-                    const [p, c] = item.split(':');
-                    if (p && productosValidos.includes(p.trim().toUpperCase())) {
-                        consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                if (stringNuevas.includes(':')) {
+                    stringNuevas.split(',').forEach(item => {
+                        const [p, c] = item.split(':');
+                        if (p && productosValidos.includes(p.trim().toUpperCase())) {
+                            consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                        }
+                    });
+                }
+
+                productosValidos.forEach(prod => {
+                    const el = document.getElementById(`v-cant-${prod}`);
+                    if (el) {
+                        const cant = consumosNuevos[prod] || 0;
+                        el.innerText = cant;
+                        el.style.color = cant > 0 ? '#d4af37' : '#fff';
                     }
                 });
             }
-
-           productosValidos.forEach(prod => {
-                const el = document.getElementById(`v-cant-${prod}`);
-                if (el) {
-                    const cant = consumosNuevos[prod] || 0;
-                    el.innerText = cant;
-                    el.style.color = cant > 0 ? '#d4af37' : '#fff';
-                }
-            });
+        })
+        .subscribe();
+   // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
+    if (nivel === 'camarero') {
+        let style = document.getElementById('ocultarMasCamarero');
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'ocultarMasCamarero';
+            document.head.appendChild(style);
         }
-    })
-    .subscribe();
-
-
-// === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
-if (nivel === 'camarero') {
-    let style = document.getElementById('ocultarMasCamarero');
-    if (!style) {
-        style = document.createElement('style');
-        style.id = 'ocultarMasCamarero';
-        document.head.appendChild(style);
-    }
         
+        // Regla CSS pura: Oculta de forma instantánea cualquier botón de sumar sin importar cuántas veces se redibuje la tarjeta
         style.innerHTML = `
             #card-consumos button:nth-child(2),
             #card-consumos button.btn-sumar,
@@ -475,12 +403,13 @@ if (nivel === 'camarero') {
             }
         `;
 
-        // Intervalo de respaldo directo por JS
+        // 2. Intervalo de respaldo directo por JS
         setInterval(() => {
             document.querySelectorAll('button').forEach(btn => {
                 const texto = btn.innerText.trim();
                 const accion = btn.getAttribute('onclick') || '';
                 
+                // Si es un botón de sumar o contiene un '+', lo ocultamos al instante
                 if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
                     if (!accion.includes('restar')) {
                         btn.style.setProperty('display', 'none', 'important');
@@ -488,8 +417,10 @@ if (nivel === 'camarero') {
                 }
             });
         }, 100);
+    }
 }
 
+// NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
     const btnPagar = document.getElementById('btnPagarTarjeta');
     if (!btnPagar) return;
@@ -504,139 +435,136 @@ function inyectarInterceptosDePago() {
         });
     }
 }
-
-function formatearDNI(dni) {
-    if(!dni || dni.length < 3) return dni;
-    return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
-}
-
-function render() {
-    const b = document.getElementById('buscador').value.toLowerCase();
-    let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
-    // Corrección para incluir nivel 'puerta' además de 'personal'
-    if((nivel === "puerta" || nivel === "personal" || nivel === "camarero") && b === "") f = [];
-    
-    document.getElementById('st-total').innerText = db.length; 
-    document.getElementById('st-aforo').innerText = aforo; 
-    document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
-    document.getElementById('lista').innerHTML = f.map(s => `
-        <tr class="${s.vetado ? 'fila-vetada' : ''}">
-            <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-            <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-            <td>
-                <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
-            </td>
-        </tr>`).join('');
-}
-
-async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
-
-function exportarBaseDatos() {
-    const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
-}
-
-async function importarBaseDatos(event) {
-    const file = event.target.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        try {
-            const datos = JSON.parse(e.target.result);
-            if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
-                for(let s of datos) {
-                    delete s.created_at;
-                    await _supabase.from(NOMBRE_TABLA).upsert(s);
-                }
-                alert("Importación completada"); refrescarDatos();
-            }
-        } catch(err) { alert("Archivo no válido"); }
-    };
-    reader.readAsText(file);
-}
-
-function exportarExcel() {
-    let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
-    db.forEach(s => {
-        if (s.dentro || s.hora || s.consumiciones) {
-            csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
+        function formatearDNI(dni) {
+            if(!dni || dni.length < 3) return dni;
+            return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
         }
-    });
-    const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
-}
 
-async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
-async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
+        function render() {
+            const b = document.getElementById('buscador').value.toLowerCase();
+            let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
+            if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
+            document.getElementById('st-total').innerText = db.length; 
+            document.getElementById('st-aforo').innerText = aforo; 
+            document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
+            document.getElementById('lista').innerHTML = f.map(s => `
+                <tr class="${s.vetado ? 'fila-vetada' : ''}">
+                    <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
+                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
+                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+                    </td>
+                </tr>`).join('');
+        }
 
-async function registrar() {
-    const d = document.getElementById('dni').value.toUpperCase();
-    const n = document.getElementById('nom').value;
-    const e = document.getElementById('mail').value;
-    const c = document.getElementById('cumple').value;
-    const cat = document.getElementById('cat').value;
-    if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-    
-    const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-        dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-        hora: new Date().toLocaleTimeString(), cat: cat 
-    }).select();
-    
-    if (error) {
-        alert("Error al registrar: " + error.message);
-        return;
-    }
+        async function borrarSocio(dni) { if(confirm("¿Borrar socio?")) { await _supabase.from(NOMBRE_TABLA).delete().eq('dni', dni); refrescarDatos(); } }
 
-    if(e) {
-        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-            to_name: n, to_email: e, dni: d, categoria: cat
-        }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-    }
+        function exportarBaseDatos() {
+            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "COPIA_EL6.json"; a.click();
+        }
 
-    document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-    document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-    document.getElementById('checkRGPD').checked = false;
-
-    await refrescarDatos(); 
-    if(data && data[0]) {
-        abrirTarjeta(data[0]);
-    } else {
-        const recienCreado = db.find(x => x.dni === d);
-        if(recienCreado) abrirTarjeta(recienCreado);
-    }
-}
-
-function toggleCamara() {
-    const readerDiv = document.getElementById('reader');
-    const btn = document.getElementById('btnCam');
-    if(!camActiva) {
-        readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-            async (text) => {
-                btn.click();
-                const socio = db.find(x => x.dni === text.trim().toUpperCase());
-                if(socio) {
-                    if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
-                    await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
-                    refrescarDatos(); abrirTarjeta(socio);
-                } else {
-                    if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
-                        document.getElementById('dni').value = text.trim().toUpperCase();
-                        document.getElementById('nom').focus();
+        async function importarBaseDatos(event) {
+            const file = event.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const datos = JSON.parse(e.target.result);
+                    if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
+                        for(let s of datos) {
+                            delete s.created_at;
+                            await _supabase.from(NOMBRE_TABLA).upsert(s);
+                        }
+                        alert("Importación completada"); refrescarDatos();
                     }
-                }
-            }, () => {}
-        );
-    } else {
-        readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
-        if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
-    }
-}
+                } catch(err) { alert("Archivo no válido"); }
+            };
+            reader.readAsText(file);
+        }
 
-// Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
+        function exportarExcel() {
+            let csv = "ID,DNI,NOMBRE,CATEGORIA,ESTADO,HORA,CONSUMICIONES\n";
+            db.forEach(s => {
+                if (s.dentro || s.hora || s.consumiciones) {
+                    csv += `${s.id},${s.dni},${s.nombre},${s.cat},${s.dentro?'DENTRO':'FUERA'},${s.hora || ''},"${s.consumiciones || ''}"\n`;
+                }
+            });
+            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `INFORME_EL6_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+        }
+
+        async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
+        async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
+        
+        async function registrar() {
+            const d = document.getElementById('dni').value.toUpperCase();
+            const n = document.getElementById('nom').value;
+            const e = document.getElementById('mail').value;
+            const c = document.getElementById('cumple').value;
+            const cat = document.getElementById('cat').value;
+            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+            
+            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+                hora: new Date().toLocaleTimeString(), cat: cat 
+            }).select();
+            
+            if (error) {
+                alert("Error al registrar: " + error.message);
+                return;
+            }
+
+            if(e) {
+                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+                    to_name: n, to_email: e, dni: d, categoria: cat
+                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
+            }
+
+            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
+
+            await refrescarDatos(); 
+            if(data && data[0]) {
+                abrirTarjeta(data[0]);
+            } else {
+                const recienCreado = db.find(x => x.dni === d);
+                if(recienCreado) abrirTarjeta(recienCreado);
+            }
+        }
+
+        function toggleCamara() {
+            const readerDiv = document.getElementById('reader');
+            const btn = document.getElementById('btnCam');
+            if(!camActiva) {
+                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
+                html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+                    async (text) => {
+                        btn.click();
+                        const socio = db.find(x => x.dni === text.trim().toUpperCase());
+                        if(socio) {
+                            if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
+                            await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
+                            refrescarDatos(); abrirTarjeta(socio);
+                        } else {
+                            if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
+                                document.getElementById('dni').value = text.trim().toUpperCase();
+                                document.getElementById('nom').focus();
+                            }
+                        }
+                    }, () => {}
+                );
+            } else {
+                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
+                if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
+            }
+        }
+
+        // Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
 let firmaCargadaCache = "";
 
 function abrirTarjeta(s) {
@@ -676,44 +604,6 @@ function abrirTarjeta(s) {
         });
     }
 
-    // Renderizado de lista de productos dentro de la tarjeta
-    const contenedorConsumos = document.getElementById('card-consumos');
-    if (contenedorConsumos) {
-        contenedorConsumos.innerHTML = productosValidos.map(prod => {
-            const cant = consumosSocio[prod] || 0;
-            return `
-                <div class="item-consumo">
-                    <span>${prod}</span>
-                    <div class="ctrl-consumo">
-                        <button onclick="modificarConsumo('${prod}', -1)">-</button>
-                        <span id="v-cant-${prod}" style="color: ${cant > 0 ? '#d4af37' : '#fff'};">${cant}</span>
-                        <button class="btn-sumar" style="${nivel==='camarero'?'display:none !important':''}" onclick="modificarConsumo('${prod}', 1)">+</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    // Generar código QR del DNI del socio
-    const qrDiv = document.getElementById('card-qr');
-    if (qrDiv) {
-        qrDiv.innerHTML = "";
-        if (typeof QRCode !== 'undefined') {
-            new QRCode(qrDiv, {
-                text: s.dni,
-                width: 90,
-                height: 90,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        }
-    }
-
-    // Mostrar modal
-    const modal = document.getElementById('modalTarjeta');
-    if (modal) modal.style.display = 'flex';
-}
     let htmlConsumos = `
         <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
             <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -831,9 +721,6 @@ async function modificarCantidadDirecta(dni, producto, cambio) {
         });
     }
 
-    // === CÓDIGO CORREGIDO ===
-async function cambiarConsumo(dni, producto, cambio) {
-    const prodKey = producto.trim().toUpperCase();
     let cantActual = consumos[prodKey] || 0;
     let nuevaCant = cantActual + cambio;
     if (nuevaCant < 0) nuevaCant = 0;
@@ -985,203 +872,102 @@ async function guardarFirmaSocio() {
     }
 }
 
-// 1. DICCIONARIO DE CLAVES (Tus 3 contraseñas originales)
-var CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || {
-    jefe: "12345",      // Control total y facturación
-    puerta: "2222",     // Solo arqueo a ciegas (Efectivo, TPV, Ropero)
-    camarero: "0000"    // Solo barra
-};
-
-var nivel = ""; // Guarda el rol actual ('jefe', 'puerta', 'camarero')
-
-// 2. FUNCIÓN PARA ACCEDER A LA APP
-function accederApp() {
-    // Capturamos el rol y la clave del formulario
-    const selectRol = document.getElementById('tipoClave') || document.getElementById('selectRolLogin');
-    const inputPass = document.getElementById('nuevaClaveInput') || document.getElementById('inputPassLogin');
-
-    if (!selectRol || !inputPass) {
-        alert("Error: No se encontraron los campos del formulario de login.");
-        return;
-    }
-
-    const rolSeleccionado = selectRol.value.toLowerCase().trim();
-    const claveIngresada = inputPass.value.trim();
-
-    // Verificación
-    if (CLAVES[rolSeleccionado] && CLAVES[rolSeleccionado] === claveIngresada) {
-        nivel = rolSeleccionado; // Asignamos el nivel de acceso
-        
-        // Ocultamos la pantalla de login
-        const modalLogin = document.getElementById('modalLogin') || document.getElementById('pantallaLogin');
-        if (modalLogin) modalLogin.style.display = 'none';
-
-        // Aplicamos las restricciones visuales según el rol
-        aplicarRestriccionesPorRol();
-
-        // Refrescamos datos si la función existe
-        if (typeof refrescarDatos === 'function') {
-            refrescarDatos();
-        }
-    } else {
-        alert("🔑 Contraseña incorrecta para el rol seleccionado.");
-    }
-}
-
-// 3. APLICAR RESTRICCIONES DE PRIVACIDAD (Facturación e Históricos)
-function aplicarRestriccionesPorRol() {
-    // Si NO es Jefe (Puerta o Camarero), ocultamos facturación y totales
-    if (nivel !== 'jefe') {
-        // Ocultar histórico de cajas
-        const btnHistorico = document.getElementById('btnHistoricoCajas');
-        if (btnHistorico) btnHistorico.style.display = 'none';
-
-        // Ocultar botones de borrar o editar precios/ajustes
-        const elementosPrivados = document.querySelectorAll('.solo-jefe, .facturacion-total');
-        elementosPrivados.forEach(el => el.style.display = 'none');
-    } else {
-        // Si es JEFE, mostramos todo
-        const btnHistorico = document.getElementById('btnHistoricoCajas');
-        if (btnHistorico) btnHistorico.style.display = 'inline-block';
-
-        const elementosPrivados = document.querySelectorAll('.solo-jefe, .facturacion-total');
-        elementosPrivados.forEach(el => el.style.display = 'block');
-    }
-}
-
-// 4. ACTUALIZACIÓN DE CLAVES DESDE EL PANEL
 function actualizarClave() {
-    const t = document.getElementById('tipoClave').value.toLowerCase().trim(); 
-    const n = document.getElementById('nuevaClaveInput').value.trim();
-    if (n) { 
-        CLAVES[t] = n; 
-        localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); 
-        alert("Contraseña actualizada correctamente para el rol: " + t.toUpperCase()); 
-    }
+    const t = document.getElementById('tipoClave').value; 
+    const n = document.getElementById('nuevaClaveInput').value;
+    if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
 }
 
         /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
-function prepararCierreCaja() { 
-    const PRECIO_ENTRADA = 20;
-    const PRECIO_COPA = 10;
-    const PRECIO_CERVEZA = 5;
-    const PRECIO_REFRESCO = 5;
-    const PRECIO_AGUA = 5;
-    const PRECIO_ENERGETICO = 5;
-    const PRECIO_CHUPITO = 5;
+        function prepararCierreCaja() { 
+            const PRECIO_ENTRADA = 20;
+            const PRECIO_COPA = 10;
+            const PRECIO_CERVEZA = 5;
+            const PRECIO_REFRESCO = 5;
+            const PRECIO_AGUA = 5;
+            const PRECIO_ENERGETICO = 5;
+            const PRECIO_CHUPITO = 5;
 
-    let totalAsistentes = 0;
-    let totalCopas = 0;
-    let totalCervezas = 0;
-    let totalRefrescos = 0;
-    let totalAguas = 0;
-    let totalEnergeticos = 0;
-    let totalChupitos = 0;
-    let recaudacionEsperada = 0;
+            let totalAsistentes = 0;
+            let totalCopas = 0;
+            let totalCervezas = 0;
+            let totalRefrescos = 0;
+            let totalAguas = 0;
+            let totalEnergeticos = 0;
+            let totalChupitos = 0;
+            let recaudacionEsperada = 0;
 
-    db.forEach(s => {
-        if (s.dentro || s.hora) {
-            totalAsistentes++;
-            recaudacionEsperada += PRECIO_ENTRADA;
+            db.forEach(s => {
+                if (s.dentro || s.hora) {
+                    totalAsistentes++;
+                    recaudacionEsperada += PRECIO_ENTRADA;
 
-            let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
-            const stringConsumos = String(s.consumiciones || '').trim();
-            if (stringConsumos.includes(':')) {
-                stringConsumos.split(',').forEach(item => {
-                    const [p, c] = item.split(':');
-                    if (p && typeof consumosMap[p.trim().toUpperCase()] !== 'undefined') {
-                        consumosMap[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
+                    const stringConsumos = String(s.consumiciones || '').trim();
+                    if (stringConsumos.includes(':')) {
+                        stringConsumos.split(',').forEach(item => {
+                            const [p, c] = item.split(':');
+                            if (p && typeof consumosMap[p.trim().toUpperCase()] !== 'undefined') {
+                                consumosMap[p.trim().toUpperCase()] = parseInt(c) || 0;
+                            }
+                        });
                     }
-                });
-            }
 
-            totalCopas += consumosMap['COPA'];
-            totalCervezas += consumosMap['CERVEZA'];
-            totalRefrescos += consumosMap['REFRESCO'];
-            totalAguas += consumosMap['AGUA'];
-            totalEnergeticos += consumosMap['ENERGÉTICO'];
-            totalChupitos += consumosMap['CHUPITO'];
+                    totalCopas += consumosMap['COPA'];
+                    totalCervezas += consumosMap['CERVEZA'];
+                    totalRefrescos += consumosMap['REFRESCO'];
+                    totalAguas += consumosMap['AGUA'];
+                    totalEnergeticos += consumosMap['ENERGÉTICO'];
+                    totalChupitos += consumosMap['CHUPITO'];
 
-            recaudacionEsperada += (consumosMap['COPA'] * PRECIO_COPA);
-            recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIO_CERVEZA);
-            recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
-            recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
-            recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
-            recaudacionEsperada += (consumosMap['CHUPITO'] * PRECIO_CHUPITO);
+                    recaudacionEsperada += (consumosMap['COPA'] * PRECIO_COPA);
+                    recaudacionEsperada += (consumosMap['CERVEZA'] * PRECIO_CERVEZA);
+                    recaudacionEsperada += (consumosMap['REFRESCO'] * PRECIO_REFRESCO);
+                    recaudacionEsperada += (consumosMap['AGUA'] * PRECIO_AGUA);
+                    recaudacionEsperada += (consumosMap['ENERGÉTICO'] * PRECIO_ENERGETICO);
+                    recaudacionEsperada += (consumosMap['CHUPITO'] * PRECIO_CHUPITO);
+                }
+            });
+
+            datosCajaGlobal = {
+                totalAsistentes, recaudacionEsperada,
+                totalCopas, totalCervezas, totalRefrescos, totalAguas, totalEnergeticos, totalChupitos,
+                dineroEntradas: totalAsistentes * PRECIO_ENTRADA,
+                dineroCopas: totalCopas * PRECIO_COPA,
+                dineroCervezas: totalCervezas * PRECIO_CERVEZA,
+                dineroRefrescos: totalRefrescos * PRECIO_REFRESCO,
+                dineroAguas: totalAguas * PRECIO_AGUA,
+                dineroEnergeticos: totalEnergeticos * PRECIO_ENERGETICO,
+                dineroChupitos: totalChupitos * PRECIO_CHUPITO
+            };
+
+            let htmlHTML = `
+                <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
+                <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
+                <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
+                <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
+                <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
+                <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
+                <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
+                <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
+                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
+            `;
+
+            document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
+            document.getElementById('cajaTpvInput').value = 0;
+            document.getElementById('cajaEfectivoInput').value = 0;
+            
+            calcularDescuadreEnTiempoReal();
+            document.getElementById('modalLibroCajas').style.display = 'flex';
         }
-    });
 
-    datosCajaGlobal = {
-        totalAsistentes, recaudacionEsperada,
-        totalCopas, totalCervezas, totalRefrescos, totalAguas, totalEnergeticos, totalChupitos,
-        dineroEntradas: totalAsistentes * PRECIO_ENTRADA,
-        dineroCopas: totalCopas * PRECIO_COPA,
-        dineroCervezas: totalCervezas * PRECIO_CERVEZA,
-        dineroRefrescos: totalRefrescos * PRECIO_REFRESCO,
-        dineroAguas: totalAguas * PRECIO_AGUA,
-        dineroEnergeticos: totalEnergeticos * PRECIO_ENERGETICO,
-        dineroChupitos: totalChupitos * PRECIO_CHUPITO
-    };
-
-    let htmlHTML = '';
-
-    // Si es del equipo de puerta (o camarero), no ve los números esperados
-    if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
-        htmlHTML = `
-            <div style="text-align: center; padding: 15px; color: #d4af37; font-weight: bold; background: rgba(212,175,55,0.05); border-radius: 8px;">
-                🔒 CIERRE A CIEGAS (PUERTA)
-                <div style="font-size: 11px; color: #ccc; font-weight: normal; margin-top: 4px;">
-                    Introduce únicamente la recaudación física cobrada en TPV, Efectivo y Ropero.
-                </div>
-            </div>
-        `;
-    } else {
-        // El perfil 'jefe' ve el desglose financiero completo
-        htmlHTML = `
-            <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
-            <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
-            <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
-            <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
-            <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
-            <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
-            <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
-            <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
-            <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
-        `;
-    }
-
-    document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
-
-    // Reseteo de inputs (TPV, Efectivo y Ropero)
-    if (document.getElementById('cajaTpvInput')) document.getElementById('cajaTpvInput').value = 0;
-    if (document.getElementById('cajaEfectivoInput')) document.getElementById('cajaEfectivoInput').value = 0;
-    if (document.getElementById('cajaRoperoInput')) document.getElementById('cajaRoperoInput').value = 0;
-
-    calcularDescuadreEnTiempoReal();
-    document.getElementById('modalLibroCajas').style.display = 'flex';
-}
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const roperoInput = document.getElementById('cajaRoperoInput');
-            const ropero = roperoInput ? (parseFloat(roperoInput.value) || 0) : 0;
-            
-            const totalReal = tpv + efectivo + ropero;
+            const totalReal = tpv + efectivo;
             const descuadre = totalReal - datosCajaGlobal.recaudacionEsperada;
 
             const indicador = document.getElementById('cajaResultadoCéntimo');
-            
-            // Ocultar información si el usuario NO es jefe
-            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
-                if (indicador) {
-                    indicador.innerText = "🔒 Recaudación lista para entrega";
-                    indicador.style.background = "rgba(255,255,255,0.05)";
-                    indicador.style.color = "#ccc";
-                }
-                return;
-            }
-
-            // Vista para el JEFE
             if (indicador) {
                 if (descuadre === 0) {
                     indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
@@ -1204,13 +990,10 @@ function prepararCierreCaja() {
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const totalEfectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const roperoInput = document.getElementById('cajaRoperoInput');
-            const totalRopero = roperoInput ? (parseFloat(roperoInput.value) || 0) : 0;
-
-            const totalCajaReal = totalTPV + totalEfectivo + totalRopero;
+            const totalCajaReal = totalTPV + totalEfectivo;
             const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
 
-            // Guardamos en Supabase manteniendo exactamente tus campos + ropero opcional
+            // Guardamos en Supabase
             const { error: errorCaja } = await _supabase
                 .from('cajas_diarias')
                 .insert([{ 
@@ -1219,7 +1002,6 @@ function prepararCierreCaja() {
                     recaudacion_esperada: datosCajaGlobal.recaudacionEsperada,
                     pagado_efectivo: totalEfectivo,
                     pagado_tpv: totalTPV,
-                    ropero: totalRopero,
                     descuadre: descuadre,
                     copas_vendidas: datosCajaGlobal.totalCopas,
                     cervezas_vendidas: datosCajaGlobal.totalCervezas,
@@ -1261,6 +1043,7 @@ function prepararCierreCaja() {
                 if (el) el.innerText = "0";
             });
 
+            // CORRECCIÓN CLAVE: Reseteamos socioActual y cerramos modales para evitar que salte la tarjeta
             socioActual = null;
             if (document.getElementById('modalTarjeta')) {
                 document.getElementById('modalTarjeta').style.display = 'none';
@@ -1271,15 +1054,8 @@ function prepararCierreCaja() {
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
 
-        /* --- INYECTOR DEL BOTÓN DE HISTÓRICO PROTEGIDO POR ROL --- */
+        /* --- INYECTOR DEL BOTÓN DE HISTÓRICO PROTEGIDO --- */
         function inyectarBotonHistorialEnArqueo() {
-            // Oculta componentes de detalle si el rol no es jefe
-            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
-                const elementosSensibles = document.querySelectorAll('.datos-sensibles-caja, .desglose-productos-caja');
-                elementosSensibles.forEach(el => el.style.display = 'none');
-                return;
-            }
-
             const contenedorModal = document.getElementById('modalLibroCajas');
             if (!contenedorModal) return;
 
@@ -1301,13 +1077,8 @@ function prepararCierreCaja() {
             }
         }
 
-        /* --- PANTALLA VISUAL: LIBRO HISTÓRICO PROTEGIDO PARA JEFE --- */
+        /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
         async function mostrarHistoricoCajas() {
-            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
-                alert("⛔ Acceso denegado: Solo la dirección puede acceder al libro histórico.");
-                return;
-            }
-
             const viejo = document.getElementById('modalHistoricoCajas');
             if(viejo) viejo.remove();
 
@@ -1326,7 +1097,7 @@ function prepararCierreCaja() {
             modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
 
             let tablaHTML = `
-                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1200px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
+                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
                         <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
                         <div style="display: flex; gap: 12px; align-items: center;">
@@ -1336,7 +1107,7 @@ function prepararCierreCaja() {
                     </div>
                     
                     <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1050px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1000px;">
                             <thead>
                                 <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
                                     <th style="padding: 12px 10px;">FECHA</th>
@@ -1349,7 +1120,6 @@ function prepararCierreCaja() {
                                     <th style="padding: 12px 10px; text-align:right; background: rgba(255,255,255,0.03);">TOTAL CAJA</th>
                                     <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
                                     <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
-                                    <th style="padding: 12px 10px; text-align:right;">ROPERO</th>
                                     <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
                                     <th style="padding: 12px 10px; text-align:center; color: #ff4a4a; background: rgba(239,68,68,0.05);">ACCIONES</th>
                                 </tr>
@@ -1358,7 +1128,7 @@ function prepararCierreCaja() {
             `;
 
             registros.forEach(r => {
-                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0) + (parseFloat(r.ropero) || 0);
+                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
                 const desc = parseFloat(r.descuadre) || 0;
                 let estadoBadge = "";
                 
@@ -1376,7 +1146,7 @@ function prepararCierreCaja() {
                 }
 
                 tablaHTML += `
-                    <tr id="fila-caja-${r.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <td style="padding: 10px;">${fInvertida}</td>
                         <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
                         <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
@@ -1387,10 +1157,9 @@ function prepararCierreCaja() {
                         <td style="padding: 10px; text-align:right; font-weight:bold; color:#d4af37;">${totalCajaCalculado.toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:right;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
-                        <td style="padding: 10px; text-align:right;">${(r.ropero || 0).toFixed(2)}€</td>
                         <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
                         <td style="padding: 10px; text-align:center;">
-                            <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
+                            <button onclick="eliminarRegistroCaja('${r.id}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
                         </td>
                     </tr>
                 `;
@@ -1409,11 +1178,6 @@ function prepararCierreCaja() {
 
         /* --- ACCIÓN: BORRAR REGISTRO INDIVIDUAL DE SUPABASE --- */
         async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
-            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
-                alert("⛔ Solo el jefe puede eliminar registros de caja.");
-                return;
-            }
-
             if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
 
             const { error } = await _supabase
@@ -1432,27 +1196,22 @@ function prepararCierreCaja() {
             alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
         }
 
-       /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV PROTEGIDO --- */
+        /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV --- */
         async function descargarExcelUnificado() {
-            if (typeof nivel !== 'undefined' && nivel !== 'jefe') {
-                alert("⛔ Solo el perfil de jefe puede descargar los datos financieros.");
-                return;
-            }
-
             const { data: registros, error } = await _supabase
                 .from('cajas_diarias')
                 .select('*')
                 .order('fecha', { ascending: true });
 
-            if (error || !registros) return;
+            if(error || !registros) return;
 
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;ROPERO;DESCUADRE\n";
+            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
 
             registros.forEach(r => {
-                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0) + (parseFloat(r.ropero) || 0);
+                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
                 const chups = r.chupitos_vendidas || r.chupitos || 0;
-                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.ropero || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
+                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
@@ -1464,11 +1223,8 @@ function prepararCierreCaja() {
             link.remove();
         }
 
-       
-
-        /* --- EVENTOS DEL LIENZO SIGNATURE CANVAS --- */
+        // Eventos del Lienzo Signature Canvas
         function obtenerPosicion(e) {
-            if (typeof canvas === 'undefined' || !canvas) return { x: 0, y: 0 };
             const r = canvas.getBoundingClientRect();
             const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
             const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -1476,45 +1232,33 @@ function prepararCierreCaja() {
         }
 
         function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
-        function terminarDibujo() { dibujando = false; if (typeof ctx !== 'undefined' && ctx) ctx.beginPath(); }
+        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
         function pautarDibujo(e) {
-            if (typeof dibujando === 'undefined' || !dibujando) return;
+            if (!dibujando) return;
             e.preventDefault();
             const pos = obtenerPosicion(e);
-            if (typeof ctx !== 'undefined' && ctx) {
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
-            }
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
         }
 
-        if (typeof canvas !== 'undefined' && canvas) {
-            canvas.addEventListener('mousedown', iniciarDibujo);
-            window.addEventListener('mouseup', terminarDibujo);
-            canvas.addEventListener('mousemove', pautarDibujo);
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        window.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mousemove', pautarDibujo);
 
-            canvas.addEventListener('touchstart', iniciarDibujo);
-            window.addEventListener('touchend', terminarDibujo);
-            canvas.addEventListener('touchmove', pautarDibujo);
-        }
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        window.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchmove', pautarDibujo);
 
-        /* --- ARRANQUE INICIAL Y BUCLES EN SEGUNDO PLANO --- */
-        if (typeof refrescarDatos === 'function') refrescarDatos();
+        // Arranque inicial y bucles en segundo plano
+        refrescarDatos();
 
         setInterval(() => {
-            const modalTarj = document.getElementById('modalTarjeta');
-            const modalCaj = document.getElementById('modalLibroCajas');
-            const modalHist = document.getElementById('modalHistoricoCajas');
-
-            const tarjVis = modalTarj && modalTarj.style.display === 'flex';
-            const cajVis = modalCaj && modalCaj.style.display === 'flex';
-
-            if (typeof refrescarDatos === 'function' && !tarjVis && !cajVis && !modalHist) {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
                 refrescarDatos();
             }
-            if (cajVis && typeof inyectarBotonHistorialEnArqueo === 'function') {
+            if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
                 inyectarBotonHistorialEnArqueo();
             }
         }, 1500);
     </script>
 </body>
-</html>
