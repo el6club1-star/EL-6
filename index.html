@@ -536,35 +536,35 @@ function inyectarInterceptosDePago() {
             }
         }
 
-        function toggleCamara() {
-            const readerDiv = document.getElementById('reader');
-            const btn = document.getElementById('btnCam');
-            if(!camActiva) {
-                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-                    async (text) => {
-                        btn.click();
-                        const socio = db.find(x => x.dni === text.trim().toUpperCase());
-                        if(socio) {
-                            if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
-                            await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
-                            refrescarDatos(); abrirTarjeta(socio);
-                        } else {
-                            if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
-                                document.getElementById('dni').value = text.trim().toUpperCase();
-                                document.getElementById('nom').focus();
-                            }
+       function toggleCamara() {
+        const readerDiv = document.getElementById('reader');
+        const btn = document.getElementById('btnCam');
+        if(!camActiva) {
+            readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+                async (text) => {
+                    btn.click();
+                    const socio = db.find(x => x.dni === text.trim().toUpperCase());
+                    if(socio) {
+                        if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
+                        await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
+                        refrescarDatos(); abrirTarjeta(socio);
+                    } else {
+                        if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
+                            document.getElementById('dni').value = text.trim().toUpperCase();
+                            document.getElementById('nom').focus();
                         }
-                    }, () => {}
-                );
-            } else {
-                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
-                if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
-            }
+                    }
+                }, () => {}
+            );
+        } else {
+            readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
+            if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
         }
+    }
 
-        // Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
+    // Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
 let firmaCargadaCache = "";
 
 function abrirTarjeta(s) {
@@ -878,8 +878,8 @@ function actualizarClave() {
     if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
 }
 
-        /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
-        function prepararCierreCaja() { 
+        /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS (CIERRE CIEGO) --- */
+        function prepararCierreCaja() {  
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
             const PRECIO_CERVEZA = 5;
@@ -942,46 +942,41 @@ function actualizarClave() {
             };
 
             let htmlHTML = `
-                <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
-                <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
-                <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
-                <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
-                <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
-                <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
-                <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
-                <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
-                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
+                <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px; text-align: center;">
+                    <p style="color: #d4af37; font-weight: bold; margin: 0 0 8px 0; font-size: 13px;">🔒 ARQUEO DE CAJA CIEGO</p>
+                    <p style="color: #aaa; font-size: 11px; margin: 0; line-height: 1.4;">Por motivos de seguridad, el desglose de consumiciones y la recaudación teórica están ocultos. Introduzca los totales reales contados en caja.</p>
+                </div>
             `;
 
             document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
             document.getElementById('cajaTpvInput').value = 0;
             document.getElementById('cajaEfectivoInput').value = 0;
             
-            calcularDescuadreEnTiempoReal();
+            const roperoInput = document.getElementById('cajaRoperoInput');
+            if (roperoInput) roperoInput.value = 0;
+            
+            const indicador = document.getElementById('cajaResultadoCéntimo');
+            if (indicador) {
+                indicador.innerText = "🔒 Modo Ciego Activo (Resultados ocultos)";
+                indicador.style.background = "rgba(212,175,55,0.1)";
+                indicador.style.color = "#d4af37";
+            }
+
             document.getElementById('modalLibroCajas').style.display = 'flex';
         }
 
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const totalReal = tpv + efectivo;
+            const ropero = document.getElementById('cajaRoperoInput') ? (parseFloat(document.getElementById('cajaRoperoInput').value) || 0) : 0;
+            const totalReal = tpv + efectivo + ropero;
             const descuadre = totalReal - datosCajaGlobal.recaudacionEsperada;
 
             const indicador = document.getElementById('cajaResultadoCéntimo');
             if (indicador) {
-                if (descuadre === 0) {
-                    indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
-                    indicador.style.background = "rgba(34,197,94,0.2)";
-                    indicador.style.color = "#22c55e";
-                } else if (descuadre > 0) {
-                    indicador.innerText = `🟢 ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
-                    indicador.style.background = "rgba(34,197,94,0.2)";
-                    indicador.style.color = "#22c55e";
-                } else {
-                    indicador.innerText = `🔴 ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`;
-                    indicador.style.background = "rgba(239,68,68,0.2)";
-                    indicador.style.color = "#ef4444";
-                }
+                indicador.innerText = "🔒 Modo Ciego Activo (Resultados ocultos)";
+                indicador.style.background = "rgba(212,175,55,0.1)";
+                indicador.style.color = "#d4af37";
             }
         }
 
@@ -990,7 +985,8 @@ function actualizarClave() {
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const totalEfectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
-            const totalCajaReal = totalTPV + totalEfectivo;
+            const totalRopero = document.getElementById('cajaRoperoInput') ? (parseFloat(document.getElementById('cajaRoperoInput').value) || 0) : 0;
+            const totalCajaReal = totalTPV + totalEfectivo + totalRopero;
             const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
 
             // Guardamos en Supabase
@@ -1037,8 +1033,7 @@ function actualizarClave() {
                     return;
                 }
             }
-
-            productosValidos.forEach(prod => {
+  productosValidos.forEach(prod => {
                 const el = document.getElementById(`v-cant-${prod}`);
                 if (el) el.innerText = "0";
             });
