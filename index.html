@@ -1075,7 +1075,7 @@ function actualizarClave() {
             }
         }
 
-       /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
+     /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
     async function mostrarHistoricoCajas() {
         const viejo = document.getElementById('modalHistoricoCajas');
         if(viejo) viejo.remove();
@@ -1296,6 +1296,24 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
+    // Inyector automático para colocar el botón de puerta exactamente donde se ubica el de jefe
+    function inyectarBotonPuertaEnSitioJefe() {
+        // Busca contenedores típicos de puerta o paneles de control
+        const contenedor = document.getElementById('panelPuerta') || document.querySelector('.seccion-puerta') || document.querySelector('#seccionPuerta');
+        if (!contenedor) return;
+
+        if (document.getElementById('btnCierreCiegoPuerta')) return;
+
+        const btn = document.createElement('button');
+        btn.id = 'btnCierreCiegoPuerta';
+        btn.type = 'button';
+        btn.onclick = abrirModalCierrePuertaCiego;
+        btn.innerText = "🔴 REINICIAR NOCHE (PUERTA)";
+        btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; width: 100%; margin-top: 15px; text-align: center; display: block;";
+        
+        contenedor.appendChild(btn);
+    }
+
     // Eventos del Lienzo Signature Canvas
     function obtenerPosicion(e) {
         const r = canvas.getBoundingClientRect();
@@ -1332,6 +1350,7 @@ function actualizarClave() {
         if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
             inyectarBotonHistorialEnArqueo();
         }
+        inyectarBotonPuertaEnSitioJefe();
     }, 1500);
 </script>
 </body>
