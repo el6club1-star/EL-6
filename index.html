@@ -1296,38 +1296,53 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-    // Inyector inteligente: detecta el selector de claves y añade el botón solo si está en PUERTA
-    function gestionarBotonCierreSegunRol() {
-        const selectClaves = document.querySelector("select");
-        let esPuerta = false;
+   function gestionarBotonCierreSegunRol() {
+    // Intentamos localizar el selector o el elemento que muestra el rol actual
+    const selectClaves = document.querySelector("select");
+    let esPuerta = false;
 
-        if (selectClaves) {
-            const valor = (selectClaves.value || "").toUpperCase();
-            const texto = (selectClaves.options[selectClaves.selectedIndex]?.text || "").toUpperCase();
-            if (valor.includes('PUERTA') || texto.includes('PUERTA')) {
-                esPuerta = true;
-            }
+    if (selectClaves) {
+        const valor = (selectClaves.value || "").toUpperCase();
+        const texto = (selectClaves.options[selectClaves.selectedIndex]?.text || "").toUpperCase();
+        if (valor.includes('PUERTA') || texto.includes('PUERTA')) {
+            esPuerta = true;
         }
+    }
 
-        let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
+    // Alternativa de respaldo por si el rol se guarda en alguna variable global o localStorage
+    if (!esPuerta && typeof nivel !== 'undefined' && nivel) {
+        if (String(nivel).toUpperCase().includes('PUERTA')) {
+            esPuerta = true;
+        }
+    }
 
-        if (esPuerta) {
-            if (!btnPuerta && selectClaves && selectClaves.parentNode) {
+    let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
+
+    if (esPuerta) {
+        if (!btnPuerta) {
+            // Buscamos un contenedor seguro donde inyectar el botón (por ejemplo, cerca del header o el selector)
+            const contenedorDestino = selectClaves ? selectClaves.parentNode : document.body;
+            if (contenedorDestino) {
                 const btn = document.createElement('button');
                 btn.id = 'btnCierreCiegoPuertaRol';
                 btn.type = 'button';
                 btn.onclick = abrirModalCierrePuertaCiego;
                 btn.innerText = "🔴 REINICIAR NOCHE";
-                btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-left: 10px; display: inline-flex; align-items: center; vertical-align: middle;";
+                btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-left: 10px; display: inline-flex; align-items: center; vertical-align: middle; z-index: 1000;";
                 
-                selectClaves.parentNode.insertBefore(btn, selectClaves.nextSibling);
-            }
-        } else {
-            if (btnPuerta) {
-                btnPuerta.remove();
+                if (selectClaves) {
+                    selectClaves.parentNode.insertBefore(btn, selectClaves.nextSibling);
+                } else {
+                    document.body.appendChild(btn); // Fallback visual si no encuentra el select
+                }
             }
         }
+    } else {
+        if (btnPuerta) {
+            btnPuerta.remove();
+        }
     }
+}
 
     // Eventos del Lienzo Signature Canvas
     function obtenerPosicion(e) {
