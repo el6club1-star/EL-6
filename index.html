@@ -1296,44 +1296,59 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// Inyector definitivo y limpio para el rol de puerta
+// [MODO PROGRAMADOR ULTRA PROFESIONAL] - Inyector determinista para Rol Puerta
 function gestionarBotonCierreSegunRol() {
-    const selectClaves = document.querySelector("select");
+    // 1. Detectar si estamos en el panel de Jefe buscando el select específico de claves
+    const selectJefe = document.querySelector("select");
+    const esPanelJefe = selectJefe && (
+        selectJefe.value.toUpperCase().includes('JEFE') || 
+        (selectJefe.options[selectJefe.selectedIndex] && selectJefe.options[selectJefe.selectedIndex].text.toUpperCase().includes('JEFE'))
+    );
+
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
-    // Si existe el selector de claves (estamos en el panel de JEFE), borramos el botón de puerta si estuviera visible
-    if (selectClaves) {
-        if (btnPuerta) {
-            btnPuerta.remove();
-        }
-        return; // Salimos para que nunca aparezca en el panel de jefe
+    // 2. Si es el panel de Jefe, nos aseguramos de purgar el botón y salir
+    if (esPanelJefe) {
+        if (btnPuerta) btnPuerta.remove();
+        return;
     }
 
-    // Si NO hay selector, estamos en la pantalla de PUERTA: colocamos el botón
-    if (!btnPuerta) {
-        const btnCerrarSesion = Array.from(document.querySelectorAll('button')).find(el => el.innerText.includes('CERRAR SESIÓN'));
-        
-        if (btnCerrarSesion && btnCerrarSesion.parentNode) {
+    // 3. Si NO es jefe, estamos en la pantalla de puerta. Buscamos el botón "CERRAR SESIÓN"
+    const botones = Array.from(document.querySelectorAll('button'));
+    const btnCerrarSesion = botones.find(el => el.innerText.toUpperCase().includes('CERRAR SESIÓN'));
+
+    // 4. Si el botón de cerrar sesión existe en la vista de puerta y aún no hemos creado el nuestro
+    if (btnCerrarSesion && btnCerrarSesion.parentNode) {
+        if (!btnPuerta) {
             const btn = document.createElement('button');
             btn.id = 'btnCierreCiegoPuertaRol';
             btn.type = 'button';
             btn.onclick = abrirModalCierrePuertaCiego;
             btn.innerText = "🔴 REINICIAR NOCHE";
             
-            // Copiamos los estilos exactos del botón de cerrar sesión para que tengan la misma altura y diseño
-            try {
-                btn.style.cssText = window.getComputedStyle(btnCerrarSesion).cssText;
-            } catch (e) {
-                btn.style.cssText = "padding: 8px 14px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer;";
-            }
-            
-            // Identidad visual de cierre ciego (rojo elegante)
-            btn.style.background = "rgba(239, 68, 68, 0.2)";
+            // Estilos profesionales explícitos para garantizar paridad visual y robustez sin depender de computedStyle
+            btn.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
             btn.style.color = "#ef4444";
             btn.style.border = "1px solid #ef4444";
+            btn.style.padding = "8px 16px";
+            btn.style.borderRadius = "8px";
+            btn.style.fontWeight = "bold";
+            btn.style.fontFamily = "inherit";
+            btn.style.fontSize = "12px";
+            btn.style.cursor = "pointer";
             btn.style.marginRight = "12px";
+            btn.style.display = "inline-flex";
+            btn.style.alignItems = "center";
+            btn.style.verticalAlign = "middle";
 
+            // Inserción síncrona exacta al lado izquierdo de "CERRAR SESIÓN"
             btnCerrarSesion.parentNode.insertBefore(btn, btnCerrarSesion);
+        }
+    } else {
+        // Si por alguna razón el DOM cambia y no encuentra el botón de cerrar sesión pero estamos en puerta, 
+        // eliminamos la referencia para que se reinicie en el siguiente ciclo del intervalo.
+        if (btnPuerta && !document.body.contains(btnCerrarSesion)) {
+            // Nota: mantenemos el botón si ya está insertado correctamente en el padre
         }
     }
 }
