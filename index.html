@@ -1296,47 +1296,28 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-   function gestionarBotonCierreSegunRol() {
-    // Intentamos localizar el selector o el elemento que muestra el rol actual
-    const selectClaves = document.querySelector("select");
-    let esPuerta = false;
-
-    if (selectClaves) {
-        const valor = (selectClaves.value || "").toUpperCase();
-        const texto = (selectClaves.options[selectClaves.selectedIndex]?.text || "").toUpperCase();
-        if (valor.includes('PUERTA') || texto.includes('PUERTA')) {
-            esPuerta = true;
-        }
-    }
-
-    // Alternativa de respaldo por si el rol se guarda en alguna variable global o localStorage
-    if (!esPuerta && typeof nivel !== 'undefined' && nivel) {
-        if (String(nivel).toUpperCase().includes('PUERTA')) {
-            esPuerta = true;
-        }
-    }
-
+  // Inyector definitivo: coloca el botón de cierre ciego de puerta siempre visible arriba
+function gestionarBotonCierreSegunRol() {
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
-    if (esPuerta) {
-        if (!btnPuerta) {
-            // Buscamos un contenedor seguro donde inyectar el botón (por ejemplo, cerca del header o el selector)
-            const contenedorDestino = selectClaves ? selectClaves.parentNode : document.body;
-            if (contenedorDestino) {
-                const btn = document.createElement('button');
-                btn.id = 'btnCierreCiegoPuertaRol';
-                btn.type = 'button';
-                btn.onclick = abrirModalCierrePuertaCiego;
-                btn.innerText = "🔴 REINICIAR NOCHE";
-                btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-left: 10px; display: inline-flex; align-items: center; vertical-align: middle; z-index: 1000;";
-                
-                if (selectClaves) {
-                    selectClaves.parentNode.insertBefore(btn, selectClaves.nextSibling);
-                } else {
-                    document.body.appendChild(btn); // Fallback visual si no encuentra el select
-                }
-            }
+    if (!btnPuerta) {
+        const btn = document.createElement('button');
+        btn.id = 'btnCierreCiegoPuertaRol';
+        btn.type = 'button';
+        btn.onclick = abrirModalCierrePuertaCiego;
+        btn.innerText = "🔴 REINICIAR NOCHE";
+        // Estilo elegante y adaptado para la zona superior
+        btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; margin-left: 15px; display: inline-flex; align-items: center; vertical-align: middle; z-index: 1000;";
+
+        // Buscamos el título principal de la cabecera (CLUB PRIVADO EL 6) para ponerlo justo al lado
+        const headerZona = document.querySelector("h3") || document.querySelector("h2");
+        if (headerZona && headerZona.parentNode) {
+            headerZona.parentNode.insertBefore(btn, headerZona.nextSibling);
+        } else {
+            document.body.insertBefore(btn, document.body.firstChild);
         }
+    }
+}
     } else {
         if (btnPuerta) {
             btnPuerta.remove();
