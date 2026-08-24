@@ -1296,25 +1296,27 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [INYECTOR DEFINITIVO PARA ROL PUERTA] - Control estricto de visibilidad
+// [INYECTOR DEFINITIVO Y SEGURO - ROL PUERTA]
 function gestionarBotonCierreSegunRol() {
     const selectClaves = document.querySelector("select");
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
-    // Si existe el desplegable de claves y marca JEFE, borramos el botón de puerta
+    // Si hay un selector y es el de Jefe, eliminamos nuestro botón
     if (selectClaves) {
         const textoSelect = (selectClaves.innerText || "").toUpperCase();
         const valorSelect = (selectClaves.value || "").toUpperCase();
-        if (textoSelect.includes('JEFE') || valorSelect.includes('JEFE') || selectClaves.querySelector("option[value*='JEFE']:checked")) {
+        if (textoSelect.includes('JEFE') || valorSelect.includes('JEFE')) {
             if (btnPuerta) btnPuerta.remove();
             return;
         }
     }
 
-    // Si NO estamos en el panel de jefe (estamos en puerta), creamos/mantenemos el botón
+    // Si estamos en la pantalla de puerta, inyectamos el botón
     if (!btnPuerta) {
-        const btnCerrarSesion = Array.from(document.querySelectorAll('button')).find(el => 
-            el.innerText.toUpperCase().includes('CERRAR SESIÓN')
+        // Buscamos cualquier elemento (botón, enlace, etc.) que tenga el texto de cerrar sesión
+        const elementos = Array.from(document.querySelectorAll('button, a, div'));
+        const btnCerrarSesion = elementos.find(el => 
+            el.children.length === 0 && el.innerText && el.innerText.toUpperCase().trim() === 'CERRAR SESIÓN'
         );
 
         if (btnCerrarSesion && btnCerrarSesion.parentNode) {
@@ -1324,7 +1326,7 @@ function gestionarBotonCierreSegunRol() {
             btn.onclick = abrirModalCierrePuertaCiego;
             btn.innerText = "🔴 REINICIAR NOCHE";
             
-            // Estilos profesionales limpios
+            // Estilos profesionales exactos
             btn.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
             btn.style.color = "#ef4444";
             btn.style.border = "1px solid #ef4444";
