@@ -1299,55 +1299,35 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [SOLUCIÓN DE FUERZA BRUTA - ROL PUERTA]
+// [CONTROLADOR DE VISIBILIDAD PARA EL BOTÓN DE PUERTA]
 function gestionarBotonCierreSegunRol() {
-    let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
+    const selectClaves = document.getElementById('tipoClave');
+    const btnPuertaCiego = document.getElementById('btnResetPuerta');
     
-    // 1. Detectar si estamos en el panel de Jefe buscando el select de claves
-    const selectClaves = document.querySelector("select");
-    let esJefe = false;
-    
-    if (selectClaves) {
-        const texto = selectClaves.innerText || "";
-        const val = selectClaves.value || "";
-        if (texto.includes('JEFE') || val.includes('JEFE')) {
-            esJefe = true;
+    if (btnPuertaCiego) {
+        let esJefe = false;
+        if (selectClaves) {
+            const val = (selectClaves.value || "").toUpperCase();
+            if (val.includes('JEFE')) {
+                esJefe = true;
+            }
         }
-    }
-
-    // 2. Si es Jefe, quitamos el botón si existiera y salimos
-    if (esJefe) {
-        if (btnPuerta) btnPuerta.remove();
-        return;
-    }
-
-    // 3. Si NO es jefe (estamos en puerta), creamos el botón directamente en la cabecera superior
-    if (!btnPuerta) {
-        // Buscamos la cabecera o cualquier contenedor superior de la página
-        const header = document.querySelector("header") || document.querySelector("div");
         
-        if (header) {
-            const btn = document.createElement('button');
-            btn.id = 'btnCierreCiegoPuertaRol';
-            btn.type = 'button';
-            btn.onclick = abrirModalCierrePuertaCiego;
-            btn.innerText = "🔴 REINICIAR NOCHE";
-            
-            // Estilos fijos para que se vea perfectamente arriba a la derecha
-            btn.style.position = "absolute";
-            btn.style.top = "15px";
-            btn.style.right = "180px"; // Colocado justo a la izquierda del botón de cerrar sesión
-            btn.style.zIndex = "999999";
-            btn.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
-            btn.style.color = "#ef4444";
-            btn.style.border = "1px solid #ef4444";
-            btn.style.padding = "8px 16px";
-            btn.style.borderRadius = "8px";
-            btn.style.fontWeight = "bold";
-            btn.style.fontSize = "12px";
-            btn.style.cursor = "pointer";
-
-            document.body.appendChild(btn);
+        // Si es jefe, ocultamos el botón de la puerta (el jefe usa el suyo propio)
+        if (esJefe) {
+            btnPuertaCiego.style.display = 'none';
+        } else {
+            // Si es puerta o camarero, lo mostramos con sus estilos limpios
+            btnPuertaCiego.style.display = 'inline-block';
+            btnPuertaCiego.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+            btnPuertaCiego.style.color = "#ef4444";
+            btnPuertaCiego.style.border = "1px solid #ef4444";
+            btnPuertaCiego.style.padding = "8px 16px";
+            btnPuertaCiego.style.borderRadius = "8px";
+            btnPuertaCiego.style.fontWeight = "bold";
+            btnPuertaCiego.style.fontSize = "12px";
+            btnPuertaCiego.style.cursor = "pointer";
+            btnPuertaCiego.style.marginRight = "12px";
         }
     }
 }
@@ -1381,7 +1361,7 @@ function gestionarBotonCierreSegunRol() {
     // Arranque inicial y bucles en segundo plano
     refrescarDatos();
     
-    // Fuerza la creación del botón al cargar la pantalla
+    // Fuerza la comprobación al cargar la pantalla
     gestionarBotonCierreSegunRol();
 
     setInterval(() => {
