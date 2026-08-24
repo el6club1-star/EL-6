@@ -1296,52 +1296,55 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [INYECTOR DEFINITIVO Y SEGURO - ROL PUERTA]
+// [SOLUCIÓN DE FUERZA BRUTA - ROL PUERTA]
 function gestionarBotonCierreSegunRol() {
-    const selectClaves = document.querySelector("select");
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
-
-    // Si hay un selector y es el de Jefe, eliminamos nuestro botón
+    
+    // 1. Detectar si estamos en el panel de Jefe buscando el select de claves
+    const selectClaves = document.querySelector("select");
+    let esJefe = false;
+    
     if (selectClaves) {
-        const textoSelect = (selectClaves.innerText || "").toUpperCase();
-        const valorSelect = (selectClaves.value || "").toUpperCase();
-        if (textoSelect.includes('JEFE') || valorSelect.includes('JEFE')) {
-            if (btnPuerta) btnPuerta.remove();
-            return;
+        const texto = selectClaves.innerText || "";
+        const val = selectClaves.value || "";
+        if (texto.includes('JEFE') || val.includes('JEFE')) {
+            esJefe = true;
         }
     }
 
-    // Si estamos en la pantalla de puerta, inyectamos el botón
-    if (!btnPuerta) {
-        // Buscamos cualquier elemento (botón, enlace, etc.) que tenga el texto de cerrar sesión
-        const elementos = Array.from(document.querySelectorAll('button, a, div'));
-        const btnCerrarSesion = elementos.find(el => 
-            el.children.length === 0 && el.innerText && el.innerText.toUpperCase().trim() === 'CERRAR SESIÓN'
-        );
+    // 2. Si es Jefe, quitamos el botón si existiera y salimos
+    if (esJefe) {
+        if (btnPuerta) btnPuerta.remove();
+        return;
+    }
 
-        if (btnCerrarSesion && btnCerrarSesion.parentNode) {
+    // 3. Si NO es jefe (estamos en puerta), creamos el botón directamente en la cabecera superior
+    if (!btnPuerta) {
+        // Buscamos la cabecera o cualquier contenedor superior de la página
+        const header = document.querySelector("header") || document.querySelector("div");
+        
+        if (header) {
             const btn = document.createElement('button');
             btn.id = 'btnCierreCiegoPuertaRol';
             btn.type = 'button';
             btn.onclick = abrirModalCierrePuertaCiego;
             btn.innerText = "🔴 REINICIAR NOCHE";
             
-            // Estilos profesionales exactos
-            btn.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+            // Estilos fijos para que se vea perfectamente arriba a la derecha
+            btn.style.position = "absolute";
+            btn.style.top = "15px";
+            btn.style.right = "180px"; // Colocado justo a la izquierda del botón de cerrar sesión
+            btn.style.zIndex = "999999";
+            btn.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
             btn.style.color = "#ef4444";
             btn.style.border = "1px solid #ef4444";
             btn.style.padding = "8px 16px";
             btn.style.borderRadius = "8px";
             btn.style.fontWeight = "bold";
-            btn.style.fontFamily = "inherit";
             btn.style.fontSize = "12px";
             btn.style.cursor = "pointer";
-            btn.style.marginRight = "12px";
-            btn.style.display = "inline-flex";
-            btn.style.alignItems = "center";
-            btn.style.verticalAlign = "middle";
 
-            btnCerrarSesion.parentNode.insertBefore(btn, btnCerrarSesion);
+            document.body.appendChild(btn);
         }
     }
 }
