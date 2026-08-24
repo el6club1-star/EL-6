@@ -1296,25 +1296,42 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// Inyector definitivo: coloca el botón de cierre ciego de puerta siempre visible arriba
+// Inyector inteligente: detecta el rol de puerta (clave 0000 o texto puerta) y añade el botón arriba a la izquierda
 function gestionarBotonCierreSegunRol() {
+    const selectClaves = document.querySelector("select");
+    let esPuerta = false;
+
+    if (selectClaves) {
+        const valor = (selectClaves.value || "").toUpperCase();
+        const texto = (selectClaves.options[selectClaves.selectedIndex]?.text || "").toUpperCase();
+        if (valor.includes('PUERTA') || texto.includes('PUERTA') || valor.includes('0000') || texto.includes('0000')) {
+            esPuerta = true;
+        }
+    }
+
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
-    if (!btnPuerta) {
-        const btn = document.createElement('button');
-        btn.id = 'btnCierreCiegoPuertaRol';
-        btn.type = 'button';
-        btn.onclick = abrirModalCierrePuertaCiego;
-        btn.innerText = "🔴 REINICIAR NOCHE";
-        // Estilo elegante y adaptado para la zona superior
-        btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; margin-left: 15px; display: inline-flex; align-items: center; vertical-align: middle; z-index: 1000;";
+    if (esPuerta) {
+        if (!btnPuerta) {
+            const btn = document.createElement('button');
+            btn.id = 'btnCierreCiegoPuertaRol';
+            btn.type = 'button';
+            btn.onclick = abrirModalCierrePuertaCiego;
+            btn.innerText = "🔴 REINICIAR NOCHE";
+            // Estilo idéntico al de los controles superiores para una alineación perfecta
+            btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; margin-right: 15px; display: inline-flex; align-items: center; vertical-align: middle; z-index: 1000;";
 
-        // Buscamos el título principal de la cabecera (CLUB PRIVADO EL 6) para ponerlo justo al lado
-        const headerZona = document.querySelector("h3") || document.querySelector("h2");
-        if (headerZona && headerZona.parentNode) {
-            headerZona.parentNode.insertBefore(btn, headerZona.nextSibling);
-        } else {
-            document.body.insertBefore(btn, document.body.firstChild);
+            // Lo colocamos justo al lado del selector de claves superior izquierda
+            const zonaArriba = document.querySelector("select");
+            if (zonaArriba && zonaArriba.parentNode) {
+                zonaArriba.parentNode.insertBefore(btn, zonaArriba);
+            } else {
+                document.body.insertBefore(btn, document.body.firstChild);
+            }
+        }
+    } else {
+        if (btnPuerta) {
+            btnPuerta.remove();
         }
     }
 }
