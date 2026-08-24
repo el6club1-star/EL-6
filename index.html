@@ -1296,46 +1296,26 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// Inyector definitivo: controla la visibilidad del botón de reinicio ciego según el rol activo
+// Inyector definitivo para la pantalla de puerta: coloca el botón de reinicio ciego arriba
 function gestionarBotonCierreSegunRol() {
-    const selectClaves = document.querySelector("select");
-    let esPuerta = false;
-
-    if (selectClaves) {
-        const valor = (selectClaves.value || "").toUpperCase();
-        const texto = (selectClaves.options[selectClaves.selectedIndex]?.text || "").toUpperCase();
-        
-        // Si el selector indica explícitamente PUERTA o la clave 0000
-        if (valor.includes('PUERTA') || texto.includes('PUERTA') || valor.includes('0000') || texto.includes('0000')) {
-            esPuerta = true;
-        }
-    }
-
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
-    if (esPuerta) {
-        if (!btnPuerta) {
-            const btn = document.createElement('button');
-            btn.id = 'btnCierreCiegoPuertaRol';
-            btn.type = 'button';
-            btn.onclick = abrirModalCierrePuertaCiego;
-            btn.innerText = "🔴 REINICIAR NOCHE";
-            btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; margin-right: 15px; display: inline-flex; align-items: center; vertical-align: middle; z-index: 1000;";
+    if (!btnPuerta) {
+        const btn = document.createElement('button');
+        btn.id = 'btnCierreCiegoPuertaRol';
+        btn.type = 'button';
+        btn.onclick = abrirModalCierrePuertaCiego;
+        btn.innerText = "🔴 REINICIAR NOCHE";
+        btn.style.cssText = "background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer; margin-right: 15px; display: inline-flex; align-items: center; vertical-align: middle; z-index: 1000;";
 
-            // Buscamos el contenedor superior donde está el selector de claves para insertarlo al lado
-            const zonaArriba = document.querySelector("select");
-            if (zonaArriba && zonaArriba.parentNode) {
-                zonaArriba.parentNode.insertBefore(btn, zonaArriba);
-            } else {
-                // Fallback seguro por si acaso
-                const headerFallback = document.querySelector("h3") || document.body;
-                headerFallback.insertBefore(btn, headerFallback.firstChild);
-            }
-        }
-    } else {
-        // Si NO es puerta (por ejemplo, es jefe), eliminamos el botón para que no se vea
-        if (btnPuerta) {
-            btnPuerta.remove();
+        // Buscamos el botón de cerrar sesión o la cabecera para colocarlo perfectamente visible arriba
+        const btnCerrarSesion = Array.from(document.querySelectorAll('button')).find(el => el.innerText.includes('CERRAR SESIÓN'));
+        
+        if (btnCerrarSesion && btnCerrarSesion.parentNode) {
+            btnCerrarSesion.parentNode.insertBefore(btn, btnCerrarSesion);
+        } else {
+            const headerFallback = document.querySelector("h3") || document.body;
+            headerFallback.insertBefore(btn, headerFallback.firstChild);
         }
     }
 }
@@ -1368,9 +1348,12 @@ function gestionarBotonCierreSegunRol() {
 
     // Arranque inicial y bucles en segundo plano
     refrescarDatos();
+    
+    // LLAMADA DIRECTA: Fuerza la creación del botón al cargar la pantalla
+    gestionarBotonCierreSegunRol();
 
     setInterval(() => {
-        if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
+        if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta')?.style.display !== 'flex' && document.getElementById('modalLibroCajas')?.style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
             refrescarDatos();
         }
         if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
