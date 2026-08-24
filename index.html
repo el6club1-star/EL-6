@@ -1300,36 +1300,49 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [CONTROLADOR DE VISIBILIDAD PARA EL BOTÓN DE PUERTA]
+// [CONTROLADOR DEFINITIVO DEL BOTÓN ROJO DE REINICIAR NOCHE - PUERTA]
 function gestionarBotonCierreSegunRol() {
     const selectClaves = document.getElementById('tipoClave');
-    const btnPuertaCiego = document.getElementById('btnResetPuerta');
+    let btnPuertaCiego = document.getElementById('btnResetPuerta');
     
+    let esJefe = false;
+    if (selectClaves) {
+        const val = (selectClaves.value || "").toUpperCase();
+        if (val.includes('JEFE')) {
+            esJefe = true;
+        }
+    }
+
+    // Si estamos en modo JEFE, ocultamos o borramos el botón de la puerta
+    if (esJefe) {
+        if (btnPuertaCiego) btnPuertaCiego.style.display = 'none';
+        return;
+    }
+
+    // Si NO es jefe (estamos en Puerta o Camarero), nos aseguramos de que el botón exista y sea rojo
+    if (!btnPuertaCiego) {
+        const btnCerrarSesion = document.getElementById('btnLogout');
+        if (btnCerrarSesion && btnCerrarSesion.parentNode) {
+            btnPuertaCiego = document.createElement('button');
+            btnPuertaCiego.id = 'btnResetPuerta';
+            btnPuertaCiego.type = 'button';
+            btnPuertaCiego.innerText = "🔴 REINICIAR NOCHE";
+            btnCerrarSesion.parentNode.insertBefore(btnPuertaCiego, btnCerrarSesion);
+        }
+    }
+
     if (btnPuertaCiego) {
-        let esJefe = false;
-        if (selectClaves) {
-            const val = (selectClaves.value || "").toUpperCase();
-            if (val.includes('JEFE')) {
-                esJefe = true;
-            }
-        }
-        
-        // Si es jefe, ocultamos el botón de la puerta (el jefe usa el suyo propio)
-        if (esJefe) {
-            btnPuertaCiego.style.display = 'none';
-        } else {
-            // Si es puerta o camarero, lo mostramos con sus estilos limpios
-            btnPuertaCiego.style.display = 'inline-block';
-            btnPuertaCiego.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
-            btnPuertaCiego.style.color = "#ef4444";
-            btnPuertaCiego.style.border = "1px solid #ef4444";
-            btnPuertaCiego.style.padding = "8px 16px";
-            btnPuertaCiego.style.borderRadius = "8px";
-            btnPuertaCiego.style.fontWeight = "bold";
-            btnPuertaCiego.style.fontSize = "12px";
-            btnPuertaCiego.style.cursor = "pointer";
-            btnPuertaCiego.style.marginRight = "12px";
-        }
+        btnPuertaCiego.style.display = 'inline-block';
+        btnPuertaCiego.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+        btnPuertaCiego.style.color = "#ef4444";
+        btnPuertaCiego.style.border = "1px solid #ef4444";
+        btnPuertaCiego.style.padding = "8px 16px";
+        btnPuertaCiego.style.borderRadius = "8px";
+        btnPuertaCiego.style.fontWeight = "bold";
+        btnPuertaCiego.style.fontSize = "12px";
+        btnPuertaCiego.style.cursor = "pointer";
+        btnPuertaCiego.style.marginRight = "12px";
+        btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
     }
 }
 
