@@ -90,9 +90,11 @@
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-  <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
-    <!-- NUEVO BOTÓN EXCLUSIVO PARA LA PUERTA (CIEGO) -->
-    <button class="btn-reset-noche" id="btnResetPuerta" style="display:none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE (PUERTA)</button>
+ <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
+    <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
+        <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
+        <button class="btn-logout" id="btnLogout" style="display: none; background: #000; color: #fff; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+    </div>
     
     <div class="container" id="principal">
         <header>
@@ -112,7 +114,6 @@
             <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
             <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
         </header>
-        
         <div id="panelAdmin" class="stats-container">
             <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
             <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
