@@ -1296,7 +1296,7 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-  // Inyector definitivo: coloca el botón de cierre ciego de puerta siempre visible arriba
+// Inyector definitivo: coloca el botón de cierre ciego de puerta siempre visible arriba
 function gestionarBotonCierreSegunRol() {
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
@@ -1315,12 +1315,6 @@ function gestionarBotonCierreSegunRol() {
             headerZona.parentNode.insertBefore(btn, headerZona.nextSibling);
         } else {
             document.body.insertBefore(btn, document.body.firstChild);
-        }
-    }
-}
-    } else {
-        if (btnPuerta) {
-            btnPuerta.remove();
         }
     }
 }
