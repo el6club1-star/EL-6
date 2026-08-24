@@ -1296,31 +1296,20 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [ARQUITECTURA ULTRA PROFESIONAL] - Inyector con aislamiento estricto de rol y paridad visual
+// Inyector definitivo y limpio para el rol de puerta
 function gestionarBotonCierreSegunRol() {
-    // 1. Verificamos si estamos en el panel de Jefe mediante el selector de claves
     const selectClaves = document.querySelector("select");
-    let esJefe = false;
+    let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
+    // Si existe el selector de claves (estamos en el panel de JEFE), borramos el botón de puerta si estuviera visible
     if (selectClaves) {
-        const valor = (selectClaves.value || "").toUpperCase();
-        const texto = (selectClaves.options[selectClaves.selectedIndex]?.text || "").toUpperCase();
-        if (valor.includes('JEFE') || texto.includes('JEFE')) {
-            esJefe = true;
-        }
-    }
-
-    const btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
-
-    // 2. Principio de exclusión: Si es Jefe, purgamos cualquier rastro del botón de puerta
-    if (esJefe) {
         if (btnPuerta) {
             btnPuerta.remove();
         }
-        return;
+        return; // Salimos para que nunca aparezca en el panel de jefe
     }
 
-    // 3. Si estamos en la interfaz de Puerta, aseguramos la inyección con paridad de estilos
+    // Si NO hay selector, estamos en la pantalla de PUERTA: colocamos el botón
     if (!btnPuerta) {
         const btnCerrarSesion = Array.from(document.querySelectorAll('button')).find(el => el.innerText.includes('CERRAR SESIÓN'));
         
@@ -1331,18 +1320,19 @@ function gestionarBotonCierreSegunRol() {
             btn.onclick = abrirModalCierrePuertaCiego;
             btn.innerText = "🔴 REINICIAR NOCHE";
             
-            // Heredamos las métricas exactas del sistema para garantizar idéntica altura y diseño
-            const estilosNativos = window.getComputedStyle(btnCerrarSesion);
-            btn.style.cssText = estilosNativos.cssText;
+            // Copiamos los estilos exactos del botón de cerrar sesión para que tengan la misma altura y diseño
+            try {
+                btn.style.cssText = window.getComputedStyle(btnCerrarSesion).cssText;
+            } catch (e) {
+                btn.style.cssText = "padding: 8px 14px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 12px; cursor: pointer;";
+            }
             
-            // Aplicación de la identidad visual de seguridad (Rojo Ciego) sobre la base heredada
-            btn.style.background = "rgba(239, 68, 68, 0.15)";
+            // Identidad visual de cierre ciego (rojo elegante)
+            btn.style.background = "rgba(239, 68, 68, 0.2)";
             btn.style.color = "#ef4444";
             btn.style.border = "1px solid #ef4444";
             btn.style.marginRight = "12px";
-            btn.style.marginLeft = "0px";
 
-            // Inserción síncrona al DOM justo antes del botón de cierre de sesión
             btnCerrarSesion.parentNode.insertBefore(btn, btnCerrarSesion);
         }
     }
