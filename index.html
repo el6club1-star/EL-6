@@ -90,7 +90,9 @@
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-    <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+  <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+    <!-- NUEVO BOTÓN EXCLUSIVO PARA LA PUERTA (CIEGO) -->
+    <button class="btn-reset-noche" id="btnResetPuerta" style="display:none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE (PUERTA)</button>
     
     <div class="container" id="principal">
         <header>
@@ -100,6 +102,7 @@
                 <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
                 <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
             </div>
+            <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
             <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
             <div class="admin-btns" id="adminExtra" style="display:none;">
                 <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
