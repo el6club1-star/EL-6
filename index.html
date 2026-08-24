@@ -1296,25 +1296,23 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [ININYECTOR DEFINITIVO POR ESTADO DE PANTALLA]
+// [INYECTOR DEFINITIVO PARA ROL PUERTA] - Control estricto de visibilidad
 function gestionarBotonCierreSegunRol() {
-    // Buscamos si está el desplegable de claves del Jefe
     const selectClaves = document.querySelector("select");
     let btnPuerta = document.getElementById('btnCierreCiegoPuertaRol');
 
-    // Si hay un select en pantalla, comprobamos si es el panel de Jefe
+    // Si existe el desplegable de claves y marca JEFE, borramos el botón de puerta
     if (selectClaves) {
-        const textoSelect = selectClaves.innerText || "";
-        // Si el panel actual tiene opciones de gestión de claves o dice Jefe, quitamos el botón de puerta
-        if (textoSelect.includes('JEFE') || document.querySelector("input[value*='JEFE']") || selectClaves.value === "JEFE") {
+        const textoSelect = (selectClaves.innerText || "").toUpperCase();
+        const valorSelect = (selectClaves.value || "").toUpperCase();
+        if (textoSelect.includes('JEFE') || valorSelect.includes('JEFE') || selectClaves.querySelector("option[value*='JEFE']:checked")) {
             if (btnPuerta) btnPuerta.remove();
             return;
         }
     }
 
-    // Si NO estamos en el panel de jefe (estamos en puerta/ camarero), aseguramos que el botón esté visible
+    // Si NO estamos en el panel de jefe (estamos en puerta), creamos/mantenemos el botón
     if (!btnPuerta) {
-        // Buscamos el botón de cerrar sesión arriba a la derecha
         const btnCerrarSesion = Array.from(document.querySelectorAll('button')).find(el => 
             el.innerText.toUpperCase().includes('CERRAR SESIÓN')
         );
@@ -1326,7 +1324,7 @@ function gestionarBotonCierreSegunRol() {
             btn.onclick = abrirModalCierrePuertaCiego;
             btn.innerText = "🔴 REINICIAR NOCHE";
             
-            // Estilos profesionales limpios y idénticos
+            // Estilos profesionales limpios
             btn.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
             btn.style.color = "#ef4444";
             btn.style.border = "1px solid #ef4444";
@@ -1341,13 +1339,12 @@ function gestionarBotonCierreSegunRol() {
             btn.style.alignItems = "center";
             btn.style.verticalAlign = "middle";
 
-            // Lo metemos justo al lado izquierdo del botón de cerrar sesión
             btnCerrarSesion.parentNode.insertBefore(btn, btnCerrarSesion);
         }
     }
 }
 
-    // Eventos del Lienzo Signature Canvas
+// Eventos del Lienzo Signature Canvas
     function obtenerPosicion(e) {
         const r = canvas.getBoundingClientRect();
         const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -1376,7 +1373,7 @@ function gestionarBotonCierreSegunRol() {
     // Arranque inicial y bucles en segundo plano
     refrescarDatos();
     
-    // LLAMADA DIRECTA: Fuerza la creación del botón al cargar la pantalla
+    // Fuerza la creación del botón al cargar la pantalla
     gestionarBotonCierreSegunRol();
 
     setInterval(() => {
@@ -1384,7 +1381,7 @@ function gestionarBotonCierreSegunRol() {
             refrescarDatos();
         }
         if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
-            inyectarBotonHistorialEnArqueo();
+            inyectorBotonHistorialEnArqueo();
         }
         gestionarBotonCierreSegunRol();
     }, 1500);
