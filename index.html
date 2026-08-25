@@ -1093,28 +1093,31 @@ function actualizarClave() {
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
 
-        /* --- INYECTOR DEL BOTÓN DE HISTÓRICO PROTEGIDO --- */
-        function inyectarBotonHistorialEnArqueo() {
-            const contenedorModal = document.getElementById('modalLibroCajas');
-            if (!contenedorModal) return;
+       /* --- INYECTOR AUTOMÁTICO DEL BOTÓN EN EL MODAL DE ARQUEO --- */
+    function inyectorBotonHistorialEnArqueo() {
+        const modalArqueo = document.getElementById('modalLibroCajas');
+        if (!modalArqueo) return;
 
-            if (document.getElementById('btn-historial-seguro')) return;
+        // Comprobamos si el botón ya fue insertado para no duplicarlo
+        if (document.getElementById('btnVerHistoricoSupabase')) return;
 
-            const btnConfirmar = contenedorModal.querySelector("button[onclick*='ejecutarCierreResetFinal']");
-            if (btnConfirmar) {
-                const btnHist = document.createElement('button');
-                btnHist.id = 'btn-historial-seguro';
-                btnHist.type = 'button';
-                btnHist.onclick = mostrarHistoricoCajas;
-                btnHist.innerText = "📊 VER LIBRO HISTÓRICO";
-                btnHist.style.cssText = "background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; margin-top: 15px; width: 100%; display: block; text-align: center; letter-spacing: 0.5px; transition: 0.2s;";
-                
-                btnHist.onmouseover = () => { btnHist.style.background = '#d4af37'; btnHist.style.color = '#000'; };
-                btnHist.onmouseout = () => { btnHist.style.background = 'rgba(0,0,0,0.6)'; btnHist.style.color = '#d4af37'; };
+        // Buscamos el botón de confirmar cierre para colocar el nuestro justo debajo
+        const botonConfirmar = modalArqueo.querySelector('button[onclick*="ejecutarCierreResetFinal"]') || modalArqueo.querySelector('.panel-caja button') || modalArqueo.querySelector('button[type="button"]');
+        
+        if (botonConfirmar && botonConfirmar.parentNode) {
+            const btnHistorial = document.createElement('button');
+            btnHistorial.id = 'btnVerHistoricoSupabase';
+            btnHistorial.type = 'button';
+            btnHistorial.innerText = "📖 Ver Historial Libro de Cajas";
+            btnHistorial.style.cssText = "width: 100%; padding: 10px; background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 11px;";
+            
+            // Al hacer clic, llamará directamente a la función del histórico
+            btnHistorial.onclick = mostrarHistoricoCajas;
 
-                btnConfirmar.parentNode.insertBefore(btnHist, btnConfirmar.nextSibling);
-            }
+            // Lo insertamos justo después del botón de confirmar
+            botonConfirmar.parentNode.insertBefore(btnHistorial, botonConfirmar.nextSibling);
         }
+    }
 
     /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
     async function mostrarHistoricoCajas() {
@@ -1262,7 +1265,7 @@ function actualizarClave() {
         link.remove();
     }
 
- /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
+    /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
     function abrirModalCierrePuertaCiego() {
         let modal = document.getElementById('modalCierrePuertaCiego');
         if (!modal) {
@@ -1337,32 +1340,30 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [CONTROLADOR DEFINITIVO DE LOS BOTONES - LIMPIO]
-function gestionarBotonCierreSegunRol() {
-    let btnPuertaIzq = document.getElementById('btnCierrePuertaIzquierda');
-    
-    // Si el botón ya existe en el HTML, nos aseguramos de que se muestre correctamente
-    if (btnPuertaIzq) {
-        btnPuertaIzq.style.display = 'block';
-    }
+    // [CONTROLADOR DEFINITIVO DE LOS BOTONES - LIMPIO]
+    function gestionarBotonCierreSegunRol() {
+        let btnPuertaIzq = document.getElementById('btnCierrePuertaIzquierda');
+        
+        if (btnPuertaIzq) {
+            btnPuertaIzq.style.display = 'block';
+        }
 
-    // Opcional superior derecho (si existe la barra de sesión)
-    let btnPuertaCiego = document.getElementById('btnResetPuerta');
-    if (!btnPuertaCiego) {
-        const btnCerrarSesion = document.getElementById('btnLogout');
-        if (btnCerrarSesion && btnCerrarSesion.parentNode) {
-            btnPuertaCiego = document.createElement('button');
-            btnPuertaCiego.id = 'btnResetPuerta';
-            btnPuertaCiego.type = 'button';
-            btnPuertaCiego.innerText = "🔴 REINICIAR NOCHE";
-            btnPuertaCiego.style.cssText = "background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-right: 12px;";
-            btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
-            btnCerrarSesion.parentNode.insertBefore(btnPuertaCiego, btnCerrarSesion);
+        let btnPuertaCiego = document.getElementById('btnResetPuerta');
+        if (!btnPuertaCiego) {
+            const btnCerrarSesion = document.getElementById('btnLogout');
+            if (btnCerrarSesion && btnCerrarSesion.parentNode) {
+                btnPuertaCiego = document.createElement('button');
+                btnPuertaCiego.id = 'btnResetPuerta';
+                btnPuertaCiego.type = 'button';
+                btnPuertaCiego.innerText = "🔴 REINICIAR NOCHE";
+                btnPuertaCiego.style.cssText = "background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-right: 12px;";
+                btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
+                btnCerrarSesion.parentNode.insertBefore(btnPuertaCiego, btnCerrarSesion);
+            }
         }
     }
-}
 
-// Eventos del Lienzo Signature Canvas
+    // Eventos del Lienzo Signature Canvas
     function obtenerPosicion(e) {
         const r = canvas.getBoundingClientRect();
         const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -1395,7 +1396,6 @@ function gestionarBotonCierreSegunRol() {
         refrescarDatos();
     }
     
-    // Fuerza la comprobación al cargar la pantalla
     gestionarBotonCierreSegunRol();
 
     setInterval(() => {
