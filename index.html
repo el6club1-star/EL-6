@@ -82,8 +82,6 @@
 </style>
 </head>
 <body>
-   <div id="antena"><div id="dot" class="dot"></div><span id="statusText">LINK</span></div>
-    
     <!-- BOTÓN FIJO ARRIBA A LA IZQUIERDA (OCULTO POR DEFECTO) -->
     <div id="miBotonCierrePerfecto" style="display: none !important; position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; width: auto !important; height: auto !important;">
         <button type="button" onclick="abrirModalCierrePuertaCiego()" style="display: inline-block !important; width: auto !important; height: auto !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 8px 14px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; white-space: nowrap !important;">
@@ -97,7 +95,7 @@
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-<!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
+    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
     <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
         <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
         <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
@@ -126,25 +124,38 @@
             <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
-        <div class="reg-box" id="cajaRegistro">
-            <div>
-                <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
-                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
-                <div class="contenedor-rgpd">
+        
+        <!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
+        <div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 140px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
+                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
+                <div class="contenedor-rgpd" style="margin-top: 5px;">
                     <input type="checkbox" id="checkRGPD" style="width:auto;"> 
                     <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
                 </div>
             </div>
-            <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
-            <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
-            <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
-            <div><label style="font-size:11px; font-weight:bold;">TIPO</label>
-                <select id="cat">
+            <div style="flex: 2; min-width: 180px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
+                <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 130px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
+                <input type="date" id="cumple" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 160px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
+                <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 120px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
+                <select id="cat" style="width:100%;">
                     <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
                 </select>
             </div>
-        </div>
-            <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
+            <div>
+                <button class="btn-add" onclick="registrar()" style="height: 40px; white-space: nowrap;">REGISTRAR</button>
+            </div>
         </div>
         
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
