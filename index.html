@@ -82,7 +82,7 @@
     </style>
 </head>
 <body>
-    <div id="antena"><div id="dot" class="dot"></div><span id="statusText">LINK</span></div>
+   <div id="antena"><div id="dot" class="dot"></div><span id="statusText">LINK</span></div>
     
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
@@ -95,6 +95,9 @@
         <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
         <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
     </div>
+
+    <!-- BOTÓN FIJO EN LA ESQUINA INFERIOR IZQUIERDA PARA PUERTA -->
+    <button class="btn-reset-noche" id="btnCierrePuertaIzquierda" style="display: none; position: fixed; bottom: 20px; left: 20px; z-index: 99999; background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);" onclick="abrirModalCierrePuertaCiego()">🔴 CIERRE CIEGO PUERTA</button>
     
     <div class="container" id="principal">
         <header>
