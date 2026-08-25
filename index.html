@@ -90,7 +90,11 @@
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-    <button class="btn-logout" id="btnLogout" style="display:none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+ <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
+    <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
+        <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
+        <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+    </div>
     
     <div class="container" id="principal">
         <header>
@@ -100,6 +104,7 @@
                 <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
                 <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
             </div>
+            <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
             <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
             <div class="admin-btns" id="adminExtra" style="display:none;">
                 <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
@@ -109,7 +114,6 @@
             <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
             <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
         </header>
-        
         <div id="panelAdmin" class="stats-container">
             <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
             <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
@@ -1075,188 +1079,313 @@ function actualizarClave() {
             }
         }
 
-        /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
-        async function mostrarHistoricoCajas() {
-            const viejo = document.getElementById('modalHistoricoCajas');
-            if(viejo) viejo.remove();
+    /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
+    async function mostrarHistoricoCajas() {
+        const viejo = document.getElementById('modalHistoricoCajas');
+        if(viejo) viejo.remove();
 
-            const { data: registros, error } = await _supabase
-                .from('cajas_diarias')
-                .select('*')
-                .order('fecha', { ascending: false });
+        const { data: registros, error } = await _supabase
+            .from('cajas_diarias')
+            .select('*')
+            .order('fecha', { ascending: false });
 
-            if(error) {
-                alert("Error al cargar el histórico: " + error.message);
-                return;
+        if(error) {
+            alert("Error al cargar el histórico: " + error.message);
+            return;
+        }
+
+        const modalHist = document.createElement('div');
+        modalHist.id = 'modalHistoricoCajas';
+        modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
+
+        let tablaHTML = `
+            <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                    <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">📥 DESCARGAR LIBRO EXCEL (.CSV)</button>
+                        <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: none; border: none; color: #ff4a4a; font-size: 22px; font-weight: bold; cursor: pointer;">✕</button>
+                    </div>
+                </div>
+                
+                <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1000px;">
+                        <thead>
+                            <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
+                                <th style="padding: 12px 10px;">FECHA</th>
+                                <th style="padding: 12px 10px; text-align:center;">ENTRADAS</th>
+                                <th style="padding: 12px 10px; text-align:center;">COPAS</th>
+                                <th style="padding: 12px 10px; text-align:center;">CERVEZAS</th>
+                                <th style="padding: 12px 10px; text-align:center;">CHUPITOS</th>
+                                <th style="padding: 12px 10px; text-align:center;">REFRESCOS</th>
+                                <th style="padding: 12px 10px; text-align:center;">ENERGÉTICOS</th>
+                                <th style="padding: 12px 10px; text-align:right; background: rgba(255,255,255,0.03);">TOTAL CAJA</th>
+                                <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
+                                <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
+                                <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
+                                <th style="padding: 12px 10px; text-align:center; color: #ff4a4a; background: rgba(239,68,68,0.05);">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        registros.forEach(r => {
+            const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+            const desc = parseFloat(r.descuadre) || 0;
+            let estadoBadge = "";
+            
+            if(desc === 0) {
+                estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Cuadrada</span>`;
+            } else if(desc > 0) {
+                estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Sobran +${desc.toFixed(2)}€</span>`;
+            } else {
+                estadoBadge = `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-weight:700;">Faltan ${desc.toFixed(2)}€</span>`;
             }
 
-            const modalHist = document.createElement('div');
-            modalHist.id = 'modalHistoricoCajas';
-            modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
-
-            let tablaHTML = `
-                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
-                        <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">📥 DESCARGAR LIBRO EXCEL (.CSV)</button>
-                            <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: none; border: none; color: #ff4a4a; font-size: 22px; font-weight: bold; cursor: pointer;">✕</button>
-                        </div>
-                    </div>
-                    
-                    <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1000px;">
-                            <thead>
-                                <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
-                                    <th style="padding: 12px 10px;">FECHA</th>
-                                    <th style="padding: 12px 10px; text-align:center;">ENTRADAS</th>
-                                    <th style="padding: 12px 10px; text-align:center;">COPAS</th>
-                                    <th style="padding: 12px 10px; text-align:center;">CERVEZAS</th>
-                                    <th style="padding: 12px 10px; text-align:center;">CHUPITOS</th>
-                                    <th style="padding: 12px 10px; text-align:center;">REFRESCOS</th>
-                                    <th style="padding: 12px 10px; text-align:center;">ENERGÉTICOS</th>
-                                    <th style="padding: 12px 10px; text-align:right; background: rgba(255,255,255,0.03);">TOTAL CAJA</th>
-                                    <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
-                                    <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
-                                    <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
-                                    <th style="padding: 12px 10px; text-align:center; color: #ff4a4a; background: rgba(239,68,68,0.05);">ACCIONES</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-            `;
-
-            registros.forEach(r => {
-                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
-                const desc = parseFloat(r.descuadre) || 0;
-                let estadoBadge = "";
-                
-                if(desc === 0) {
-                    estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Cuadrada</span>`;
-                } else if(desc > 0) {
-                    estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Sobran +${desc.toFixed(2)}€</span>`;
-                } else {
-                    estadoBadge = `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-weight:700;">Faltan ${desc.toFixed(2)}€</span>`;
-                }
-
-                let fInvertida = r.fecha;
-                if(r.fecha && r.fecha.includes('-')) {
-                    fInvertida = r.fecha.split('-').reverse().join('/');
-                }
-
-                tablaHTML += `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 10px;">${fInvertida}</td>
-                        <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
-                        <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
-                        <td style="padding: 10px; text-align:center;">${r.cervezas_vendidas || 0}</td>
-                        <td style="padding: 10px; text-align:center;">${r.chupitos_vendidas || 0}</td>
-                        <td style="padding: 10px; text-align:center;">${r.refrescos_vendidas || 0}</td>
-                        <td style="padding: 10px; text-align:center;">${r.energeticos_vendidas || 0}</td>
-                        <td style="padding: 10px; text-align:right; font-weight:bold; color:#d4af37;">${totalCajaCalculado.toFixed(2)}€</td>
-                        <td style="padding: 10px; text-align:right;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
-                        <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
-                        <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
-                        <td style="padding: 10px; text-align:center;">
-                            <button onclick="eliminarRegistroCaja('${r.id}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
-                        </td>
-                    </tr>
-                `;
-            });
+            let fInvertida = r.fecha;
+            if(r.fecha && r.fecha.includes('-')) {
+                fInvertida = r.fecha.split('-').reverse().join('/');
+            }
 
             tablaHTML += `
-                            </tbody>
-                        </table>
+                <tr id="fila-caja-${r.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 10px;">${fInvertida}</td>
+                    <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
+                    <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
+                    <td style="padding: 10px; text-align:center;">${r.cervezas_vendidas || 0}</td>
+                    <td style="padding: 10px; text-align:center;">${r.chupitos_vendidas || 0}</td>
+                    <td style="padding: 10px; text-align:center;">${r.refrescos_vendidas || 0}</td>
+                    <td style="padding: 10px; text-align:center;">${r.energeticos_vendidas || 0}</td>
+                    <td style="padding: 10px; text-align:right; font-weight:bold; color:#d4af37;">${totalCajaCalculado.toFixed(2)}€</td>
+                    <td style="padding: 10px; text-align:right;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
+                    <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
+                    <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
+                    <td style="padding: 10px; text-align:center;">
+                        <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tablaHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        modalHist.innerHTML = tablaHTML;
+        document.body.appendChild(modalHist);
+    }
+
+    /* --- ACCIÓN: BORRAR REGISTRO INDIVIDUAL DE SUPABASE --- */
+    async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
+        if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
+
+        const { error } = await _supabase
+            .from('cajas_diarias')
+            .delete()
+            .eq('id', idCaja);
+
+        if (error) {
+            alert("No se pudo eliminar el registro de Supabase: " + error.message);
+            return;
+        }
+
+        const fila = document.getElementById(`fila-caja-${idCaja}`);
+        if (fila) fila.remove();
+        
+        alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
+    }
+
+    /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV --- */
+    async function descargarExcelUnificado() {
+        const { data: registros, error } = await _supabase
+            .from('cajas_diarias')
+            .select('*')
+            .order('fecha', { ascending: true });
+
+        if(error || !registros) return;
+
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+        csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
+
+        registros.forEach(r => {
+            const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+            const chups = r.chupitos_vendidas || r.chupitos || 0;
+            csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "LIBRO_DE_CAJAS_UNIFICADO.csv");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
+    function abrirModalCierrePuertaCiego() {
+        let modal = document.getElementById('modalCierrePuertaCiego');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'modalCierrePuertaCiego';
+            modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200000; display: flex; justify-content: center; align-items: center; font-family: 'Inter', sans-serif; color: #fff;";
+            modal.innerHTML = `
+                <div style="background: #111827; border: 1px solid #374151; border-radius: 12px; width: 90%; max-width: 400px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+                    <h3 style="margin-top: 0; color: #ef4444; font-size: 18px; text-align: center;">🔴 Cierre Ciego - Puerta</h3>
+                    <p style="font-size: 13px; color: #9ca3af; text-align: center; margin-bottom: 20px;">Introduce el recuento real de caja:</p>
+                    
+                    <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">Efectivo contado (€):</label>
+                    <input type="number" id="puertaCiegoEfectivo" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box;">
+                    
+                    <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">TPV / Tarjeta (€):</label>
+                    <input type="number" id="puertaCiegoTpv" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box;">
+                    
+                    <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">Ropero (€) [Opcional]:</label>
+                    <input type="number" id="puertaCiegoRopero" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 20px; box-sizing: border-box;">
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="ejecutarCierrePuertaCiegoReal()" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Confirmar Cierre</button>
+                        <button type="button" onclick="document.getElementById('modalCierrePuertaCiego').remove()" style="flex: 1; background: #374151; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
                     </div>
                 </div>
             `;
+            document.body.appendChild(modal);
+        } else {
+            document.getElementById('puertaCiegoEfectivo').value = 0;
+            document.getElementById('puertaCiegoTpv').value = 0;
+            document.getElementById('puertaCiegoRopero').value = 0;
+            modal.style.display = 'flex';
+        }
+    }
 
-            modalHist.innerHTML = tablaHTML;
-            document.body.appendChild(modalHist);
+    async function ejecutarCierrePuertaCiegoReal() {
+        if (!confirm("¿Estás seguro de efectuar el cierre de noche? Se registrarán los datos y se limpiarán los aforos activos.")) return;
+
+        const efectivo = parseFloat(document.getElementById('puertaCiegoEfectivo').value) || 0;
+        const tpv = parseFloat(document.getElementById('puertaCiegoTpv').value) || 0;
+        const ropero = parseFloat(document.getElementById('puertaCiegoRopero').value) || 0;
+        const totalEfectivoConRopero = efectivo + ropero;
+        const totalRecaudado = totalEfectivoConRopero + tpv;
+
+        const { error: errorCaja } = await _supabase
+            .from('cajas_diarias')
+            .insert([{ 
+                fecha: new Date().toISOString().split('T')[0],
+                pagado_efectivo: totalEfectivoConRopero, 
+                pagado_tpv: tpv,
+                recaudacion_esperada: totalRecaudado,
+                total_asistentes: db.filter(s => s.dentro || s.hora).length
+            }]);
+
+        if (errorCaja) {
+            alert("⚠️ Error al guardar en la nube: " + errorCaja.message);
+            return;
         }
 
-        /* --- ACCIÓN: BORRAR REGISTRO INDIVIDUAL DE SUPABASE --- */
-        async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
-            if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
-
-            const { error } = await _supabase
-                .from('cajas_diarias')
-                .delete()
-                .eq('id', idCaja);
-
-            if (error) {
-                alert("No se pudo eliminar el registro de Supabase: " + error.message);
-                return;
-            }
-
-            const fila = document.getElementById(`fila-caja-${idCaja}`);
-            if (fila) fila.remove();
-            
-            alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
+        const listaIds = db.map(socio => socio.id).filter(id => id != null);
+        if (listaIds.length > 0) {
+            await _supabase
+                .from(NOMBRE_TABLA)
+                .update({ dentro: false, hora: null, consumiciones: null, pago_realizado: false, hora_pago: null })
+                .in('id', listaIds);
         }
 
-        /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV --- */
-        async function descargarExcelUnificado() {
-            const { data: registros, error } = await _supabase
-                .from('cajas_diarias')
-                .select('*')
-                .order('fecha', { ascending: true });
+        const modal = document.getElementById('modalCierrePuertaCiego');
+        if (modal) modal.remove();
 
-            if(error || !registros) return;
+        if (typeof refrescarDatos === 'function') await refrescarDatos();
+        alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
+    }
 
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
-
-            registros.forEach(r => {
-                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
-                const chups = r.chupitos_vendidas || r.chupitos || 0;
-                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "LIBRO_DE_CAJAS_UNIFICADO.csv");
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+// [CONTROLADOR DEFINITIVO DEL BOTÓN ROJO DE REINICIAR NOCHE - PUERTA]
+function gestionarBotonCierreSegunRol() {
+    const selectClaves = document.getElementById('tipoClave');
+    let btnPuertaCiego = document.getElementById('btnResetPuerta');
+    
+    let esJefe = false;
+    if (selectClaves) {
+        const val = (selectClaves.value || "").toUpperCase();
+        if (val.includes('JEFE')) {
+            esJefe = true;
         }
+    }
 
-        // Eventos del Lienzo Signature Canvas
-        function obtenerPosicion(e) {
-            const r = canvas.getBoundingClientRect();
-            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clienteX - r.left, y: clienteY - r.top };
+    // Si estamos en modo JEFE, ocultamos o borramos el botón de la puerta
+    if (esJefe) {
+        if (btnPuertaCiego) btnPuertaCiego.style.display = 'none';
+        return;
+    }
+
+    // Si NO es jefe (estamos en Puerta o Camarero), nos aseguramos de que el botón exista y sea rojo
+    if (!btnPuertaCiego) {
+        const btnCerrarSesion = document.getElementById('btnLogout');
+        if (btnCerrarSesion && btnCerrarSesion.parentNode) {
+            btnPuertaCiego = document.createElement('button');
+            btnPuertaCiego.id = 'btnResetPuerta';
+            btnPuertaCiego.type = 'button';
+            btnPuertaCiego.innerText = "🔴 REINICIAR NOCHE";
+            btnCerrarSesion.parentNode.insertBefore(btnPuertaCiego, btnCerrarSesion);
         }
+    }
 
-        function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
-        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
-        function pautarDibujo(e) {
-            if (!dibujando) return;
-            e.preventDefault();
-            const pos = obtenerPosicion(e);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
+    if (btnPuertaCiego) {
+        btnPuertaCiego.style.display = 'inline-block';
+        btnPuertaCiego.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+        btnPuertaCiego.style.color = "#ef4444";
+        btnPuertaCiego.style.border = "1px solid #ef4444";
+        btnPuertaCiego.style.padding = "8px 16px";
+        btnPuertaCiego.style.borderRadius = "8px";
+        btnPuertaCiego.style.fontWeight = "bold";
+        btnPuertaCiego.style.fontSize = "12px";
+        btnPuertaCiego.style.cursor = "pointer";
+        btnPuertaCiego.style.marginRight = "12px";
+        btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
+    }
+}
+
+// Eventos del Lienzo Signature Canvas
+    function obtenerPosicion(e) {
+        const r = canvas.getBoundingClientRect();
+        const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clienteX - r.left, y: clienteY - r.top };
+    }
+
+    function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
+    function terminarDibujo() { dibujando = false; ctx.beginPath(); }
+    function pautarDibujo(e) {
+        if (!dibujando) return;
+        e.preventDefault();
+        const pos = obtenerPosicion(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    }
+
+    canvas.addEventListener('mousedown', iniciarDibujo);
+    window.addEventListener('mouseup', terminarDibujo);
+    canvas.addEventListener('mousemove', pautarDibujo);
+
+    canvas.addEventListener('touchstart', iniciarDibujo);
+    window.addEventListener('touchend', terminarDibujo);
+    canvas.addEventListener('touchmove', pautarDibujo);
+
+    // Arranque inicial y bucles en segundo plano
+    refrescarDatos();
+    
+    // Fuerza la comprobación al cargar la pantalla
+    gestionarBotonCierreSegunRol();
+
+    setInterval(() => {
+        if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta')?.style.display !== 'flex' && document.getElementById('modalLibroCajas')?.style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
+            refrescarDatos();
         }
-
-        canvas.addEventListener('mousedown', iniciarDibujo);
-        window.addEventListener('mouseup', terminarDibujo);
-        canvas.addEventListener('mousemove', pautarDibujo);
-
-        canvas.addEventListener('touchstart', iniciarDibujo);
-        window.addEventListener('touchend', terminarDibujo);
-        canvas.addEventListener('touchmove', pautarDibujo);
-
-        // Arranque inicial y bucles en segundo plano
-        refrescarDatos();
-
-        setInterval(() => {
-            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta').style.display !== 'flex' && document.getElementById('modalLibroCajas').style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
-                refrescarDatos();
-            }
-            if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
-                inyectarBotonHistorialEnArqueo();
-            }
-        }, 1500);
-    </script>
+        if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
+            inyectorBotonHistorialEnArqueo();
+        }
+        gestionarBotonCierreSegunRol();
+    }, 1500);
+</script>
 </body>
