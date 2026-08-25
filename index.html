@@ -103,60 +103,65 @@
     
     <div class="container" id="principal">
         <header>
-            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
-                <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
-                <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
-                <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
-            </div>
-            <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
-            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
-            <div class="admin-btns" id="adminExtra" style="display:none;">
-                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
-                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
-                <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
-            </div>
-            <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
-            <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
-        </header>
-        <div id="panelAdmin" class="stats-container">
-            <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
-            <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
-            <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
+    <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+        <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
+        <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
+        <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
+        <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
+    </div>
+    <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
+    <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
+    <div class="admin-btns" id="adminExtra" style="display:none;">
+        <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
+        <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
+        <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
+    </div>
+    
+    <!-- 👇 BOTÓN DE LIBRO DE CAJAS CONECTADO A SUPABASE 👇 -->
+    <button onclick="abrirLibroDeCajasSupabase()" style="background:#7c3aed; color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:12px;">📖 LIBRO DE CAJAS</button>
+
+    <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
+    <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
+</header>
+
+<div id="panelAdmin" class="stats-container">
+    <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
+    <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
+    <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
+</div>
+
+<!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
+<div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 140px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
+        <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
+        <div class="contenedor-rgpd" style="margin-top: 5px;">
+            <input type="checkbox" id="checkRGPD" style="width:auto;"> 
+            <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
         </div>
-        
-        <!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
-        <div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 140px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
-                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
-                <div class="contenedor-rgpd" style="margin-top: 5px;">
-                    <input type="checkbox" id="checkRGPD" style="width:auto;"> 
-                    <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
-                </div>
-            </div>
-            <div style="flex: 2; min-width: 180px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
-                <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
-            </div>
-            <div style="flex: 1; min-width: 130px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
-                <input type="date" id="cumple" style="width:100%;">
-            </div>
-            <div style="flex: 1; min-width: 160px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
-                <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
-            </div>
-            <div style="flex: 1; min-width: 120px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
-                <select id="cat" style="width:100%;">
-                    <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
-                </select>
-            </div>
-            <div>
-                <button class="btn-add" onclick="registrar()" style="height: 40px; white-space: nowrap;">REGISTRAR</button>
-            </div>
-        </div>
+    </div>
+    <div style="flex: 2; min-width: 180px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
+        <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
+    </div>
+    <div style="flex: 1; min-width: 130px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
+        <input type="date" id="cumple" style="width:100%;">
+    </div>
+    <div style="flex: 1; min-width: 160px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
+        <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
+    </div>
+    <div style="flex: 1; min-width: 120px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
+        <select id="cat" style="width:100%;">
+            <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
+        </select>
+    </div>
+    <div>
+        <button class="btn-add" onclick="registrar()" style="height: 40px; white-space: nowrap;">REGISTRAR</button>
+    </div>
+</div>
         
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
         <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
