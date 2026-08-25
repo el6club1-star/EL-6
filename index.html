@@ -79,18 +79,23 @@
         .caja-inputs input { background: #000; border: 1px solid rgba(212,175,55,0.4); color: #fff; font-weight: bold; font-size: 16px; text-align: center; padding: 8px; }
         .caja-inputs input:focus { border-color: var(--gold); outline: none; }
         .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
-    </style>
+</style>
 </head>
 <body>
-    <div id="antena"><div id="dot" class="dot"></div><span id="statusText">LINK</span></div>
-    
+    <!-- BOTÓN FIJO ARRIBA A LA IZQUIERDA (OCULTO POR DEFECTO) -->
+    <div id="miBotonCierrePerfecto" style="display: none !important; position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; width: auto !important; height: auto !important;">
+        <button type="button" onclick="abrirModalCierrePuertaCiego()" style="display: inline-block !important; width: auto !important; height: auto !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 8px 14px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; white-space: nowrap !important;">
+            🔴 CIERRE NOCHE
+        </button>
+    </div>
+
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
- <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
+    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
     <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
         <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
         <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
@@ -120,24 +125,37 @@
             <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
         
-        <div class="reg-box" id="cajaRegistro">
-            <div>
-                <label style="font-size:11px; font-weight:bold;">ID / DNI</label>
-                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();">
-                <div class="contenedor-rgpd">
+        <!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
+        <div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 140px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
+                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
+                <div class="contenedor-rgpd" style="margin-top: 5px;">
                     <input type="checkbox" id="checkRGPD" style="width:auto;"> 
                     <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
                 </div>
             </div>
-            <div><label style="font-size:11px; font-weight:bold;">NOMBRE</label><input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS"></div>
-            <div><label style="font-size:11px; font-weight:bold;">CUMPLE</label><input type="date" id="cumple"></div>
-            <div><label style="font-size:11px; font-weight:bold;">EMAIL</label><input type="email" id="mail" placeholder="CORREO ELECTRÓNICO"></div>
-            <div><label style="font-size:11px; font-weight:bold;">TIPO</label>
-                <select id="cat">
+            <div style="flex: 2; min-width: 180px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
+                <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 130px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
+                <input type="date" id="cumple" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 160px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
+                <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 120px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
+                <select id="cat" style="width:100%;">
                     <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
                 </select>
             </div>
-            <div style="padding-top:23px;"><button class="btn-add" onclick="registrar()">REGISTRAR</button></div>
+            <div>
+                <button class="btn-add" onclick="registrar()" style="height: 40px; white-space: nowrap;">REGISTRAR</button>
+            </div>
         </div>
         
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
@@ -308,83 +326,94 @@
             }
         }
 
-        function validarEntrada() {
-            const p = document.getElementById('passApp').value;
-            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-            else alert("CÓDIGO INCORRECTO");
+       function validarEntrada() {
+        const p = document.getElementById('passApp').value;
+        if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
+        else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
+        else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
+        else alert("CÓDIGO INCORRECTO");
+    }
+
+    function entrar() { 
+        document.getElementById('pantallaLogin').style.display='none'; 
+        document.getElementById('principal').style.display='block'; 
+        document.getElementById('btnLogout').style.display='block'; 
+
+        // === CONTROL DEL BOTÓN DE CIERRE (SOLO ROL PUERTA / PERSONAL) ===
+        const btnCierre = document.getElementById('miBotonCierrePerfecto');
+        if (btnCierre) {
+            if (nivel === 'personal') {
+                btnCierre.style.setProperty('display', 'block', 'important');
+            } else {
+                btnCierre.style.setProperty('display', 'none', 'important');
+            }
         }
 
-       function entrar() { 
-    document.getElementById('pantallaLogin').style.display='none'; 
-    document.getElementById('principal').style.display='block'; 
-    document.getElementById('btnLogout').style.display='block'; 
-    if(nivel === 'jefe') { 
-        document.getElementById('btnExport').style.display='block'; 
-        document.getElementById('btnReset').style.display='block'; 
-        document.getElementById('panelAdmin').style.display='grid'; 
-        document.getElementById('adminExtra').style.display='flex';
-        document.getElementById('configClaves').style.display = 'block';
-    }
-    if(nivel === 'camarero') {
-        document.getElementById('cajaRegistro').style.display = 'none';
-        document.getElementById('btnReset').style.display = 'none';
-        document.getElementById('panelAdmin').style.display = 'none';
-        if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-        if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-        if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
-    }
+        if(nivel === 'jefe') { 
+            document.getElementById('btnExport').style.display='block'; 
+            document.getElementById('btnReset').style.display='block'; 
+            document.getElementById('panelAdmin').style.display='grid'; 
+            document.getElementById('adminExtra').style.display='flex';
+            document.getElementById('configClaves').style.display = 'block';
+        }
+        if(nivel === 'camarero') {
+            document.getElementById('cajaRegistro').style.display = 'none';
+            document.getElementById('btnReset').style.display = 'none';
+            document.getElementById('panelAdmin').style.display = 'none';
+            if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+            if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+            if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+        }
 
-    const botonCamaraPrincipal = document.getElementById('btnCam');
-    if (botonCamaraPrincipal) {
-        botonCamaraPrincipal.style.display = 'block';
-    }
+        const botonCamaraPrincipal = document.getElementById('btnCam');
+        if (botonCamaraPrincipal) {
+            botonCamaraPrincipal.style.display = 'block';
+        }
 
-    // Activamos la escucha del botón pagar justo al entrar
-    inyectarInterceptosDePago();
-    refrescarDatos();
+        // Activamos la escucha del botón pagar justo al entrar
+        inyectarInterceptosDePago();
+        refrescarDatos();
 
-    // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
-    _supabase
-        .channel('cambios-en-directo')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-            // Actualiza la lista en memoria local
-            db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
-            aforo = db.filter(x => x.dentro).length;
-            
-            // Refresca la tabla trasera de la aplicación
-            render();
-            
-            // Si la tarjeta abierta es la de este socio, actualizamos solo los números sin redibujar la pantalla
-            if (socioActual && socioActual.dni === payload.new.dni) {
-                socioActual = payload.new;
+        // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
+        _supabase
+            .channel('cambios-en-directo')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
+                // Actualiza la lista en memoria local
+                db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
+                aforo = db.filter(x => x.dentro).length;
+                
+                // Refresca la tabla trasera de la aplicación
+                render();
+                
+                // Si la tarjeta abierta es la de este socio, actualizamos solo los números sin redibujar la pantalla
+                if (socioActual && socioActual.dni === payload.new.dni) {
+                    socioActual = payload.new;
 
-                const stringNuevas = String(payload.new.consumiciones || '').trim();
-                let consumosNuevos = {};
-                productosValidos.forEach(p => consumosNuevos[p] = 0);
+                    const stringNuevas = String(payload.new.consumiciones || '').trim();
+                    let consumosNuevos = {};
+                    productosValidos.forEach(p => consumosNuevos[p] = 0);
 
-                if (stringNuevas.includes(':')) {
-                    stringNuevas.split(',').forEach(item => {
-                        const [p, c] = item.split(':');
-                        if (p && productosValidos.includes(p.trim().toUpperCase())) {
-                            consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    if (stringNuevas.includes(':')) {
+                        stringNuevas.split(',').forEach(item => {
+                            const [p, c] = item.split(':');
+                            if (p && productosValidos.includes(p.trim().toUpperCase())) {
+                                consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                            }
+                        });
+                    }
+
+                    // Actualiza directamente las cifras visuales de los contadores
+                    productosValidos.forEach(prod => {
+                        const el = document.getElementById(`v-cant-${prod}`);
+                        if (el) {
+                            const cant = consumosNuevos[prod] || 0;
+                            el.innerText = cant;
+                            el.style.color = cant > 0 ? '#d4af37' : '#fff';
                         }
                     });
                 }
-
-                // Actualiza directamente las cifras visuales de los contadores
-                productosValidos.forEach(prod => {
-                    const el = document.getElementById(`v-cant-${prod}`);
-                    if (el) {
-                        const cant = consumosNuevos[prod] || 0;
-                        el.innerText = cant;
-                        el.style.color = cant > 0 ? '#d4af37' : '#fff';
-                    }
-                });
-            }
-        })
-        .subscribe();
+            })
+            .subscribe();
    // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
     if (nivel === 'camarero') {
         let style = document.getElementById('ocultarMasCamarero');
@@ -1225,7 +1254,7 @@ function actualizarClave() {
         link.remove();
     }
 
-    /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
+ /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
     function abrirModalCierrePuertaCiego() {
         let modal = document.getElementById('modalCierrePuertaCiego');
         if (!modal) {
@@ -1300,26 +1329,17 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [CONTROLADOR DEFINITIVO DEL BOTÓN ROJO DE REINICIAR NOCHE - PUERTA]
+// [CONTROLADOR DEFINITIVO DE LOS BOTONES - LIMPIO]
 function gestionarBotonCierreSegunRol() {
-    const selectClaves = document.getElementById('tipoClave');
-    let btnPuertaCiego = document.getElementById('btnResetPuerta');
+    let btnPuertaIzq = document.getElementById('btnCierrePuertaIzquierda');
     
-    let esJefe = false;
-    if (selectClaves) {
-        const val = (selectClaves.value || "").toUpperCase();
-        if (val.includes('JEFE')) {
-            esJefe = true;
-        }
+    // Si el botón ya existe en el HTML, nos aseguramos de que se muestre correctamente
+    if (btnPuertaIzq) {
+        btnPuertaIzq.style.display = 'block';
     }
 
-    // Si estamos en modo JEFE, ocultamos o borramos el botón de la puerta
-    if (esJefe) {
-        if (btnPuertaCiego) btnPuertaCiego.style.display = 'none';
-        return;
-    }
-
-    // Si NO es jefe (estamos en Puerta o Camarero), nos aseguramos de que el botón exista y sea rojo
+    // Opcional superior derecho (si existe la barra de sesión)
+    let btnPuertaCiego = document.getElementById('btnResetPuerta');
     if (!btnPuertaCiego) {
         const btnCerrarSesion = document.getElementById('btnLogout');
         if (btnCerrarSesion && btnCerrarSesion.parentNode) {
@@ -1327,22 +1347,10 @@ function gestionarBotonCierreSegunRol() {
             btnPuertaCiego.id = 'btnResetPuerta';
             btnPuertaCiego.type = 'button';
             btnPuertaCiego.innerText = "🔴 REINICIAR NOCHE";
+            btnPuertaCiego.style.cssText = "background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-right: 12px;";
+            btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
             btnCerrarSesion.parentNode.insertBefore(btnPuertaCiego, btnCerrarSesion);
         }
-    }
-
-    if (btnPuertaCiego) {
-        btnPuertaCiego.style.display = 'inline-block';
-        btnPuertaCiego.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
-        btnPuertaCiego.style.color = "#ef4444";
-        btnPuertaCiego.style.border = "1px solid #ef4444";
-        btnPuertaCiego.style.padding = "8px 16px";
-        btnPuertaCiego.style.borderRadius = "8px";
-        btnPuertaCiego.style.fontWeight = "bold";
-        btnPuertaCiego.style.fontSize = "12px";
-        btnPuertaCiego.style.cursor = "pointer";
-        btnPuertaCiego.style.marginRight = "12px";
-        btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
     }
 }
 
@@ -1364,16 +1372,20 @@ function gestionarBotonCierreSegunRol() {
         ctx.stroke();
     }
 
-    canvas.addEventListener('mousedown', iniciarDibujo);
-    window.addEventListener('mouseup', terminarDibujo);
-    canvas.addEventListener('mousemove', pautarDibujo);
+    if (typeof canvas !== 'undefined' && canvas) {
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        window.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mousemove', pautarDibujo);
 
-    canvas.addEventListener('touchstart', iniciarDibujo);
-    window.addEventListener('touchend', terminarDibujo);
-    canvas.addEventListener('touchmove', pautarDibujo);
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        window.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchmove', pautarDibujo);
+    }
 
     // Arranque inicial y bucles en segundo plano
-    refrescarDatos();
+    if (typeof refrescarDatos === 'function') {
+        refrescarDatos();
+    }
     
     // Fuerza la comprobación al cargar la pantalla
     gestionarBotonCierreSegunRol();
