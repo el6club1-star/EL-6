@@ -1307,23 +1307,13 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [CONTROLADOR DEFINITIVO DE LOS BOTONES - INDEPENDIENTE Y VISIBLE]
+// [CONTROLADOR DEFINITIVO DE LOS BOTONES - LIMPIO]
 function gestionarBotonCierreSegunRol() {
     let btnPuertaIzq = document.getElementById('btnCierrePuertaIzquierda');
     
-    // Forzamos la creación del botón flotante inferior izquierdo de manera persistente
-    if (!btnPuertaIzq) {
-        btnPuertaIzq = document.createElement('button');
-        btnPuertaIzq.id = 'btnCierrePuertaIzquierda';
-        btnPuertaIzq.className = 'btn-reset-noche';
-        btnPuertaIzq.innerText = "🔴 CIERRE CIEGO PUERTA";
-        btnPuertaIzq.style.cssText = "position: fixed !important; bottom: 20px !important; left: 20px !important; z-index: 99999999 !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 12px 20px !important; border-radius: 10px !important; font-weight: bold !important; font-size: 13px !important; cursor: pointer !important; box-shadow: 0 6px 20px rgba(0,0,0,0.8) !important;";
-        btnPuertaIzq.onclick = abrirModalCierrePuertaCiego;
-        document.body.appendChild(btnPuertaIzq);
-    } else {
-        // Garantizamos que siempre esté visible por encima de cualquier capa de login o paneles
+    // Si el botón ya existe en el HTML, nos aseguramos de que se muestre correctamente
+    if (btnPuertaIzq) {
         btnPuertaIzq.style.display = 'block';
-        btnPuertaIzq.style.zIndex = '99999999';
     }
 
     // Opcional superior derecho (si existe la barra de sesión)
