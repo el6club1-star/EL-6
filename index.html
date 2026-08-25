@@ -1227,7 +1227,7 @@ function actualizarClave() {
         link.remove();
     }
 
-  /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
+ /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
     function abrirModalCierrePuertaCiego() {
         let modal = document.getElementById('modalCierrePuertaCiego');
         if (!modal) {
@@ -1302,28 +1302,27 @@ function actualizarClave() {
         alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
     }
 
-// [CONTROLADOR DEFINITIVO DE LOS BOTONES DE REINICIAR NOCHE - PUERTA]
+// [CONTROLADOR DEFINITIVO DE LOS BOTONES - INDEPENDIENTE Y VISIBLE]
 function gestionarBotonCierreSegunRol() {
-    const selectClaves = document.getElementById('tipoClave');
-    let btnPuertaCiego = document.getElementById('btnResetPuerta');
     let btnPuertaIzq = document.getElementById('btnCierrePuertaIzquierda');
     
-    let esJefe = false;
-    if (selectClaves) {
-        const val = (selectClaves.value || "").toUpperCase();
-        if (val.includes('JEFE')) {
-            esJefe = true;
-        }
+    // Forzamos la creación del botón flotante inferior izquierdo de manera persistente
+    if (!btnPuertaIzq) {
+        btnPuertaIzq = document.createElement('button');
+        btnPuertaIzq.id = 'btnCierrePuertaIzquierda';
+        btnPuertaIzq.className = 'btn-reset-noche';
+        btnPuertaIzq.innerText = "🔴 CIERRE CIEGO PUERTA";
+        btnPuertaIzq.style.cssText = "position: fixed !important; bottom: 20px !important; left: 20px !important; z-index: 99999999 !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 12px 20px !important; border-radius: 10px !important; font-weight: bold !important; font-size: 13px !important; cursor: pointer !important; box-shadow: 0 6px 20px rgba(0,0,0,0.8) !important;";
+        btnPuertaIzq.onclick = abrirModalCierrePuertaCiego;
+        document.body.appendChild(btnPuertaIzq);
+    } else {
+        // Garantizamos que siempre esté visible por encima de cualquier capa de login o paneles
+        btnPuertaIzq.style.display = 'block';
+        btnPuertaIzq.style.zIndex = '99999999';
     }
 
-    // Si estamos en modo JEFE, ocultamos ambos botones de puerta
-    if (esJefe) {
-        if (btnPuertaCiego) btnPuertaCiego.style.display = 'none';
-        if (btnPuertaIzq) btnPuertaIzq.style.display = 'none';
-        return;
-    }
-
-    // Si NO es jefe (Puerta o Camarero), aseguramos el superior derecho
+    // Opcional superior derecho (si existe la barra de sesión)
+    let btnPuertaCiego = document.getElementById('btnResetPuerta');
     if (!btnPuertaCiego) {
         const btnCerrarSesion = document.getElementById('btnLogout');
         if (btnCerrarSesion && btnCerrarSesion.parentNode) {
@@ -1331,37 +1330,10 @@ function gestionarBotonCierreSegunRol() {
             btnPuertaCiego.id = 'btnResetPuerta';
             btnPuertaCiego.type = 'button';
             btnPuertaCiego.innerText = "🔴 REINICIAR NOCHE";
+            btnPuertaCiego.style.cssText = "background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-right: 12px;";
+            btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
             btnCerrarSesion.parentNode.insertBefore(btnPuertaCiego, btnCerrarSesion);
         }
-    }
-
-    if (btnPuertaCiego) {
-        btnPuertaCiego.style.display = 'inline-block';
-        btnPuertaCiego.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
-        btnPuertaCiego.style.color = "#ef4444";
-        btnPuertaCiego.style.border = "1px solid #ef4444";
-        btnPuertaCiego.style.padding = "8px 16px";
-        btnPuertaCiego.style.borderRadius = "8px";
-        btnPuertaCiego.style.fontWeight = "bold";
-        btnPuertaCiego.style.fontSize = "12px";
-        btnPuertaCiego.style.cursor = "pointer";
-        btnPuertaCiego.style.marginRight = "12px";
-        btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
-    }
-
-    // Y también gestionamos el inferior izquierdo por si acaso no estuviera creado en el HTML
-    if (!btnPuertaIzq) {
-        btnPuertaIzq = document.createElement('button');
-        btnPuertaIzq.id = 'btnCierrePuertaIzquierda';
-        btnPuertaIzq.className = 'btn-reset-noche';
-        btnPuertaIzq.innerText = "🔴 CIERRE CIEGO PUERTA";
-        btnPuertaIzq.style.cssText = "position: fixed; bottom: 20px; left: 20px; z-index: 99999; background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);";
-        btnPuertaIzq.onclick = abrirModalCierrePuertaCiego;
-        document.body.appendChild(btnPuertaIzq);
-    }
-    
-    if (btnPuertaIzq) {
-        btnPuertaIzq.style.display = 'block';
     }
 }
 
@@ -1383,16 +1355,20 @@ function gestionarBotonCierreSegunRol() {
         ctx.stroke();
     }
 
-    canvas.addEventListener('mousedown', iniciarDibujo);
-    window.addEventListener('mouseup', terminarDibujo);
-    canvas.addEventListener('mousemove', pautarDibujo);
+    if (typeof canvas !== 'undefined' && canvas) {
+        canvas.addEventListener('mousedown', iniciarDibujo);
+        window.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mousemove', pautarDibujo);
 
-    canvas.addEventListener('touchstart', iniciarDibujo);
-    window.addEventListener('touchend', terminarDibujo);
-    canvas.addEventListener('touchmove', pautarDibujo);
+        canvas.addEventListener('touchstart', iniciarDibujo);
+        window.addEventListener('touchend', terminarDibujo);
+        canvas.addEventListener('touchmove', pautarDibujo);
+    }
 
     // Arranque inicial y bucles en segundo plano
-    refrescarDatos();
+    if (typeof refrescarDatos === 'function') {
+        refrescarDatos();
+    }
     
     // Fuerza la comprobación al cargar la pantalla
     gestionarBotonCierreSegunRol();
