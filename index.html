@@ -1092,20 +1092,33 @@ function actualizarClave() {
             await refrescarDatos(); 
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
-/* --- INYECTOR AUTOMÁTICO DEFINITIVO (ELIMINA FANTASMAS POR TEXTO) --- */
+/* --- INYECTOR DEFINITIVO: BORRA CUALQUIER DUPLICADO Y DEJA UNO SOLO --- */
     function inyectorBotonHistorialEnArqueo() {
         const modalArqueo = document.getElementById('modalLibroCajas');
         if (!modalArqueo) return;
 
-        // 1. Limpieza radical: Buscamos cualquier botón existente en el modal que tenga ese texto o ID y los borramos todos
+        // 1. Buscamos TODOS los botones dentro del modal para limpiar los duplicados o estáticos
         const todosLosBotones = modalArqueo.querySelectorAll('button');
+        let botonValidoExistente = null;
+
         todosLosBotones.forEach(btn => {
+            // Si el botón contiene el texto del histórico
             if (btn.innerText.includes("Ver Historial Libro de Cajas") || btn.id === 'btnVerHistoricoSupabase') {
-                btn.remove();
+                if (!botonValidoExistente) {
+                    // Guardamos el primero que encontremos para no duplicar
+                    botonValidoExistente = btn;
+                    btn.id = 'btnVerHistoricoSupabase'; // Nos aseguramos que tenga su ID correcto
+                } else {
+                    // ¡Borrachera de botones! Si hay un segundo o tercer botón repetido, lo ELIMINAMOS
+                    btn.remove();
+                }
             }
         });
 
-        // 2. Buscamos el botón de confirmar cierre para colocar el nuestro limpio y único justo debajo
+        // Si ya encontramos uno válido y está bien colocado, no hacemos nada más
+        if (botonValidoExistente) return;
+
+        // 2. Si no existe ninguno, lo creamos justo debajo del botón de confirmar
         const botonConfirmar = modalArqueo.querySelector('button[onclick*="ejecutarCierreResetFinal"]') || modalArqueo.querySelector('.panel-caja button') || modalArqueo.querySelector('button[type="button"]');
         
         if (botonConfirmar && botonConfirmar.parentNode) {
@@ -1115,14 +1128,13 @@ function actualizarClave() {
             btnHistorial.innerText = "📖 Ver Historial Libro de Cajas";
             btnHistorial.style.cssText = "width: 100%; padding: 10px; background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 11px;";
             
-            // Asignamos la función correcta
+            // Asignamos la función que abre el histórico correctamente
             btnHistorial.onclick = mostrarHistoricoCajas;
 
             // Lo insertamos limpio
             botonConfirmar.parentNode.insertBefore(btnHistorial, botonConfirmar.nextSibling);
         }
     }
-
     /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
     async function mostrarHistoricoCajas() {
         const viejo = document.getElementById('modalHistoricoCajas');
