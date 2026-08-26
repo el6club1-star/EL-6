@@ -1092,24 +1092,20 @@ function actualizarClave() {
             await refrescarDatos(); 
             alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
-/* --- INYECTOR AUTOMÁTICO DEL BOTÓN EN EL MODAL DE ARQUEO (ÚNICO Y LIMPIO) --- */
+/* --- INYECTOR AUTOMÁTICO DEFINITIVO (ELIMINA FANTASMAS POR TEXTO) --- */
     function inyectorBotonHistorialEnArqueo() {
         const modalArqueo = document.getElementById('modalLibroCajas');
         if (!modalArqueo) return;
 
-        // 1. Buscamos TODOS los botones de histórico que puedan existir y eliminamos los sobrantes para evitar duplicados
-        const botonesExistentes = modalArqueo.querySelectorAll('#btnVerHistoricoSupabase');
-        if (botonesExistentes.length > 1) {
-            // Dejamos solo el primero y borramos los demás
-            for (let i = 1; i < botonesExistentes.length; i++) {
-                botonesExistentes[i].remove();
+        // 1. Limpieza radical: Buscamos cualquier botón existente en el modal que tenga ese texto o ID y los borramos todos
+        const todosLosBotones = modalArqueo.querySelectorAll('button');
+        todosLosBotones.forEach(btn => {
+            if (btn.innerText.includes("Ver Historial Libro de Cajas") || btn.id === 'btnVerHistoricoSupabase') {
+                btn.remove();
             }
-        }
+        });
 
-        // Si ya hay exactamente uno, no hacemos nada más
-        if (botonesExistentes.length === 1) return;
-
-        // 2. Buscamos el botón de confirmar cierre para colocar el nuestro justo debajo
+        // 2. Buscamos el botón de confirmar cierre para colocar el nuestro limpio y único justo debajo
         const botonConfirmar = modalArqueo.querySelector('button[onclick*="ejecutarCierreResetFinal"]') || modalArqueo.querySelector('.panel-caja button') || modalArqueo.querySelector('button[type="button"]');
         
         if (botonConfirmar && botonConfirmar.parentNode) {
@@ -1119,10 +1115,10 @@ function actualizarClave() {
             btnHistorial.innerText = "📖 Ver Historial Libro de Cajas";
             btnHistorial.style.cssText = "width: 100%; padding: 10px; background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 11px;";
             
-            // Al hacer clic, llamará directamente a tu función del histórico
+            // Asignamos la función correcta
             btnHistorial.onclick = mostrarHistoricoCajas;
 
-            // Lo insertamos justo después del botón de confirmar
+            // Lo insertamos limpio
             botonConfirmar.parentNode.insertBefore(btnHistorial, botonConfirmar.nextSibling);
         }
     }
