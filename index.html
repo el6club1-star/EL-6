@@ -1414,6 +1414,18 @@ function actualizarClave() {
     
     gestionarBotonCierreSegunRol();
 
+    // ⚡ MODIFICACIÓN AQUÍ: Se añade ejecución inmediata de la inyección al abrir el modal para eliminar el retardo de 1.5s
+    const observerModalCajas = new MutationObserver(() => {
+        const modalLibro = document.getElementById('modalLibroCajas');
+        if (modalLibro && modalLibro.style.display === 'flex') {
+            inyectorBotonHistorialEnArqueo();
+        }
+    });
+    const modalLibroElement = document.getElementById('modalLibroCajas');
+    if (modalLibroElement) {
+        observerModalCajas.observe(modalLibroElement, { attributes: true, attributeFilter: ['style'] });
+    }
+
     setInterval(() => {
         if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta')?.style.display !== 'flex' && document.getElementById('modalLibroCajas')?.style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
             refrescarDatos();
