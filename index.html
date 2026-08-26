@@ -220,7 +220,7 @@
         <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
     </div>
 
-   <div id="modalLibroCajas">
+  <div id="modalLibroCajas">
         <div class="panel-caja">
             <h3 class="titulo-caja">⚜️ Arqueo y Libro de Cajas</h3>
             <div class="desglose-scroll" id="cajaDesgloseContenido"></div>
@@ -240,13 +240,13 @@
             
             <button onclick="ejecutarCierreResetFinal()" style="width:100%; padding:12px; background:var(--gold); color:black; border:none; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Confirmar Cierre de Noche</button>
             
-            <!-- 👇 AQUÍ TIENES EL BOTÓN ABAJO, CON EL ESTILO ELEGANTE Y OSCURO/DORADO 👇 -->
-            <button onclick="abrirLibroDeCajasSupabase()" style="width:100%; padding:10px; background:rgba(212, 175, 55, 0.15); color:var(--gold); border:1px solid var(--gold); border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px; font-size:11px;">📖 Ver Historial Libro de Cajas</button>
+            <!-- (El botón duplicado y roto que había aquí abajo ha sido eliminado por completo) -->
 
             <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
     <script>
+   
         (function(){
             emailjs.init("TU_USER_ID_AQUÍ"); 
         })();
