@@ -477,7 +477,7 @@ function inyectarInterceptosDePago() {
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
         }
 
-        function render() {
+       function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
             if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
@@ -489,10 +489,10 @@ function inyectarInterceptosDePago() {
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.id}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.id}')">VETO</button>
+                        <button class="btn-acc" onclick="reAbrir('${s.id}')">TARJETA</button>
+                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.id}')">🗑️</button>
                     </td>
                 </tr>`).join('');
         }
