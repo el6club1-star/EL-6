@@ -488,11 +488,11 @@ function inyectarInterceptosDePago() {
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
                     <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                    <td>
-        <button class="btn-acc" style="${nivel && nivel.toLowerCase()==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.id}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-        <button class="btn-acc" style="${nivel && nivel.toLowerCase()==='camarero'?'display:none':''}" onclick="tVeto('${s.id}')">VETO</button>
+                   <td>
+        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.id}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.id}')">VETO</button>
         <button class="btn-acc" onclick="reAbrir('${s.id}')">TARJETA</button>
-        <button class="btn-acc" style="color:red; ${nivel && nivel.toLowerCase()!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.id}')">🗑️</button>
+        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.id}')">🗑️</button>
     </td>
                 </tr>`).join('');
         }
