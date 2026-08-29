@@ -128,35 +128,38 @@
     <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
 </div>
 
-<!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
-<div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 140px;">
+<!-- FORMULARIO DE REGISTRO EN UNA SOLA LÍNEA -->
+<div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-start; gap: 8px; flex-wrap: nowrap; width: 100%; box-sizing: border-box;">
+    <div style="flex: 1.2; min-width: 130px;">
         <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
         <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
-        <div class="contenedor-rgpd" style="margin-top: 5px;">
+        <div class="contenedor-rgpd" style="margin-top: 5px; font-size: 10px; white-space: nowrap;">
             <input type="checkbox" id="checkRGPD" style="width:auto;"> 
             <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
         </div>
     </div>
-    <div style="flex: 2; min-width: 180px;">
+    <div style="flex: 2; min-width: 150px;">
         <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
         <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
     </div>
-    <div style="flex: 1; min-width: 130px;">
+    <div style="flex: 1; min-width: 110px;">
         <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
         <input type="date" id="cumple" style="width:100%;">
     </div>
-    <div style="flex: 1; min-width: 160px;">
+    <div style="flex: 1.5; min-width: 130px;">
         <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
         <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
     </div>
-    <div style="flex: 1; min-width: 120px;">
+    <div style="flex: 1; min-width: 100px;">
         <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
         <select id="cat" style="width:100%;">
             <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
         </select>
     </div>
-    <div>
+    <div style="display: flex; align-items: flex-end; min-width: 90px;">
+        <button type="button" onclick="registrarSocio()" style="width:100%; height: 38px; cursor: pointer;">REGISTRAR</button>
+    </div>
+</div>
         <button class="btn-add" onclick="registrar()" style="height: 40px; white-space: nowrap;">REGISTRAR</button>
     </div>
 </div>
