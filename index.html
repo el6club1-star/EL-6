@@ -536,42 +536,49 @@ function inyectarInterceptosDePago() {
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
         async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
       async function registrar() {
-            const d = document.getElementById('dni').value.toUpperCase();
-            const n = document.getElementById('nom').value;
-            const e = document.getElementById('mail').value;
-            const c = document.getElementById('cumple').value;
-            const cat = document.getElementById('cat').value;
-            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-            
-            const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-                hora: new Date().toLocaleTimeString(), cat: cat 
-            }).select();
-            
-            if (error) {
-                alert("Error al registrar: " + error.message);
-                return;
-            }
+    const d = document.getElementById('dni').value.toUpperCase();
+    const n = document.getElementById('nom').value;
+    const e = document.getElementById('mail').value;
+    const c = document.getElementById('cumple').value;
+    const cat = document.getElementById('cat').value;
+    if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+    
+    const { data, error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+        dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+        hora: new Date().toLocaleTimeString(), cat: cat 
+    }).select();
+    
+    if (error) {
+        alert("Error al registrar: " + error.message);
+        return;
+    }
 
-            if(e) {
-                emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                    to_name: n, to_email: e, dni: d, categoria: cat
-                }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-            }
+    if(e) {
+        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+            to_name: n, to_email: e, dni: d, categoria: cat
+        }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
+    }
 
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
+    document.getElementById('dni').value = ""; 
+    document.getElementById('nom').value = "";
+    document.getElementById('mail').value = ""; 
+    document.getElementById('cumple').value = "";
+    document.getElementById('checkRGPD').checked = false;
 
-            await refrescarDatos(); 
-            if(data && data[0]) {
-                abrirTarjeta(data[0]);
-            } else {
-                const recienCreado = db.find(x => x.dni === d);
-                if(recienCreado) abrirTarjeta(recienCreado);
-            }
+    await refrescarDatos(); 
+
+    if(data && data[0]) {
+        abrirTarjeta(data[0]);
+    } else {
+        // Comprobación segura para evitar errores si 'db' no está definido
+        const recienCreado = (typeof db !== 'undefined' && Array.isArray(db)) ? db.find(x => x.dni === d) : null;
+        if(recienCreado) {
+            abrirTarjeta(recienCreado);
+        } else {
+            abrirTarjeta({ dni: d, nombre: n, cat: cat, cumple: c, email: e, dentro: true });
         }
-
+    }
+}
 
         function toggleCamara() {
             const readerDiv = document.getElementById('reader');
