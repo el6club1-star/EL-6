@@ -536,7 +536,7 @@ function inyectarInterceptosDePago() {
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
         async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
         
-        async function registrar() {
+       async function registrar() {
     const d = document.getElementById('dni').value.toUpperCase();
     const n = document.getElementById('nom').value;
     const e = document.getElementById('mail').value;
@@ -561,6 +561,17 @@ function inyectarInterceptosDePago() {
         }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
     }
 
+    // Guardamos los datos en un objeto antes de vaciar los inputs
+    const datosSocio = {
+        dni: d,
+        nombre: n,
+        email: e,
+        cumple: c,
+        cat: cat,
+        hora: new Date().toLocaleTimeString(),
+        dentro: true
+    };
+
     document.getElementById('dni').value = ""; 
     document.getElementById('nom').value = "";
     document.getElementById('mail').value = ""; 
@@ -568,12 +579,9 @@ function inyectarInterceptosDePago() {
     document.getElementById('checkRGPD').checked = false;
 
     await refrescarDatos(); 
-    
-    if(data && data[0]) {
-        abrirTarjeta(data[0]);
-    } else {
-        abrirTarjeta({ dni: d, nombre: n, cat: cat, cumple: c, email: e });
-    }
+
+    // Forzamos la apertura directa usando el objeto local asegurando que siempre salte
+    abrirTarjeta(datosSocio);
 }
         function toggleCamara() {
             const readerDiv = document.getElementById('reader');
