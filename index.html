@@ -578,11 +578,18 @@ function inyectarInterceptosDePago() {
     document.getElementById('cumple').value = "";
     document.getElementById('checkRGPD').checked = false;
 
+    // Esperamos a que la base de datos y la tabla se actualicen
     await refrescarDatos(); 
 
-    // Forzamos la apertura directa usando el objeto local asegurando que siempre salte
-    abrirTarjeta(datosSocio);
-}
+    // Buscamos al socio recién creado en la lista oficial (igual que hace la tabla)
+    const socioCreado = typeof db !== 'undefined' ? db.find(x => x.dni === d) : null;
+
+    if (socioCreado) {
+        abrirTarjeta(socioCreado);
+    } else {
+        // Respaldo de emergencia por si la lista tarda en refrescar
+        abrirTarjeta({ dni: d, nombre: n, cat: cat, cumple: c, email: e });
+    }
         function toggleCamara() {
             const readerDiv = document.getElementById('reader');
             const btn = document.getElementById('btnCam');
