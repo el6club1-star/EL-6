@@ -560,18 +560,17 @@ function inyectarInterceptosDePago() {
                 }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
             }
 
-            document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
-            document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
-            document.getElementById('checkRGPD').checked = false;
+          document.getElementById('dni').value = ""; document.getElementById('nom').value = "";
+    document.getElementById('mail').value = ""; document.getElementById('cumple').value = "";
+    document.getElementById('checkRGPD').checked = false;
 
-            await refrescarDatos(); 
-            if(data && data[0]) {
-                abrirTarjeta(data[0]);
-            } else {
-                const recienCreado = db.find(x => x.dni === d);
-                if(recienCreado) abrirTarjeta(recienCreado);
-            }
-        }
+    await refrescarDatos(); 
+    if(data && data[0]) {
+        abrirTarjeta(data[0]);
+    } else {
+        const recienCreado = db.find(x => x.dni === d);
+        if(recienCreado) abrirTarjeta(recienCreado);
+    }
 
         function toggleCamara() {
             const readerDiv = document.getElementById('reader');
