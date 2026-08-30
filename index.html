@@ -891,7 +891,7 @@ async function guardarFirmaSocio() {
     const firmaB64 = canvas.toDataURL();
     firmaCargadaCache = firmaB64;
 
-    if(origenFirma === 'tarjeta' && socioActual) {
+    if(socioActual && socioActual.dni) {
         await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
         socioActual.firma_b64 = firmaB64;
         
