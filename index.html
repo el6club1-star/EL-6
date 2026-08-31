@@ -272,9 +272,10 @@
 
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
-            if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
+            if(dot) {
+                if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
+            }
         }
-
         async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
