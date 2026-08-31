@@ -82,40 +82,67 @@
 </style>
 </head>
 <body>
-    <!-- BOTÓN FIJO ARRIBA A LA IZQUIERDA (OCULTO POR DEFECTO) -->
-    <div id="miBotonCierrePerfecto" style="display: none !important; position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; width: auto !important; height: auto !important;">
-        <button type="button" onclick="abrirModalCierrePuertaCiego()" style="display: inline-block !important; width: auto !important; height: auto !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 8px 14px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; white-space: nowrap !important;">
-            🔴 CIERRE NOCHE
-        </button>
-    </div>
-
-    <!-- MENÚ HAMBURGUESA ELEGANTE (IZQUIERDA) -->
-    <div id="menuAdminContainer" style="position: fixed; top: 15px; left: 15px; z-index: 99999;">
-        <button onclick="toggleMenuAdmin()" style="background: #111; color: #d4af37; border: 1px solid #d4af37; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);">
+    <!-- MENÚ HAMBURGUESA FIJO A LA IZQUIERDA -->
+    <div id="menuAdminContainer" style="position: fixed; top: 15px; left: 15px; z-index: 2147483647;">
+        <button onclick="toggleMenuAdmin()" style="background: #000; color: #d4af37; border: 1px solid #d4af37; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
             ☰
         </button>
-        <div id="dropdownAdmin" style="display: none; position: absolute; left: 0; top: 40px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); width: 210px; padding: 6px 0;">
-            <div style="font-weight: 600; padding: 8px 15px; font-size: 11px; color: #94a3b8; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f9;">ADMINISTRACIÓN</div>
+        <div id="dropdownAdmin" style="display: none; position: absolute; left: 0; top: 50px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0px 10px 25px rgba(0,0,0,0.2); width: 220px; padding: 8px 0;">
+            <div style="font-weight: bold; padding: 8px 15px; font-size: 10px; color: #64748b; letter-spacing: 1px; border-bottom: 1px solid #f1f5f9;">ADMINISTRACIÓN</div>
             
-            <button onclick="prepararCierreCaja()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <button onclick="prepararCierreCaja()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #1e293b; border: none; cursor: pointer; font-size: 13px; font-weight: 600;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                 🔄 Reiniciar Noche
             </button>
             
-            <button onclick="exportarExcel()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <button onclick="exportarExcel()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #1e293b; border: none; cursor: pointer; font-size: 13px; font-weight: 600;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                 📊 Descargar Excel
             </button>
             
-            <button onclick="exportarBaseDatos()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <button onclick="exportarBaseDatos()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #1e293b; border: none; cursor: pointer; font-size: 13px; font-weight: 600;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                 💾 Copia de Seguridad
             </button>
             
-            <button onclick="document.getElementById('importFile').click()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <button onclick="document.getElementById('importFile').click()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #1e293b; border: none; cursor: pointer; font-size: 13px; font-weight: 600;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                 📥 Restaurar Copia
             </button>
             <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
         </div>
     </div>
 
+    <script>
+        function toggleMenuAdmin() {
+            const menu = document.getElementById('dropdownAdmin');
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
+
+        window.addEventListener('click', function(e) {
+            const container = document.getElementById('menuAdminContainer');
+            const menu = document.getElementById('dropdownAdmin');
+            if (container && menu && !container.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+    </script>
+
+    <div id="pantallaLogin">
+        <h1 style="letter-spacing: 10px;">EL 6</h1>
+        <input type="password" id="passApp" placeholder="CÓDIGO">
+        <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
+    </div>
+    
+    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
+    <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
+        <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrارSesion()">CERRAR SESIÓN 🚪</button>
+    </div>
+    
+    <div class="container" id="principal">
+        <header>
+    <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+        <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
+        <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
+        <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
+        <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
+    </div>
     <script>
         function toggleMenuAdmin() {
             const menu = document.getElementById('dropdownAdmin');
