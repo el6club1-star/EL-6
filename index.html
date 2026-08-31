@@ -82,7 +82,7 @@
 </style>
 </head>
 <body>
-    <div id="menuAdminContainer" style="position: fixed; top: 15px; left: 15px; z-index: 99999;">
+   <div id="menuAdminContainer" style="position: fixed; top: 15px; left: 15px; z-index: 99999;">
         <button onclick="toggleMenuAdmin()" style="background: #111; color: #d4af37; border: 1px solid #d4af37; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);">
             ☰
         </button>
@@ -122,32 +122,7 @@
             }
         });
     </script>
-        function toggleMenuAdmin() {
-            const menu = document.getElementById('dropdownAdmin');
-            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-        }
-
-        window.addEventListener('click', function(e) {
-            const container = document.getElementById('menuAdminContainer');
-            const menu = document.getElementById('dropdownAdmin');
-            if (container && menu && !container.contains(e.target)) {
-                menu.style.display = 'none';
-            }
-        });
-    </script>
-        function toggleMenuAdmin() {
-            const menu = document.getElementById('dropdownAdmin');
-            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-        }
-
-        window.addEventListener('click', function(e) {
-            const container = document.getElementById('menuAdminContainer');
-            const menu = document.getElementById('dropdownAdmin');
-            if (container && menu && !container.contains(e.target)) {
-                menu.style.display = 'none';
-            }
-        });
-    </script>
+        
 
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
