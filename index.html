@@ -89,6 +89,48 @@
         </button>
     </div>
 
+    <!-- MENÚ HAMBURGUESA ELEGANTE (IZQUIERDA) -->
+    <div id="menuAdminContainer" style="position: fixed; top: 15px; left: 15px; z-index: 99999;">
+        <button onclick="toggleMenuAdmin()" style="background: #111; color: #d4af37; border: 1px solid #d4af37; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);">
+            ☰
+        </button>
+        <div id="dropdownAdmin" style="display: none; position: absolute; left: 0; top: 40px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); width: 210px; padding: 6px 0;">
+            <div style="font-weight: 600; padding: 8px 15px; font-size: 11px; color: #94a3b8; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f9;">ADMINISTRACIÓN</div>
+            
+            <button onclick="prepararCierreCaja()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                🔄 Reiniciar Noche
+            </button>
+            
+            <button onclick="exportarExcel()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                📊 Descargar Excel
+            </button>
+            
+            <button onclick="exportarBaseDatos()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                💾 Copia de Seguridad
+            </button>
+            
+            <button onclick="document.getElementById('importFile').click()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                📥 Restaurar Copia
+            </button>
+            <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
+        </div>
+    </div>
+
+    <script>
+        function toggleMenuAdmin() {
+            const menu = document.getElementById('dropdownAdmin');
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
+
+        window.addEventListener('click', function(e) {
+            const container = document.getElementById('menuAdminContainer');
+            const menu = document.getElementById('dropdownAdmin');
+            if (container && menu && !container.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+    </script>
+
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
@@ -108,13 +150,6 @@
         <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
         <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
         <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
-    </div>
-    <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
-    <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
-    <div class="admin-btns" id="adminExtra" style="display:none;">
-        <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
-        <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
-        <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
     </div>
     
    
