@@ -888,7 +888,7 @@ function cerrarFirma() {
 }
 
 async function guardarFirmaSocio() { 
-    const firmaB64 = canvas.toDataURL();
+    const firmaB64 = document.getElementById('canvasFirma').toDataURL();
     firmaCargadaCache = firmaB64;
 
     if(socioActual && socioActual.dni) {
@@ -916,7 +916,6 @@ async function guardarFirmaSocio() {
         cerrarFirma();
     }
 }
-
 function actualizarClave() {
     const t = document.getElementById('tipoClave').value; 
     const n = document.getElementById('nuevaClaveInput').value;
