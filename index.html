@@ -579,46 +579,46 @@ function inyectarInterceptosDePago() {
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
         async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
      async function registrar() {
-        const d = document.getElementById('dni').value.toUpperCase();
-        const n = document.getElementById('nom').value;
-        const e = document.getElementById('mail').value;
-        const c = document.getElementById('cumple').value;
-        const cat = document.getElementById('cat').value;
-        if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-        
-        const { error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-            dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-            hora: new Date().toLocaleTimeString(), cat: cat 
-        });
-        
-        if (error) {
-            alert("Error al registrar: " + error.message);
-            return;
-        }
-
-        if(e) {
-            emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-                to_name: n, to_email: e, dni: d, categoria: cat
-            }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-        }
-    }
-
-    // Funciones del menú desplegable de administración
-    function toggleMenuAdmin(event) {
-        if (event) event.stopPropagation();
-        const menu = document.getElementById('dropdownAdmin');
-        if (menu) {
-            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-        }
-    }
-
-    window.addEventListener('click', function(e) {
-        const container = document.getElementById('menuAdminContainer');
-        const menu = document.getElementById('dropdownAdmin');
-        if (container && menu && !container.contains(e.target)) {
-            menu.style.display = 'none';
-        }
+    const d = document.getElementById('dni').value.toUpperCase();
+    const n = document.getElementById('nom').value;
+    const e = document.getElementById('mail').value;
+    const c = document.getElementById('cumple').value;
+    const cat = document.getElementById('cat').value;
+    if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+    
+    const { error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+        dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+        hora: new Date().toLocaleTimeString(), cat: cat 
     });
+    
+    if (error) {
+        alert("Error al registrar: " + error.message);
+        return;
+    }
+
+    if(e) {
+        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
+            to_name: n, to_email: e, dni: d, categoria: cat
+        }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
+    }
+}
+
+// Funciones del menú desplegable de administración
+function toggleMenuAdmin(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('dropdownAdmin');
+    if (menu) {
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    }
+}
+
+window.addEventListener('click', function(e) {
+    const container = document.getElementById('menuAdminContainer');
+    const menu = document.getElementById('dropdownAdmin');
+    if (container && menu && !container.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
     // Abrimos la tarjeta al instante con los datos del formulario antes de limpiar
     abrirTarjeta({ 
         dni: d, 
