@@ -82,6 +82,31 @@
 </style>
 </head>
 <body>
+    <div id="menuAdminContainer" style="display: none; position: fixed; top: 15px; left: 15px; z-index: 99999;">
+    <button type="button" onclick="toggleMenuAdmin(event)" style="background: #111; color: #d4af37; border: 1px solid #d4af37; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);">
+        ☰
+    </button>
+    <div id="dropdownAdmin" style="display: none; position: absolute; left: 0; top: 40px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); width: 210px; padding: 6px 0; text-align: left; z-index: 99999;">
+        <div style="font-weight: 600; padding: 8px 15px; font-size: 11px; color: #94a3b8; border-bottom: 1px solid #f1f5f9;">ADMINISTRACIÓN</div>
+        
+        <button type="button" onclick="prepararCierreCaja()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            🔄 Reiniciar Noche
+        </button>
+        
+        <button type="button" onclick="exportarExcel()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            📊 Descargar Excel
+        </button>
+        
+        <button type="button" onclick="exportarBaseDatos()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            💾 Copia de Seguridad
+        </button>
+        
+        <button type="button" onclick="document.getElementById('importFile').click()" style="width: 100%; text-align: left; padding: 10px 15px; background: transparent; color: #334155; border: none; cursor: pointer; font-size: 13px; font-weight: 500;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            📥 Restaurar Copia
+        </button>
+        <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
+    </div>
+</div>
     <!-- BOTÓN FIJO ARRIBA A LA IZQUIERDA (OCULTO POR DEFECTO) -->
     <div id="miBotonCierrePerfecto" style="display: none !important; position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; width: auto !important; height: auto !important;">
         <button type="button" onclick="abrirModalCierrePuertaCiego()" style="display: inline-block !important; width: auto !important; height: auto !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 8px 14px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; white-space: nowrap !important;">
