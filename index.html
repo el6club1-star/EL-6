@@ -383,20 +383,20 @@
     }
 }
 
-    function entrar() { 
-        document.getElementById('pantallalogin').style.display='none';
-        document.getElementById('principal').style.display='block'; 
-        document.getElementById('btnLogout').style.display='block'; 
+    function entrar() {    
+    document.getElementById('pantallaLogin').style.display = 'none';
+    document.getElementById('principal').style.display = 'block';    
+    document.getElementById('btnLogout').style.display = 'block';    
 
-        // === CONTROL DEL BOTÓN DE CIERRE (SOLO ROL PUERTA / PERSONAL) ===
-        const btnCierre = document.getElementById('miBotonCierrePerfecto');
-        if (btnCierre) {
-            if (nivel === 'personal') {
-                btnCierre.style.setProperty('display', 'block', 'important');
-            } else {
-                btnCierre.style.setProperty('display', 'none', 'important');
-            }
+    // === CONTROL DEL BOTÓN DE CIERRE (SOLO ROL PUERTA / PERSONAL) ===
+    const btnCierre = document.getElementById('miBotonCierrePerfecto');
+    if (btnCierre) {
+        if (nivel === 'personal') {
+            btnCierre.style.setProperty('display', 'block', 'important');
+        } else {
+            btnCierre.style.setProperty('display', 'none', 'important');
         }
+    }
 
         if(nivel === 'jefe') { 
             document.getElementById('btnExport').style.display='block'; 
