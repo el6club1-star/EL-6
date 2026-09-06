@@ -269,8 +269,7 @@
             <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
-   <script>
-   
+    <script>
         (function(){
             emailjs.init("TU_USER_ID_AQUÍ"); 
         })();
@@ -288,7 +287,7 @@
         ctx.strokeStyle = '#000000';
         let dibujando = false;
         let camActiva = false;
-       let CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || { jefe: "12345", puerta: "0000", camarero: "2222" };
+        let CLAVES = JSON.parse(localStorage.getItem('claves_el6')) || { jefe: "12345", puerta: "0000", camarero: "2222" };
         let html5QrCode;
         let origenFirma = 'tarjeta';
         const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
@@ -296,7 +295,7 @@
         // Variables globales para guardar los datos calculados temporalmente en el arqueo
         let datosCajaGlobal = {};
 
-        // === FUNCIÓN DE VALIDACIÓN AÑADIDA PARA QUE EL BOTÓN ACCEDER FUNCIONE ===
+        // === 1. VALIDACIÓN DE ENTRADA ===
         function validarEntrada() {
             const p = document.getElementById('passApp').value;
             const menuAdmin = document.getElementById('menuAdminContainer');
@@ -321,12 +320,88 @@
             }
         }
 
+        // === 2. FUNCIÓN ENTRAR (CON PANTALLALOGIN CORREGIDA) ===
+        function entrar() {    
+            document.getElementById('pantallaLogin').style.display = 'none';
+            document.getElementById('principal').style.display = 'block';    
+            document.getElementById('btnLogout').style.display = 'block';    
+
+            const btnCierre = document.getElementById('miBotonCierrePerfecto');
+            if (btnCierre) {
+                if (nivel === 'personal') {
+                    btnCierre.style.setProperty('display', 'block', 'important');
+                } else {
+                    btnCierre.style.setProperty('display', 'none', 'important');
+                }
+            }
+
+            if(nivel === 'jefe') {    
+                document.getElementById('btnExport').style.display = 'block';    
+                document.getElementById('btnReset').style.display = 'block';    
+                document.getElementById('panelAdmin').style.display = 'grid';    
+                document.getElementById('adminExtra').style.display = 'flex';
+                document.getElementById('configClaves').style.display = 'block';
+            }
+            if(nivel === 'camarero') {
+                document.getElementById('cajaRegistro').style.display = 'none';
+                document.getElementById('btnReset').style.display = 'none';
+                document.getElementById('panelAdmin').style.display = 'none';
+                if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
+                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+                if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+            }
+
+            const botonCamaraPrincipal = document.getElementById('btnCam');
+            if (botonCamaraPrincipal) {
+                botonCamaraPrincipal.style.display = 'block';
+            }
+
+            inyectarInterceptosDePago();
+            refrescarDatos();
+
+            _supabase
+                .channel('cambios-en-directo')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
+                    db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
+                    aforo = db.filter(x => x.dentro).length;
+                    render();
+                    
+                    if (socioActual && socioActual.dni === payload.new.dni) {
+                        socioActual = payload.new;
+
+                        const stringNuevas = String(payload.new.consumiciones || '').trim();
+                        let consumosNuevos = {};
+                        productosValidos.forEach(p => consumosNuevos[p] = 0);
+
+                        if (stringNuevas.includes(':')) {
+                            stringNuevas.split(',').forEach(item => {
+                                const [p, c] = item.split(':');
+                                if (p && productosValidos.includes(p.trim().toUpperCase())) {
+                                    consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                                }
+                            });
+                        }
+
+                        productosValidos.forEach(prod => {
+                            const el = document.getElementById(`v-cant-${prod}`);
+                            if (el) {
+                                const cant = consumosNuevos[prod] || 0;
+                                el.innerText = cant;
+                                el.style.color = cant > 0 ? '#d4af37' : '#fff';
+                            }
+                        });
+                    }
+                })
+                .subscribe();
+        }
+
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
             if(dot) {
                 if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
             }
         }
+
         async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
@@ -346,7 +421,7 @@
             actualizarVisualPago();
         }
 
-       function actualizarVisualPago() {
+        function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
             let pagadoValido = socioActual.pago_realizado;
@@ -383,6 +458,7 @@
                 document.getElementById('checkRGPD').checked = true; 
             }
         }
+    </script>
 
        function validarEntrada() {
     const p = document.getElementById('passApp').value;
