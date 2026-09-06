@@ -269,7 +269,7 @@
             <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
-   <script>
+    <script>
     (function(){
         emailjs.init("TU_USER_ID_AQUÍ"); 
     })();
@@ -291,9 +291,6 @@
     let html5QrCode;
     let origenFirma = 'tarjeta';
     const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
-
-    // Variables globales para guardar los datos calculados temporalmente en el arqueo
-    let datosCajaGlobal = {};
 
     function actualizarAntena(online) {
         const dot = document.getElementById('dot');
@@ -388,7 +385,6 @@
         document.getElementById('principal').style.display = 'block';    
         document.getElementById('btnLogout').style.display = 'block';    
 
-        // === CONTROL DEL BOTÓN DE CIERRE (SOLO ROL PUERTA / PERSONAL) ===
         const btnCierre = document.getElementById('miBotonCierrePerfecto');
         if (btnCierre) {
             if (nivel === 'personal') {
@@ -419,22 +415,18 @@
             botonCamaraPrincipal.style.display = 'block';
         }
 
-        // Activamos la escucha del botón pagar justo al entrar
         inyectarInterceptosDePago();
         refrescarDatos();
 
-        // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
         _supabase
             .channel('cambios-en-directo')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
                 db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
                 aforo = db.filter(x => x.dentro).length;
-                
                 render();
                 
                 if (socioActual && socioActual.dni === payload.new.dni) {
                     socioActual = payload.new;
-
                     const stringNuevas = String(payload.new.consumiciones || '').trim();
                     let consumosNuevos = {};
                     productosValidos.forEach(p => consumosNuevos[p] = 0);
@@ -460,7 +452,6 @@
             })
             .subscribe();
 
-        // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
         if (nivel === 'camarero') {
             let style = document.getElementById('ocultarMasCamarero');
             if (!style) {
@@ -468,7 +459,6 @@
                 style.id = 'ocultarMasCamarero';
                 document.head.appendChild(style);
             }
-            
             style.innerHTML = `
                 #card-consumos button:nth-child(2),
                 #card-consumos button.btn-sumar,
@@ -478,19 +468,6 @@
                     display: none !important;
                 }
             `;
-
-            setInterval(() => {
-                document.querySelectorAll('button').forEach(btn => {
-                    const texto = btn.innerText.trim();
-                    const accion = btn.getAttribute('onclick') || '';
-                    
-                    if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
-                        if (!accion.includes('restar')) {
-                            btn.style.setProperty('display', 'none', 'important');
-                        }
-                    }
-                });
-            }, 100);
         }
     }
 
@@ -526,11 +503,11 @@
                 <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
                 <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
               <td>
-        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
-    </td>
+                <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
+                <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
+            </td>
             </tr>`).join('');
     }
 
@@ -552,7 +529,7 @@
         reader.onload = async function(e) {
             try {
                 const datos = JSON.parse(e.target.result);
-                if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios? Se sobrescribirán de forma segura.`)) {
+                if(Array.isArray(datos) && confirm(`¿Quieres importar ${datos.length} socios?`)) {
                     for(let s of datos) {
                         delete s.created_at;
                         await _supabase.from(NOMBRE_TABLA).upsert(s);
@@ -602,10 +579,7 @@
             hora: new Date().toLocaleTimeString(), cat: cat 
         });
         
-        if (error) {
-            alert("Error al registrar: " + error.message);
-            return;
-        }
+        if (error) { alert("Error al registrar: " + error.message); return; }
 
         if(e) {
             emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
@@ -613,29 +587,15 @@
             }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
         }
 
-        // Abrimos la tarjeta al instante con los datos del formulario antes de limpiar
-        abrirTarjeta({ 
-            dni: d, 
-            nombre: n, 
-            email: e, 
-            cumple: c, 
-            cat: cat, 
-            dentro: true, 
-            hora: new Date().toLocaleTimeString() 
-        });
-
-        // Limpiamos el formulario
         document.getElementById('dni').value = ""; 
         document.getElementById('nom').value = "";
         document.getElementById('mail').value = ""; 
         document.getElementById('cumple').value = "";
         document.getElementById('checkRGPD').checked = false;
 
-        // Actualizamos la tabla en segundo plano
         await refrescarDatos(); 
     }
 
-    // Funciones del menú desplegable de administración
     function toggleMenuAdmin(event) {
         if (event) event.stopPropagation();
         const menu = document.getElementById('dropdownAdmin');
@@ -665,7 +625,7 @@
                     if(socio) {
                         if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
                         await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
-                        refrescarDatos(); abrirTarjeta(socio);
+                        refrescarDatos();
                     } else {
                         if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
                             document.getElementById('dni').value = text.trim().toUpperCase();
