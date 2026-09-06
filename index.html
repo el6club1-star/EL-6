@@ -269,7 +269,7 @@
             <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
-    <script>
+   <script>
    
         (function(){
             emailjs.init("TU_USER_ID_AQUÍ"); 
@@ -295,6 +295,31 @@
 
         // Variables globales para guardar los datos calculados temporalmente en el arqueo
         let datosCajaGlobal = {};
+
+        // === FUNCIÓN DE VALIDACIÓN AÑADIDA PARA QUE EL BOTÓN ACCEDER FUNCIONE ===
+        function validarEntrada() {
+            const p = document.getElementById('passApp').value;
+            const menuAdmin = document.getElementById('menuAdminContainer');
+
+            if (p === CLAVES.jefe) { 
+                nivel = "jefe"; 
+                if (menuAdmin) menuAdmin.style.display = 'block';
+                entrar(); 
+            } 
+            else if (p === CLAVES.puerta) { 
+                nivel = "personal"; 
+                if (menuAdmin) menuAdmin.style.display = 'block';
+                entrar(); 
+            } 
+            else if (p === CLAVES.camarero) { 
+                nivel = "camarero"; 
+                if (menuAdmin) menuAdmin.style.display = 'none';
+                entrar(); 
+            } 
+            else {
+                alert("CÓDIGO INCORRECTO");
+            }
+        }
 
         function actualizarAntena(online) {
             const dot = document.getElementById('dot');
