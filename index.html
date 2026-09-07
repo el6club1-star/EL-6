@@ -82,27 +82,34 @@
 </style>
 </head>
 <body>
-    <!-- 1. BOTÓN HAMBURGUESA FINO Y ELEGANTE (ARRIBA A LA IZQUIERDA) -->
-    <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="position: fixed !important; top: 18px !important; left: 20px !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important; backdrop-filter: blur(4px) !important; transition: all 0.2s ease !important;">
+    <!-- BOTÓN HAMBURGUESA FINO Y DISCRETO (ARRIBA A LA IZQUIERDA) -->
+    <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; width: 32px !important; height: 28px !important; background: #111 !important; border: 1px solid #d4af37 !important; border-radius: 6px !important; cursor: pointer !important; padding: 6px !important; box-sizing: border-box !important;">
         <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
         <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
         <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
     </button>
 
-    <!-- 2. PANTALLA DE LOGIN -->
+    <!-- 1. BLOQUE ORIGINAL DE CIERRE -->
+    <div id="miBotonCierrePerfecto" style="display: none !important; position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; width: auto !important; height: auto !important;">
+        <button type="button" onclick="abrirModalCierrePuertaCiego()" style="display: inline-block !important; width: auto !important; height: auto !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 8px 14px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; white-space: nowrap !important;">
+            🔴 CIERRE NOCHE
+        </button>
+    </div>
+
+    <!-- 2. PANTALLA DE LOGIN ORIGINAL -->
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-    <!-- 3. BARRA SUPERIOR DERECHA (MANTENIDA OCULTA/FUNCIONAL PARA EL SISTEMA) -->
-    <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: none; align-items: center; gap: 10px;">
-        <button class="btn-reset-noche" id="btnResetPuerta" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
-        <button class="btn-logout" id="btnLogout" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
+    <!-- 3. BARRA SUPERIOR DE ACCESOS DIRECTOS ORIGINAL -->
+    <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
+        <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
+        <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
     </div>
-
-    <!-- 4. CONTENEDOR PRINCIPAL Y CABECERA ORIGINAL INTACTOS -->
+    
+    <!-- 4. CONTENEDOR Y CABECERA ORIGINALES -->
     <div class="container" id="principal">
         <header>
             <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
