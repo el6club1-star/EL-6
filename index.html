@@ -102,12 +102,12 @@
     </div>
     <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
     <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
-        <!-- NUEVO: Botón Hamburguesa -->
-        <button id="hamburgerToggle" class="hamburger-btn" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <!-- BOTÓN MENÚ HAMBURGUESA (FIJO A LA IZQUIERDA) -->
+<button id="hamburgerToggle" class="hamburger-btn" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="position: fixed; top: 15px; left: 15px; z-index: 99999;">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
         <!-- Tus botones existentes -->
         <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
         <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
