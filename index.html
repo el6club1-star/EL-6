@@ -96,7 +96,14 @@
     
     <!-- CONTENEDOR Y CABECERA ORIGINALES -->
     <div class="container" id="principal">
-        <header>
+        <header style="position: relative;">
+            <!-- BOTÓN MENÚ HAMBURGUESA EXCLUSIVO PARA EL ROL DE JEFE -->
+            <button id="hamburgerToggleJefe" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="position: absolute !important; top: 10px !important; left: 0 !important; z-index: 100 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important;">
+                <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
+                <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
+                <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
+            </button>
+
             <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
                 <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
                 <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
