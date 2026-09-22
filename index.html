@@ -347,7 +347,7 @@
             }
         }
 
-      function validarEntrada() {
+     function validarEntrada() {
         const p = document.getElementById('passApp').value;
         if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
         else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
@@ -444,7 +444,16 @@
                 style.id = 'ocultarMasCamarero';
                 document.head.appendChild(style);
             }
-            style.innerHTML = '#hamburgerToggle { display: none !important; }';
+            style.innerHTML = `
+                #hamburgerToggle { display: none !important; }
+                #card-consumos button:nth-child(2),
+                #card-consumos button.btn-sumar,
+                .tarjeta-socio button.btn-sumar,
+                #modalTarjeta button.btn-sumar,
+                button[onclick*="sumar"] {
+                    display: none !important;
+                }
+            `;
         } else {
             let style = document.getElementById('ocultarMasCamarero');
             if (style) { style.innerHTML = ''; }
@@ -453,18 +462,6 @@
                 btnHamburguesa.style.setProperty('display', 'flex', 'important');
             }
         }
-    }
-        
-        // Regla CSS pura: Oculta de forma instantánea cualquier botón de sumar sin importar cuántas veces se redibuje la tarjeta
-        style.innerHTML = `
-            #card-consumos button:nth-child(2),
-            #card-consumos button.btn-sumar,
-            .tarjeta-socio button.btn-sumar,
-            #modalTarjeta button.btn-sumar,
-            button[onclick*="sumar"] {
-                display: none !important;
-            }
-        `;
 
         // 2. Intervalo de respaldo directo por JS
         setInterval(() => {
@@ -473,7 +470,7 @@
                 const accion = btn.getAttribute('onclick') || '';
                 
                 // Si es un botón de sumar o contiene un '+', lo ocultamos al instante
-                if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
+                if (nivel === 'camarero' && (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1'))) {
                     if (!accion.includes('restar')) {
                         btn.style.setProperty('display', 'none', 'important');
                     }
@@ -481,7 +478,6 @@
             });
         }, 100);
     }
-}
 
 // NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
