@@ -88,7 +88,7 @@
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS ORIGINAL (CON HAMBURGUESA PARA PUERTA/JEFE SI PROCEDE) -->
+    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS ORIGINAL -->
     <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
         <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
         <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
@@ -96,29 +96,45 @@
     
     <!-- CONTENEDOR Y CABECERA ORIGINALES -->
     <div class="container" id="principal">
-        <header style="position: relative;">
-            <!-- BOTÓN MENÚ HAMBURGUESA SOLO PARA JEFE Y PUERTA (CONTROLADO POR CSS/JS SEGÚN TU LÓGICA DE ROLES) -->
-            <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" class="solo-jefe-puerta" style="display: none; position: absolute !important; top: 10px !important; left: 0 !important; z-index: 100 !important; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important;">
-                <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-                <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-                <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-            </button>
+        <header style="position: relative; display: flex; flex-direction: column; align-items: center;">
+            
+            <!-- CONTENEDOR SUPERIOR PARA EL BOTÓN HAMBURGUESA Y TÍTULO -->
+            <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; position: relative;">
+                
+                <!-- BOTÓN MENÚ HAMBURGUESA FUNCIONAL PARA EL JEFE -->
+                <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="display: flex !important; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important; z-index: 10;">
+                    <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
+                    <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
+                    <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
+                </button>
 
-            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <h1 style="margin: 0; position: absolute; left: 50%; transform: translateX(-50%);">⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
+                
+                <!-- Espaciador invisible para equilibrar el flexbox -->
+                <div style="width: 34px;"></div>
+            </div>
+
+            <!-- ZONA DE BOTONES Y ACCESOS DE JEFE QUE SE INTEGRARÁN/DESPLEGARÁN -->
+            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
                 <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
                 <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
                 <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
                 <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
             </div>
-            <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
-            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
-            <div class="admin-btns" id="adminExtra" style="display:none;">
-                <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
-                <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
-                <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
+
+            <!-- CONTENEDOR DE ACCIONES DE JEFE -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; margin-bottom: 10px;">
+                <!-- BOTÓN ORIGINAL DE JEFE -->
+                <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
+                
+                <div class="admin-btns" id="adminExtra" style="display:none; display: inline-flex; gap: 10px;">
+                    <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:8px 12px; border-radius:5px; font-size:11px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
+                    <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:8px 12px; border-radius:5px; font-size:11px; cursor:pointer;">📥 RESTAURAR COPIA</button>
+                    <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
+                </div>
+                
+                <button class="btn-excel" id="btnExport" onclick="exportarExcel()" style="margin: 0;">📊 DESCARGAR EXCEL</button>
             </div>
-            <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
-            <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
         </header>
 
         <div id="panelAdmin" class="stats-container">
