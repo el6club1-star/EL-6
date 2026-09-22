@@ -347,7 +347,7 @@
             }
         }
 
-     function validarEntrada() {
+    function validarEntrada() {
         const p = document.getElementById('passApp').value;
         if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
         else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
@@ -492,6 +492,42 @@ function inyectarInterceptosDePago() {
                 }
             }, 600);
         });
+    }
+}
+
+// FUNCIÓN PARA ABRIR Y LLENAR EL MENÚ MÓVIL HAMBURGUESA
+function toggleMenuMobil() {
+    var drawer = document.getElementById('mobileMenuDrawer');
+    var overlay = document.getElementById('mobileMenuOverlay');
+    
+    if (drawer && overlay) {
+        drawer.classList.toggle('open');
+        overlay.classList.toggle('open');
+        
+        if (drawer.classList.contains('open')) {
+            var contenidoMenu = document.getElementById('mobileMenuContent');
+            if (contenidoMenu) {
+                contenidoMenu.innerHTML = '';
+                
+                if (nivel === 'jefe') {
+                    var btnReset = document.getElementById('btnReset');
+                    var btnExport = document.getElementById('btnExport');
+                    var adminExtra = document.getElementById('adminExtra');
+                    
+                    if (btnReset) contenidoMenu.appendChild(btnReset.cloneNode(true));
+                    if (btnExport) contenidoMenu.appendChild(btnExport.cloneNode(true));
+                    if (adminExtra) contenidoMenu.appendChild(adminExtra.cloneNode(true));
+                }
+                
+                if (nivel === 'personal') {
+                    var btnCierre = document.getElementById('miBotonCierrePerfecto');
+                    if (btnCierre) contenidoMenu.appendChild(btnCierre.cloneNode(true));
+                }
+                
+                var btnLogout = document.getElementById('btnLogout');
+                if (btnLogout) contenidoMenu.appendChild(btnLogout.cloneNode(true));
+            }
+        }
     }
 }
         function formatearDNI(dni) {
