@@ -78,114 +78,89 @@
         .caja-inputs label { font-size: 11px; font-weight: bold; color: var(--gold); display: block; margin-bottom: 5px; text-transform: uppercase; }
         .caja-inputs input { background: #000; border: 1px solid rgba(212,175,55,0.4); color: #fff; font-weight: bold; font-size: 16px; text-align: center; padding: 8px; }
         .caja-inputs input:focus { border-color: var(--gold); outline: none; }
+        .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
 </style>
 </head>
 <body>
-    <!-- PANTALLA DE LOGIN ORIGINAL -->
+    <!-- BOTÓN FIJO ARRIBA A LA IZQUIERDA (OCULTO POR DEFECTO) -->
+    <div id="miBotonCierrePerfecto" style="display: none !important; position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; width: auto !important; height: auto !important;">
+        <button type="button" onclick="abrirModalCierrePuertaCiego()" style="display: inline-block !important; width: auto !important; height: auto !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 8px 14px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; white-space: nowrap !important;">
+            🔴 CIERRE NOCHE
+        </button>
+    </div>
+
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
         <input type="password" id="passApp" placeholder="CÓDIGO">
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS ORIGINAL -->
+    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
     <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
         <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
         <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
     </div>
-
-    <!-- MENÚ LATERAL MÓVIL (DRAWER Y OVERLAY) -->
-    <div id="mobileMenuOverlay" class="menu-overlay" onclick="toggleMenuMobil()"></div>
-    <div id="mobileMenuDrawer" class="mobile-menu-drawer">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 10px;">
-            <span style="font-weight: bold; color: #d4af37; font-size: 14px; letter-spacing: 1px;">MENÚ DE OPCIONES</span>
-            <button onclick="toggleMenuMobil()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">✕</button>
-        </div>
-        <div id="mobileMenuContent" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"></div>
+    
+    <div class="container" id="principal">
+        <header>
+    <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+        <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
+        <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
+        <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
+        <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
+    </div>
+    <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
+    <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
+    <div class="admin-btns" id="adminExtra" style="display:none;">
+        <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
+        <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
+        <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
     </div>
     
-    <!-- CONTENEDOR Y CABECERA ORIGINALES -->
-    <div class="container" id="principal">
-        <header style="position: relative; display: flex; flex-direction: column; align-items: center;">
-            
-            <!-- CONTENEDOR SUPERIOR PARA EL BOTÓN HAMBURGUESA Y TÍTULO -->
-            <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; position: relative;">
-                
-                <!-- BOTÓN MENÚ HAMBURGUESA (GESTIONADO POR JS SEGÚN ROL) -->
-                <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="display: none; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important; z-index: 10;">
-                    <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-                    <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-                    <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-                </button>
+   
+    <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
+    <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
+</header>
 
-                <h1 style="margin: 0; position: absolute; left: 50%; transform: translateX(-50%);">⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
-                
-                <!-- Espaciador invisible para equilibrar el flexbox -->
-                <div style="width: 34px;"></div>
-            </div>
+<div id="panelAdmin" class="stats-container">
+    <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
+    <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
+    <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
+</div>
 
-            <!-- ZONA DE BOTONES Y ACCESOS DE JEFE -->
-            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
-                <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
-                <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
-                <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
-                <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
-            </div>
-
-            <!-- CONTENEDOR DE ACCIONES DE JEFE -->
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; margin-bottom: 10px;">
-                <!-- BOTÓN ORIGINAL DE JEFE -->
-                <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
-                
-                <div class="admin-btns" id="adminExtra" style="display:none; display: inline-flex; gap: 10px;">
-                    <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:8px 12px; border-radius:5px; font-size:11px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
-                    <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:8px 12px; border-radius:5px; font-size:11px; cursor:pointer;">📥 RESTAURAR COPIA</button>
-                    <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
-                </div>
-                
-                <button class="btn-excel" id="btnExport" onclick="exportarExcel()" style="margin: 0;">📊 DESCARGAR EXCEL</button>
-            </div>
-        </header>
-
-        <div id="panelAdmin" class="stats-container">
-            <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
-            <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
-            <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
+<!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
+<div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 140px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
+        <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
+        <div class="contenedor-rgpd" style="margin-top: 5px;">
+            <input type="checkbox" id="checkRGPD" style="width:auto;"> 
+            <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
         </div>
-
-        <!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
-        <div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 140px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
-                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
-                <div class="contenedor-rgpd" style="margin-top: 5px;">
-                    <input type="checkbox" id="checkRGPD" style="width:auto;"> 
-                    <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
-                </div>
-            </div>
-            <div style="flex: 2; min-width: 180px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
-                <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
-            </div>
-            <div style="flex: 1; min-width: 130px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
-                <input type="date" id="cumple" style="width:100%;">
-            </div>
-            <div style="flex: 1; min-width: 160px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
-                <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
-            </div>
-            <div style="flex: 1; min-width: 120px;">
-                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
-                <select id="cat" style="width:100%;">
-                    <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
-                </select>
-            </div>
-            <div style="flex: 1; min-width: 120px; display: flex; align-items: flex-end; margin-top: 19px;">
-                <button class="btn-add" onclick="registrar()" style="height: 38px; white-space: nowrap; width: 100%;">REGISTRAR</button>
-            </div>
-        </div>
-            
+    </div>
+    <div style="flex: 2; min-width: 180px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
+        <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
+    </div>
+    <div style="flex: 1; min-width: 130px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
+        <input type="date" id="cumple" style="width:100%;">
+    </div>
+    <div style="flex: 1; min-width: 160px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
+        <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
+    </div>
+  <div style="flex: 1; min-width: 120px;">
+        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
+        <select id="cat" style="width:100%;">
+            <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
+        </select>
+    </div>
+    <div style="flex: 1; min-width: 120px; display: flex; align-items: flex-end; margin-top: 19px;">
+        <button class="btn-add" onclick="registrar()" style="height: 38px; white-space: nowrap; width: 100%;">REGISTRAR</button>
+    </div>
+</div>
+        
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
         <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
         <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
@@ -195,6 +170,7 @@
             <tbody id="lista"></tbody>
         </table>
     </div>
+
     <div id="modalTarjeta">
         <div class="card-vip" id="cardMain">
             <div id="selloPagado">PAGADO ✅</div>
@@ -262,40 +238,11 @@
             
             <button onclick="ejecutarCierreResetFinal()" style="width:100%; padding:12px; background:var(--gold); color:black; border:none; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Confirmar Cierre de Noche</button>
             
+            <!-- (El botón duplicado y roto que había aquí abajo ha sido eliminado por completo) -->
+
             <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
-
-    <!-- ESTILOS NECESARIOS PARA EL MENÚ MÓVIL LATERAL -->
-    <style>
-        .mobile-menu-drawer {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background-color: #111827;
-            border-right: 1px solid rgba(212, 175, 55, 0.4);
-            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-            z-index: 2147483646;
-            transition: left 0.3s ease-in-out;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .mobile-menu-drawer.open { left: 0; }
-        .menu-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2147483645;
-            display: none;
-        }
-        .menu-overlay.open { display: block; }
-    </style>
-
     <script>
    
         (function(){
@@ -386,7 +333,7 @@
             }
         }
 
-    function validarEntrada() {
+       function validarEntrada() {
         const p = document.getElementById('passApp').value;
         if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
         else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
@@ -431,7 +378,7 @@
         }
 
         // Activamos la escucha del botón pagar justo al entrar
-        injectarInterceptosDePago();
+        inyectarInterceptosDePago();
         refrescarDatos();
 
         // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
@@ -474,46 +421,34 @@
                 }
             })
             .subscribe();
-
-        // === CONTROL VISUAL DE LA HAMBURGUESA SEGÚN ROL ===
-        const btnHamburguesa = document.getElementById('hamburgerToggle');
-        if (btnHamburguesa) {
-            if (nivel === 'camarero') {
-                btnHamburguesa.style.setProperty('display', 'none', 'important');
-            } else {
-                btnHamburguesa.style.setProperty('display', 'flex', 'important');
-            }
+   // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
+    if (nivel === 'camarero') {
+        let style = document.getElementById('ocultarMasCamarero');
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'ocultarMasCamarero';
+            document.head.appendChild(style);
         }
-
-        // === ESTILOS DEFINITIVOS PARA EL CAMARERO ===
-        if (nivel === 'camarero') {
-            let style = document.getElementById('ocultarMasCamarero');
-            if (!style) {
-                style = document.createElement('style');
-                style.id = 'ocultarMasCamarero';
-                document.head.appendChild(style);
+        
+        // Regla CSS pura: Oculta de forma instantánea cualquier botón de sumar sin importar cuántas veces se redibuje la tarjeta
+        style.innerHTML = `
+            #card-consumos button:nth-child(2),
+            #card-consumos button.btn-sumar,
+            .tarjeta-socio button.btn-sumar,
+            #modalTarjeta button.btn-sumar,
+            button[onclick*="sumar"] {
+                display: none !important;
             }
-            style.innerHTML = `
-                #card-consumos button:nth-child(2),
-                #card-consumos button.btn-sumar,
-                .tarjeta-socio button.btn-sumar,
-                #modalTarjeta button.btn-sumar,
-                button[onclick*="sumar"] {
-                    display: none !important;
-                }
-            `;
-        } else {
-            let style = document.getElementById('ocultarMasCamarero');
-            if (style) { style.innerHTML = ''; }
-        }
+        `;
 
-        // Intervalo de respaldo directo por JS
+        // 2. Intervalo de respaldo directo por JS
         setInterval(() => {
             document.querySelectorAll('button').forEach(btn => {
                 const texto = btn.innerText.trim();
                 const accion = btn.getAttribute('onclick') || '';
                 
-                if (nivel === 'camarero' && (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1'))) {
+                // Si es un botón de sumar o contiene un '+', lo ocultamos al instante
+                if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
                     if (!accion.includes('restar')) {
                         btn.style.setProperty('display', 'none', 'important');
                     }
@@ -521,7 +456,9 @@
             });
         }, 100);
     }
+}
 
+// NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
     const btnPagar = document.getElementById('btnPagarTarjeta');
     if (!btnPagar) return;
@@ -536,43 +473,6 @@ function inyectarInterceptosDePago() {
         });
     }
 }
-
-// FUNCIÓN PARA ABRIR Y LLENAR EL MENÚ MÓVIL HAMBURGUESA
-function toggleMenuMobil() {
-    var drawer = document.getElementById('mobileMenuDrawer');
-    var overlay = document.getElementById('mobileMenuOverlay');
-    
-    if (drawer && overlay) {
-        drawer.classList.toggle('open');
-        overlay.classList.toggle('open');
-        
-        if (drawer.classList.contains('open')) {
-            var contenidoMenu = document.getElementById('mobileMenuContent');
-            if (contenidoMenu) {
-                contenidoMenu.innerHTML = '';
-                
-                if (nivel === 'jefe') {
-                    var btnReset = document.getElementById('btnReset');
-                    var btnExport = document.getElementById('btnExport');
-                    var adminExtra = document.getElementById('adminExtra');
-                    
-                    if (btnReset) contenidoMenu.appendChild(btnReset.cloneNode(true));
-                    if (btnExport) contenidoMenu.appendChild(btnExport.cloneNode(true));
-                    if (adminExtra) contenidoMenu.appendChild(adminExtra.cloneNode(true));
-                }
-                
-                if (nivel === 'personal') {
-                    var btnCierre = document.getElementById('miBotonCierrePerfecto');
-                    if (btnCierre) contenidoMenu.appendChild(btnCierre.cloneNode(true));
-                }
-                
-                var btnLogout = document.getElementById('btnLogout');
-                if (btnLogout) contenidoMenu.appendChild(btnLogout.cloneNode(true));
-            }
-        }
-    }
-}
-</script>
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
