@@ -98,11 +98,11 @@
     <div class="container" id="principal">
         <header style="position: relative; display: flex; flex-direction: column; align-items: center;">
             
-            <!-- CONTENEDOR SUPERIOR PARA EL BOTÓN HAMBURGUESA Y TÍTULO (SOLO SE MUESTRA SI NO ES CAMARERO MEDIANTE TU LÓGICA) -->
+            <!-- CONTENEDOR SUPERIOR PARA EL BOTÓN HAMBURGUESA Y TÍTULO -->
             <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; position: relative;">
                 
-                <!-- BOTÓN MENÚ HAMBURGUESA (EXCLUIDO PARA CAMARERO) -->
-                <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="display: flex !important; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important; z-index: 10;">
+                <!-- BOTÓN MENÚ HAMBURGUESA (OCULTO POR DEFECTO PARA QUE EL CAMARERO NUNCA LO VEA) -->
+                <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="display: none; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important; z-index: 10;">
                     <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
                     <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
                     <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
