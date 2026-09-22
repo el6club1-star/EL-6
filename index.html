@@ -78,26 +78,9 @@
         .caja-inputs label { font-size: 11px; font-weight: bold; color: var(--gold); display: block; margin-bottom: 5px; text-transform: uppercase; }
         .caja-inputs input { background: #000; border: 1px solid rgba(212,175,55,0.4); color: #fff; font-weight: bold; font-size: 16px; text-align: center; padding: 8px; }
         .caja-inputs input:focus { border-color: var(--gold); outline: none; }
-        .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
 </style>
 </head>
 <body>
-    <!-- BOTÓN HAMBURGUESA FUNCIONAL (ARRIBA A LA IZQUIERDA) -->
-    <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="position: fixed !important; top: 18px !important; left: 20px !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important; backdrop-filter: blur(4px) !important;">
-        <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-        <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-        <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
-    </button>
-
-    <!-- MENÚ LATERAL MÓVIL (DESPLEGABLE) -->
-    <div id="mobileMenuOverlay" class="menu-overlay" onclick="toggleMenuMobil()"></div>
-    <div id="mobileMenuDrawer" class="mobile-menu-drawer">
-        <div style="font-size: 12px; font-weight: bold; color: var(--gold); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 8px;">Menú de Opciones</div>
-        <div id="mobileMenuContent">
-            <!-- Los botones correspondientes a cada rol se moverán aquí automáticamente al abrir -->
-        </div>
-    </div>
-
     <!-- PANTALLA DE LOGIN ORIGINAL -->
     <div id="pantallaLogin">
         <h1 style="letter-spacing: 10px;">EL 6</h1>
@@ -179,7 +162,6 @@
             <tbody id="lista"></tbody>
         </table>
     </div>
-
     <div id="modalTarjeta">
         <div class="card-vip" id="cardMain">
             <div id="selloPagado">PAGADO ✅</div>
