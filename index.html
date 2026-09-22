@@ -93,6 +93,16 @@
         <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
         <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
     </div>
+
+    <!-- MENÚ LATERAL MÓVIL (DRAWER Y OVERLAY) -->
+    <div id="mobileMenuOverlay" class="menu-overlay" onclick="toggleMenuMobil()"></div>
+    <div id="mobileMenuDrawer" class="mobile-menu-drawer">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 10px;">
+            <span style="font-weight: bold; color: #d4af37; font-size: 14px; letter-spacing: 1px;">MENÚ DE OPCIONES</span>
+            <button onclick="toggleMenuMobil()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">✕</button>
+        </div>
+        <div id="mobileMenuContent" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"></div>
+    </div>
     
     <!-- CONTENEDOR Y CABECERA ORIGINALES -->
     <div class="container" id="principal">
@@ -101,7 +111,7 @@
             <!-- CONTENEDOR SUPERIOR PARA EL BOTÓN HAMBURGUESA Y TÍTULO -->
             <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; position: relative;">
                 
-                <!-- BOTÓN MENÚ HAMBURGUESA (OCULTO POR DEFECTO PARA QUE EL CAMARERO NUNCA LO VEA) -->
+                <!-- BOTÓN MENÚ HAMBURGUESA (GESTIONADO POR JS SEGÚN ROL) -->
                 <button id="hamburgerToggle" type="button" onclick="toggleMenuMobil()" aria-label="Abrir menú" style="display: none; flex-direction: column !important; justify-content: center !important; gap: 4px !important; width: 34px !important; height: 34px !important; background: rgba(17, 24, 39, 0.85) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; border-radius: 6px !important; cursor: pointer !important; padding: 7px !important; box-sizing: border-box !important; z-index: 10;">
                     <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
                     <span style="display: block !important; width: 100% !important; height: 2px !important; background-color: #d4af37 !important; border-radius: 1px !important;"></span>
@@ -252,11 +262,40 @@
             
             <button onclick="ejecutarCierreResetFinal()" style="width:100%; padding:12px; background:var(--gold); color:black; border:none; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Confirmar Cierre de Noche</button>
             
-            <!-- (El botón duplicado y roto que había aquí abajo ha sido eliminado por completo) -->
-
             <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
+
+    <!-- ESTILOS NECESARIOS PARA EL MENÚ MÓVIL LATERAL -->
+    <style>
+        .mobile-menu-drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background-color: #111827;
+            border-right: 1px solid rgba(212, 175, 55, 0.4);
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            z-index: 2147483646;
+            transition: left 0.3s ease-in-out;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .mobile-menu-drawer.open { left: 0; }
+        .menu-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2147483645;
+            display: none;
+        }
+        .menu-overlay.open { display: block; }
+    </style>
+
     <script>
    
         (function(){
@@ -436,7 +475,17 @@
             })
             .subscribe();
 
-        // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
+        // === CONTROL VISUAL DE LA HAMBURGUESA SEGÚN ROL ===
+        const btnHamburguesa = document.getElementById('hamburgerToggle');
+        if (btnHamburguesa) {
+            if (nivel === 'camarero') {
+                btnHamburguesa.style.setProperty('display', 'none', 'important');
+            } else {
+                btnHamburguesa.style.setProperty('display', 'flex', 'important');
+            }
+        }
+
+        // === ESTILOS DEFINITIVOS PARA EL CAMARERO ===
         if (nivel === 'camarero') {
             let style = document.getElementById('ocultarMasCamarero');
             if (!style) {
@@ -445,7 +494,6 @@
                 document.head.appendChild(style);
             }
             style.innerHTML = `
-                #hamburgerToggle { display: none !important; }
                 #card-consumos button:nth-child(2),
                 #card-consumos button.btn-sumar,
                 .tarjeta-socio button.btn-sumar,
@@ -457,19 +505,14 @@
         } else {
             let style = document.getElementById('ocultarMasCamarero');
             if (style) { style.innerHTML = ''; }
-            const btnHamburguesa = document.getElementById('hamburgerToggle');
-            if (btnHamburguesa) {
-                btnHamburguesa.style.setProperty('display', 'flex', 'important');
-            }
         }
 
-        // 2. Intervalo de respaldo directo por JS
+        // Intervalo de respaldo directo por JS
         setInterval(() => {
             document.querySelectorAll('button').forEach(btn => {
                 const texto = btn.innerText.trim();
                 const accion = btn.getAttribute('onclick') || '';
                 
-                // Si es un botón de sumar o contiene un '+', lo ocultamos al instante
                 if (nivel === 'camarero' && (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1'))) {
                     if (!accion.includes('restar')) {
                         btn.style.setProperty('display', 'none', 'important');
@@ -479,7 +522,6 @@
         }, 100);
     }
 
-// NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
 function inyectarInterceptosDePago() {
     const btnPagar = document.getElementById('btnPagarTarjeta');
     if (!btnPagar) return;
@@ -530,6 +572,7 @@ function toggleMenuMobil() {
         }
     }
 }
+</script>
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
