@@ -347,7 +347,7 @@
             }
         }
 
-       function validarEntrada() {
+      function validarEntrada() {
         const p = document.getElementById('passApp').value;
         if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
         else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
@@ -392,7 +392,7 @@
         }
 
         // Activamos la escucha del botón pagar justo al entrar
-        inyectarInterceptosDePago();
+        injectarInterceptosDePago();
         refrescarDatos();
 
         // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
@@ -435,14 +435,25 @@
                 }
             })
             .subscribe();
-   // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
-    if (nivel === 'camarero') {
-        let style = document.getElementById('ocultarMasCamarero');
-        if (!style) {
-            style = document.createElement('style');
-            style.id = 'ocultarMasCamarero';
-            document.head.appendChild(style);
+
+        // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
+        if (nivel === 'camarero') {
+            let style = document.getElementById('ocultarMasCamarero');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'ocultarMasCamarero';
+                document.head.appendChild(style);
+            }
+            style.innerHTML = '#hamburgerToggle { display: none !important; }';
+        } else {
+            let style = document.getElementById('ocultarMasCamarero');
+            if (style) { style.innerHTML = ''; }
+            const btnHamburguesa = document.getElementById('hamburgerToggle');
+            if (btnHamburguesa) {
+                btnHamburguesa.style.setProperty('display', 'flex', 'important');
+            }
         }
+    }
         
         // Regla CSS pura: Oculta de forma instantánea cualquier botón de sumar sin importar cuántas veces se redibuje la tarjeta
         style.innerHTML = `
