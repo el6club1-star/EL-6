@@ -199,6 +199,7 @@
             
             <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); prepararCierreCaja();"> Cierre / Reinicio</button>
             <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarExcel();"> Informe Excel</button>
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); abrirModalGestionClaves();"> Gestión Claves</button>
             <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarBaseDatos();"> Copia Seguridad</button>
             <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); document.getElementById('importFile').click();"> Restaurar Copia</button>
             
@@ -1003,6 +1004,55 @@
             const t = document.getElementById('tipoClave').value; 
             const n = document.getElementById('nuevaClaveInput').value;
             if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
+        }
+
+        function abrirModalGestionClaves() {
+            let modalClaves = document.getElementById('modalGestionClavesFlotante');
+            if (!modalClaves) {
+                modalClaves = document.createElement('div');
+                modalClaves.id = 'modalGestionClavesFlotante';
+                modalClaves.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200005; align-items: center; justify-content: center; font-family: 'Inter', sans-serif;";
+                modalClaves.innerHTML = `
+                    <div style="background: #141414; border: 2px solid var(--gold); border-radius: 16px; width: 90%; max-width: 360px; padding: 24px; color: #fff; box-shadow: 0 15px 40px rgba(0,0,0,0.9);">
+                        <h3 style="margin-top: 0; color: var(--gold); font-size: 16px; text-align: center; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 10px;">Gestión de Claves</h3>
+                        
+                        <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+                            <div>
+                                <label style="font-size: 10px; color: var(--gold); font-weight: bold; display: block; margin-bottom: 4px; text-transform: uppercase;">Rol / Puesto</label>
+                                <select id="flotanteTipoClave" style="width: 100%; background: #000; color: #fff; border: 1px solid rgba(212,175,55,0.4); padding: 10px; border-radius: 8px; font-weight: bold;">
+                                    <option value="jefe">JEFE</option>
+                                    <option value="puerta">PUERTA</option>
+                                    <option value="camarero">CAMARERO</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 10px; color: var(--gold); font-weight: bold; display: block; margin-bottom: 4px; text-transform: uppercase;">Nueva Clave</label>
+                                <input type="text" id="flotanteNuevaClaveInput" placeholder="NUEVA CLAVE" style="width: 100%; background: #000; color: #fff; border: 1px solid rgba(212,175,55,0.4); padding: 10px; border-radius: 8px; text-align: center; font-size: 16px; font-weight: bold; box-sizing: border-box;">
+                            </div>
+                        </div>
+                        
+                        <button onclick="guardarClaveFlotanteModal()" style="width: 100%; background: var(--gold); color: #000; border: none; padding: 12px; border-radius: 8px; margin-top: 20px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Guardar Clave</button>
+                        <button onclick="document.getElementById('modalGestionClavesFlotante').remove()" style="width: 100%; background: rgba(255,255,255,0.08); color: #fff; border: none; padding: 8px; border-radius: 8px; margin-top: 8px; cursor: pointer; font-size: 11px;">Cancelar</button>
+                    </div>
+                `;
+                document.body.appendChild(modalClaves);
+            } else {
+                document.getElementById('flotanteNuevaClaveInput').value = "";
+                modalClaves.style.display = 'flex';
+            }
+        }
+
+        function guardarClaveFlotanteModal() {
+            const t = document.getElementById('flotanteTipoClave').value;
+            const n = document.getElementById('flotanteNuevaClaveInput').value;
+            if (n) {
+                CLAVES[t] = n;
+                localStorage.setItem('claves_el6', JSON.stringify(CLAVES));
+                alert("¡Clave actualizada correctamente para los tres roles!");
+                document.getElementById('modalGestionClavesFlotante').remove();
+            } else {
+                alert("Por favor, introduce una clave válida.");
+            }
         }
 
         function prepararCierreCaja() { 
