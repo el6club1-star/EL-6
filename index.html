@@ -81,10 +81,14 @@
         .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
 
         /* Estilos Finos y Elegantes para la Burbuja Flotante Minimalista */
-        #btnMenuHamburguesa {
+        #contenedorMenuFlotante {
             position: fixed;
             top: 18px;
             left: 18px;
+            z-index: 100002;
+        }
+
+        #btnMenuHamburguesa {
             background: rgba(15, 15, 15, 0.85);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -95,7 +99,6 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 18px;
-            z-index: 100002;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -110,9 +113,9 @@
 
         #panelMenuDesplegable {
             display: none;
-            position: fixed;
-            top: 70px;
-            left: 18px;
+            position: absolute;
+            top: 50px;
+            left: 0;
             width: 240px;
             background: rgba(12, 12, 12, 0.82);
             backdrop-filter: blur(12px);
@@ -125,6 +128,10 @@
             box-shadow: 0 12px 35px rgba(0,0,0,0.7);
             flex-direction: column;
             gap: 6px;
+        }
+
+        #contenedorMenuFlotante:hover #panelMenuDesplegable {
+            display: flex;
         }
 
         .contenido-menu-lateral {
@@ -189,22 +196,23 @@
         </button>
     </div>
 
-    <!-- BOTÓN BURBUJA FLOTANTE (SOLO SÍMBOLO HAMBURGUESA FINA) -->
-    <button id="btnMenuHamburguesa" onclick="toggleMenuHamburguesa()">☰</button>
+    <!-- CONTENEDOR FLOTANTE PARA HOVER (ENTRAR/SALIR CON EL RATÓN) -->
+    <div id="contenedorMenuFlotante">
+        <button id="btnMenuHamburguesa">☰</button>
 
-    <!-- PANEL BURBUJA ELEGANTE CON DIFUMINADO INTERNO -->
-    <div id="panelMenuDesplegable">
-        <div class="contenido-menu-lateral">
-            <h3>Control</h3>
-            
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); prepararCierreCaja();"> Cierre / Reinicio</button>
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarExcel();"> Informe Excel</button>
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); abrirModalGestionClaves();"> Gestión Claves</button>
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarBaseDatos();"> Copia Seguridad</button>
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); document.getElementById('importFile').click();"> Restaurar Copia</button>
-            
-            <div style="margin-top: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
-                <button class="btn-menu-opcion btn-menu-peligro" onclick="toggleMenuHamburguesa(); cerrarSesion();"> Cerrar Sesión</button>
+        <div id="panelMenuDesplegable">
+            <div class="contenido-menu-lateral">
+                <h3>Control</h3>
+                
+                <button class="btn-menu-opcion" onclick="prepararCierreCaja();"> Cierre / Reinicio</button>
+                <button class="btn-menu-opcion" onclick="exportarExcel();"> Informe Excel</button>
+                <button class="btn-menu-opcion" onclick="abrirModalGestionClaves();"> Gestión Claves</button>
+                <button class="btn-menu-opcion" onclick="exportarBaseDatos();"> Copia Seguridad</button>
+                <button class="btn-menu-opcion" onclick="document.getElementById('importFile').click();"> Restaurar Copia</button>
+                
+                <div style="margin-top: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
+                    <button class="btn-menu-opcion btn-menu-peligro" onclick="cerrarSesion();"> Cerrar Sesión</button>
+                </div>
             </div>
         </div>
     </div>
@@ -373,17 +381,6 @@
         const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
 
         let datosCajaGlobal = {};
-
-        function toggleMenuHamburguesa() {
-            const panel = document.getElementById('panelMenuDesplegable');
-            if (panel) {
-                if (panel.style.display === 'flex') {
-                    panel.style.display = 'none';
-                } else {
-                    panel.style.display = 'flex';
-                }
-            }
-        }
 
         async function refrescarDatos() {
             try {
