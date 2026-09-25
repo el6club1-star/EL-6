@@ -18,7 +18,7 @@
             --danger: #ef4444; 
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        #antena { position: fixed; top: 15px; left: 15px; display: flex; align-items: center; gap: 6px; z-index: 100000; font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 20px; background: rgba(0,0,0,0.05); pointer-events: none; }
+        #antena { position: fixed; top: 15px; left: 15px; display: flex; align-items: center; gap: 6px; z-index: 10000; font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 20px; background: rgba(0,0,0,0.05); pointer-events: none; }
         .dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; }
         .online { background: var(--success); box-shadow: 0 0 8px var(--success); }
         .offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
@@ -79,14 +79,124 @@
         .caja-inputs input { background: #000; border: 1px solid rgba(212,175,55,0.4); color: #fff; font-weight: bold; font-size: 16px; text-align: center; padding: 8px; }
         .caja-inputs input:focus { border-color: var(--gold); outline: none; }
         .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
-</style>
+
+        /* Estilos del Menú Hamburguesa y Panel Lateral */
+        #btnMenuHamburguesa {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #000;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 100002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #panelMenuDesplegable {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100003;
+            justify-content: flex-end;
+        }
+
+        .contenido-menu-lateral {
+            background: #111;
+            border-left: 2px solid var(--gold);
+            width: 300px;
+            height: 100%;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            overflow-y: auto;
+        }
+
+        .contenido-menu-lateral h3 {
+            color: var(--gold);
+            text-transform: uppercase;
+            font-size: 16px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(212,175,55,0.3);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        .btn-menu-opcion {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: left;
+            text-transform: uppercase;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-menu-opcion:hover {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+
+        .btn-menu-peligro {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .btn-menu-peligro:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
-    <!-- BOTÓN FIJO ARRIBA A LA IZQUIERDA (OCULTO POR DEFECTO) -->
+    <!-- BOTÓN FIJO ARRIBA A LA IZQUIERDA (CIERRE DE NOCHE DE PUERTA) -->
     <div id="miBotonCierrePerfecto" style="display: none !important; position: fixed !important; top: 15px !important; left: 15px !important; z-index: 2147483647 !important; width: auto !important; height: auto !important;">
         <button type="button" onclick="abrirModalCierrePuertaCiego()" style="display: inline-block !important; width: auto !important; height: auto !important; background-color: #ef4444 !important; color: white !important; border: 2px solid #b91c1c !important; padding: 8px 14px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; white-space: nowrap !important;">
-            🔴 CIERRE NOCHE
+             CIERRE NOCHE
         </button>
+    </div>
+
+    <!-- BOTÓN HAMBURGUESA FLOTANTE -->
+    <button id="btnMenuHamburguesa" onclick="toggleMenuHamburguesa()">☰</button>
+
+    <!-- PANEL LATERAL DESPLEGABLE CON TODOS LOS BOTONES -->
+    <div id="panelMenuDesplegable" onclick="if(event.target === this) toggleMenuHamburguesa()">
+        <div class="contenido-menu-lateral">
+            <h3>Menú de Control</h3>
+            
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); prepararCierreCaja();">🔄 Reiniciar / Cierre de Noche</button>
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarExcel();">📊 Descargar Informe Excel</button>
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarBaseDatos();">💾 Copia de Seguridad (.json)</button>
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); document.getElementById('importFile').click();">📂 Restaurar Copia</button>
+            
+            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                <button class="btn-menu-opcion btn-menu-peligro" onclick="toggleMenuHamburguesa(); cerrarSesion();">🚪 Cerrar Sesión</button>
+            </div>
+            
+            <button onclick="toggleMenuHamburguesa()" style="background: none; border: none; color: #aaa; cursor: pointer; text-align: center; margin-top: 10px; font-size: 12px;">[ Cerrar Menú ]</button>
+        </div>
     </div>
 
     <div id="pantallaLogin">
@@ -95,75 +205,62 @@
         <button onclick="validarEntrada()" style="background:var(--gold); border:none; padding:12px 50px; border-radius:8px; cursor:pointer; font-weight:bold; color:white;">ACCEDER</button>
     </div>
     
-    <!-- BARRA SUPERIOR DE ACCESOS DIRECTOS -->
-    <div style="position: fixed; top: 15px; right: 20px; z-index: 99999; display: flex; align-items: center; gap: 10px;">
-        <button class="btn-reset-noche" id="btnResetPuerta" style="display: none; background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;" onclick="abrirModalCierrePuertaCiego()">🔴 REINICIAR NOCHE</button>
-        <button class="btn-logout" id="btnLogout" style="display: none;" onclick="cerrarSesion()">CERRAR SESIÓN 🚪</button>
-    </div>
-    
     <div class="container" id="principal">
         <header>
-    <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-        <span style="font-weight:bold; color:var(--gold)">🔑 GESTIÓN DE CLAVES:</span>
-        <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
-        <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
-        <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
-    </div>
-    <!-- BOTÓN ORIGINAL DE JEFE (INTACTO) -->
-    <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()">🔄 REINICIAR NOCHE</button>
-    <div class="admin-btns" id="adminExtra" style="display:none;">
-        <button onclick="exportarBaseDatos()" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">💾 COPIA SEGURIDAD</button>
-        <button onclick="document.getElementById('importFile').click()" style="background:#8b5cf6; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px; cursor:pointer;">📥 RESTAURAR COPIA</button>
-        <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
-    </div>
-    
-   
-    <button class="btn-excel" id="btnExport" onclick="exportarExcel()">📊 DESCARGAR EXCEL</button>
-    <h1>⚜️ CLUB PRIVADO EL 6 ⚜️</h1>
-</header>
+            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <span style="font-weight:bold; color:var(--gold)"> GESTIÓN DE CLAVES:</span>
+                <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
+                <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
+                <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
+            </div>
+            
+            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()"> REINICIAR NOCHE</button>
+            <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
+            <button class="btn-excel" id="btnExport" onclick="exportarExcel()"> DESCARGAR EXCEL</button>
+            <h1> CLUB PRIVADO EL 6 </h1>
+        </header>
 
-<div id="panelAdmin" class="stats-container">
-    <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
-    <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
-    <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
-</div>
-
-<!-- FORMULARIO DE REGISTRO CON BOTÓN ALINEADO ENFRENTE -->
-<div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 140px;">
-        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
-        <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
-        <div class="contenedor-rgpd" style="margin-top: 5px;">
-            <input type="checkbox" id="checkRGPD" style="width:auto;"> 
-            <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
+        <div id="panelAdmin" class="stats-container">
+            <div class="stat-card"><h3>TOTAL SOCIOS</h3><p id="st-total">0</p></div>
+            <div class="stat-card"><h3>AFORO ACTUAL</h3><p id="st-aforo">0</p></div>
+            <div class="stat-card"><h3>VETADOS</h3><p id="st-vetados" style="color:var(--danger);">0</p></div>
         </div>
-    </div>
-    <div style="flex: 2; min-width: 180px;">
-        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
-        <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
-    </div>
-    <div style="flex: 1; min-width: 130px;">
-        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
-        <input type="date" id="cumple" style="width:100%;">
-    </div>
-    <div style="flex: 1; min-width: 160px;">
-        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
-        <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
-    </div>
-  <div style="flex: 1; min-width: 120px;">
-        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
-        <select id="cat" style="width:100%;">
-            <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
-        </select>
-    </div>
-    <div style="flex: 1; min-width: 120px; display: flex; align-items: flex-end; margin-top: 19px;">
-        <button class="btn-add" onclick="registrar()" style="height: 38px; white-space: nowrap; width: 100%;">REGISTRAR</button>
-    </div>
-</div>
+
+        <div class="reg-box" id="cajaRegistro" style="display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 140px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ID / DNI</label>
+                <input type="text" id="dni" placeholder="PASE LECTOR" oninput="this.value = this.value.toUpperCase(); autocompletarSocio();" style="width:100%;">
+                <div class="contenedor-rgpd" style="margin-top: 5px;">
+                    <input type="checkbox" id="checkRGPD" style="width:auto;"> 
+                    <span>Acepto <a onclick="gestionarEstatutos('registro')">Privacidad/Estatutos/RGPD</a></span>
+                </div>
+            </div>
+            <div style="flex: 2; min-width: 180px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">NOMBRE</label>
+                <input type="text" id="nom" placeholder="NOMBRE Y APELLIDOS" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 130px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">CUMPLE</label>
+                <input type="date" id="cumple" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 160px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">EMAIL</label>
+                <input type="email" id="mail" placeholder="CORREO ELECTRÓNICO" style="width:100%;">
+            </div>
+            <div style="flex: 1; min-width: 120px;">
+                <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">TIPO</label>
+                <select id="cat" style="width:100%;">
+                    <option value="estándar">Estándar</option><option value="socio-plus">Socio Plus</option><option value="vip-plata">VIP Plata</option><option value="vip-gold">VIP Gold</option><option value="elite">Elite</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 120px; display: flex; align-items: flex-end; margin-top: 19px;">
+                <button class="btn-add" onclick="registrar()" style="height: 38px; white-space: nowrap; width: 100%;">REGISTRAR</button>
+            </div>
+        </div>
         
         <div id="reader" style="width: 100%; max-width: 400px; margin: 10px auto; display:none; border: 2px solid var(--gold);"></div>
-        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">📷 ENCENDER CÁMARA QR</button>
-        <input type="text" id="buscador" class="search-input" placeholder="🔍 BUSCAR SOCIO..." onkeyup="render()">
+        <button id="btnCam" onclick="toggleCamara()" style="background: #000; color: var(--gold); border: 2px solid var(--gold); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;"> ENCENDER CÁMARA QR</button>
+        <input type="text" id="buscador" class="search-input" placeholder=" BUSCAR SOCIO..." onkeyup="render()">
         
         <table>
             <thead><tr><th>Nº SOCIO</th><th>ID</th><th>NOMBRE</th><th>CATEGORÍA</th><th>ESTADO</th><th>MOTIVO</th><th>HORA</th><th>ACCIONES</th></tr></thead>
@@ -173,7 +270,7 @@
 
     <div id="modalTarjeta">
         <div class="card-vip" id="cardMain">
-            <div id="selloPagado">PAGADO ✅</div>
+            <div id="selloPagado">PAGADO </div>
             <h2 style="font-size:16px; margin:0;">CLUB PRIVADO EL 6</h2>
             <div id="card-id" style="font-size:32px; font-weight:900; margin:5px 0;"></div>
             <div id="card-categoria-texto" style="font-size:12px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; opacity:0.9;"></div>
@@ -218,18 +315,18 @@
         <button id="btnCerrarModal" style="margin-top: 15px; padding: 10px 40px; cursor: pointer;" onclick="cerrar()">CERRAR</button>
     </div>
 
-  <div id="modalLibroCajas">
+    <div id="modalLibroCajas">
         <div class="panel-caja">
-            <h3 class="titulo-caja">⚜️ Arqueo y Libro de Cajas</h3>
+            <h3 class="titulo-caja"> Arqueo y Libro de Cajas</h3>
             <div class="desglose-scroll" id="cajaDesgloseContenido"></div>
             
             <div class="caja-inputs">
                 <div>
-                    <label>💳 Cobrado TPV</label>
+                    <label> Cobrado TPV</label>
                     <input type="number" id="cajaTpvInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
                 </div>
                 <div>
-                    <label>💵 Cobrado Efectivo</label>
+                    <label> Cobrado Efectivo</label>
                     <input type="number" id="cajaEfectivoInput" value="0" step="any" oninput="calcularDescuadreEnTiempoReal()">
                 </div>
             </div>
@@ -237,14 +334,12 @@
             <div id="cajaResultadoCéntimo" class="resultado-descuadre"></div>
             
             <button onclick="ejecutarCierreResetFinal()" style="width:100%; padding:12px; background:var(--gold); color:black; border:none; border-radius:8px; margin-top:15px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Confirmar Cierre de Noche</button>
-            
-            <!-- (El botón duplicado y roto que había aquí abajo ha sido eliminado por completo) -->
 
             <button onclick="document.getElementById('modalLibroCajas').style.display='none'" style="width:100%; padding:8px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:8px; margin-top:5px; cursor:pointer;">Cancelar</button>
         </div>
     </div>
+
     <script>
-   
         (function(){
             emailjs.init("TU_USER_ID_AQUÍ"); 
         })();
@@ -267,20 +362,24 @@
         let origenFirma = 'tarjeta';
         const productosValidos = ['COPA', 'CERVEZA', 'CHUPITO', 'REFRESCO', 'AGUA', 'ENERGÉTICO'];
 
-        // Variables globales para guardar los datos calculados temporalmente en el arqueo
         let datosCajaGlobal = {};
 
-        function actualizarAntena(online) {
-            const dot = document.getElementById('dot');
-            if(dot) {
-                if(online) dot.className = 'dot online'; else dot.className = 'dot offline';
+        function toggleMenuHamburguesa() {
+            const panel = document.getElementById('panelMenuDesplegable');
+            if (panel) {
+                if (panel.style.display === 'flex') {
+                    panel.style.display = 'none';
+                } else {
+                    panel.style.display = 'flex';
+                }
             }
         }
+
         async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
-                if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); actualizarAntena(true); }
-            } catch (err) { actualizarAntena(false); }
+                if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
+            } catch (err) {}
         }
 
         async function marcarPago() {
@@ -295,7 +394,7 @@
             actualizarVisualPago();
         }
 
-       function actualizarVisualPago() {
+        function actualizarVisualPago() {
             const sello = document.getElementById('selloPagado');
             const btn = document.getElementById('btnPagarTarjeta');
             let pagadoValido = socioActual.pago_realizado;
@@ -333,152 +432,137 @@
             }
         }
 
-       function validarEntrada() {
-        const p = document.getElementById('passApp').value;
-        if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
-        else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
-        else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
-        else alert("CÓDIGO INCORRECTO");
-    }
+        function validarEntrada() {
+            const p = document.getElementById('passApp').value;
+            if(p === CLAVES.jefe) { nivel="jefe"; entrar(); } 
+            else if(p === CLAVES.puerta) { nivel="personal"; entrar(); } 
+            else if(p === CLAVES.camarero) { nivel="camarero"; entrar(); } 
+            else alert("CÓDIGO INCORRECTO");
+        }
 
-    function entrar() { 
-        document.getElementById('pantallaLogin').style.display='none'; 
-        document.getElementById('principal').style.display='block'; 
-        document.getElementById('btnLogout').style.display='block'; 
+        function entrar() { 
+            document.getElementById('pantallaLogin').style.display='none'; 
+            document.getElementById('principal').style.display='block'; 
 
-        // === CONTROL DEL BOTÓN DE CIERRE (SOLO ROL PUERTA / PERSONAL) ===
-        const btnCierre = document.getElementById('miBotonCierrePerfecto');
-        if (btnCierre) {
-            if (nivel === 'personal') {
-                btnCierre.style.setProperty('display', 'block', 'important');
-            } else {
-                btnCierre.style.setProperty('display', 'none', 'important');
+            const btnCierre = document.getElementById('miBotonCierrePerfecto');
+            if (btnCierre) {
+                if (nivel === 'personal') {
+                    btnCierre.style.setProperty('display', 'block', 'important');
+                } else {
+                    btnCierre.style.setProperty('display', 'none', 'important');
+                }
             }
-        }
 
-        if(nivel === 'jefe') { 
-            document.getElementById('btnExport').style.display='block'; 
-            document.getElementById('btnReset').style.display='block'; 
-            document.getElementById('panelAdmin').style.display='grid'; 
-            document.getElementById('adminExtra').style.display='flex';
-            document.getElementById('configClaves').style.display = 'block';
-        }
-        if(nivel === 'camarero') {
-            document.getElementById('cajaRegistro').style.display = 'none';
-            document.getElementById('btnReset').style.display = 'none';
-            document.getElementById('panelAdmin').style.display = 'none';
-            if(document.getElementById('adminExtra')) document.getElementById('adminExtra').style.display = 'none';
-            if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-            if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
-        }
+            if(nivel === 'jefe') { 
+                document.getElementById('btnExport').style.display='block'; 
+                document.getElementById('btnReset').style.display='block'; 
+                document.getElementById('panelAdmin').style.display='grid'; 
+                document.getElementById('configClaves').style.display = 'block';
+            }
+            if(nivel === 'camarero') {
+                document.getElementById('cajaRegistro').style.display = 'none';
+                document.getElementById('btnReset').style.display = 'none';
+                document.getElementById('panelAdmin').style.display = 'none';
+                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
+                if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
+            }
 
-        const botonCamaraPrincipal = document.getElementById('btnCam');
-        if (botonCamaraPrincipal) {
-            botonCamaraPrincipal.style.display = 'block';
-        }
+            const botonCamaraPrincipal = document.getElementById('btnCam');
+            if (botonCamaraPrincipal) {
+                botonCamaraPrincipal.style.display = 'block';
+            }
 
-        // Activamos la escucha del botón pagar justo al entrar
-        inyectarInterceptosDePago();
-        refrescarDatos();
+            inyectorInterceptosDePago();
+            refrescarDatos();
 
-        // === ESCUCHA EN TIEMPO REAL (SIN REABRIR LA TARJETA PARA EVITAR SALTOS) ===
-        _supabase
-            .channel('cambios-en-directo')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
-                // Actualiza la lista en memoria local
-                db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
-                aforo = db.filter(x => x.dentro).length;
-                
-                // Refresca la tabla trasera de la aplicación
-                render();
-                
-                // Si la tarjeta abierta es la de este socio, actualizamos solo los números sin redibujar la pantalla
-                if (socioActual && socioActual.dni === payload.new.dni) {
-                    socioActual = payload.new;
+            _supabase
+                .channel('cambios-en-directo')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: NOMBRE_TABLA }, (payload) => {
+                    db = db.map(socio => socio.dni === payload.new.dni ? payload.new : socio);
+                    aforo = db.filter(x => x.dentro).length;
+                    render();
+                    
+                    if (socioActual && socioActual.dni === payload.new.dni) {
+                        socioActual = payload.new;
 
-                    const stringNuevas = String(payload.new.consumiciones || '').trim();
-                    let consumosNuevos = {};
-                    productosValidos.forEach(p => consumosNuevos[p] = 0);
+                        const stringNuevas = String(payload.new.consumiciones || '').trim();
+                        let consumosNuevos = {};
+                        productosValidos.forEach(p => consumosNuevos[p] = 0);
 
-                    if (stringNuevas.includes(':')) {
-                        stringNuevas.split(',').forEach(item => {
-                            const [p, c] = item.split(':');
-                            if (p && productosValidos.includes(p.trim().toUpperCase())) {
-                                consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                        if (stringNuevas.includes(':')) {
+                            stringNuevas.split(',').forEach(item => {
+                                const [p, c] = item.split(':');
+                                if (p && productosValidos.includes(p.trim().toUpperCase())) {
+                                    consumosNuevos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                                }
+                            });
+                        }
+
+                        productosValidos.forEach(prod => {
+                            const el = document.getElementById(`v-cant-${prod}`);
+                            if (el) {
+                                const cant = consumosNuevos[prod] || 0;
+                                el.innerText = cant;
+                                el.style.color = cant > 0 ? '#d4af37' : '#fff';
                             }
                         });
                     }
+                })
+                .subscribe();
 
-                    // Actualiza directamente las cifras visuales de los contadores
-                    productosValidos.forEach(prod => {
-                        const el = document.getElementById(`v-cant-${prod}`);
-                        if (el) {
-                            const cant = consumosNuevos[prod] || 0;
-                            el.innerText = cant;
-                            el.style.color = cant > 0 ? '#d4af37' : '#fff';
+            if (nivel === 'camarero') {
+                let style = document.getElementById('ocultarMasCamarero');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'ocultarMasCamarero';
+                    document.head.appendChild(style);
+                }
+                
+                style.innerHTML = `
+                    #card-consumos button:nth-child(2),
+                    #card-consumos button.btn-sumar,
+                    .tarjeta-socio button.btn-sumar,
+                    #modalTarjeta button.btn-sumar,
+                    button[onclick*="sumar"] {
+                        display: none !important;
+                    }
+                `;
+
+                setInterval(() => {
+                    document.querySelectorAll('button').forEach(btn => {
+                        const texto = btn.innerText.trim();
+                        const accion = btn.getAttribute('onclick') || '';
+                        if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
+                            if (!accion.includes('restar')) {
+                                btn.style.setProperty('display', 'none', 'important');
+                            }
                         }
                     });
-                }
-            })
-            .subscribe();
-   // === ESTILOS DEFINITIVOS Y SIN PARPADEOS PARA EL CAMARERO ===
-    if (nivel === 'camarero') {
-        let style = document.getElementById('ocultarMasCamarero');
-        if (!style) {
-            style = document.createElement('style');
-            style.id = 'ocultarMasCamarero';
-            document.head.appendChild(style);
-        }
-        
-        // Regla CSS pura: Oculta de forma instantánea cualquier botón de sumar sin importar cuántas veces se redibuje la tarjeta
-        style.innerHTML = `
-            #card-consumos button:nth-child(2),
-            #card-consumos button.btn-sumar,
-            .tarjeta-socio button.btn-sumar,
-            #modalTarjeta button.btn-sumar,
-            button[onclick*="sumar"] {
-                display: none !important;
+                }, 100);
             }
-        `;
+        }
 
-        // 2. Intervalo de respaldo directo por JS
-        setInterval(() => {
-            document.querySelectorAll('button').forEach(btn => {
-                const texto = btn.innerText.trim();
-                const accion = btn.getAttribute('onclick') || '';
-                
-                // Si es un botón de sumar o contiene un '+', lo ocultamos al instante
-                if (texto === '+' || texto.toLowerCase().includes('sumar') || accion.includes('sumar') || accion.includes(' +') || accion.includes('+1')) {
-                    if (!accion.includes('restar')) {
-                        btn.style.setProperty('display', 'none', 'important');
-                    }
-                }
-            });
-        }, 100);
-    }
-}
+        function inyectorInterceptosDePago() {
+            const btnPagar = document.getElementById('btnPagarTarjeta');
+            if (!btnPagar) return;
+            if (!btnPagar.dataset.interceptado) {
+                btnPagar.dataset.interceptado = "true";
+                btnPagar.addEventListener('click', () => {
+                    setTimeout(async () => {
+                        if (typeof refrescarDatos === 'function') {
+                            await refrescarDatos();
+                        }
+                    }, 600);
+                });
+            }
+        }
 
-// NUEVA FUNCIÓN MÁXIMA: Fuerza a que se recalculen las copas al pulsar PAGAR en la tarjeta
-function inyectarInterceptosDePago() {
-    const btnPagar = document.getElementById('btnPagarTarjeta');
-    if (!btnPagar) return;
-    if (!btnPagar.dataset.interceptado) {
-        btnPagar.dataset.interceptado = "true";
-        btnPagar.addEventListener('click', () => {
-            setTimeout(async () => {
-                if (typeof refrescarDatos === 'function') {
-                    await refrescarDatos();
-                }
-            }, 600);
-        });
-    }
-}
         function formatearDNI(dni) {
             if(!dni || dni.length < 3) return dni;
             return dni.charAt(0) + "******" + dni.charAt(dni.length - 1);
         }
 
-       function render() {
+        function render() {
             const b = document.getElementById('buscador').value.toLowerCase();
             let f = db.filter(x => (x.nombre||"").toLowerCase().includes(b) || (x.dni||"").toLowerCase().includes(b));
             if((nivel === "personal" || nivel === "camarero") && b === "") f = [];
@@ -488,13 +572,13 @@ function inyectarInterceptosDePago() {
             document.getElementById('lista').innerHTML = f.map(s => `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? '🟢' : '⚪'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
-                  <td>
-        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
-        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
-        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">🗑️</button>
-    </td>
+                    <td>${s.dentro ? 'DENTRO' : 'FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${s.dentro ? 'SALIR' : 'ENTRAR'}</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
+                        <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
+                        <button class="btn-acc" style="color:red; ${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')">BORRAR</button>
+                    </td>
                 </tr>`).join('');
         }
 
@@ -536,64 +620,56 @@ function inyectarInterceptosDePago() {
 
         async function toggleEntrada(dni) { const s = db.find(x => x.dni === dni); await _supabase.from(NOMBRE_TABLA).update({ dentro: !s.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', dni); refrescarDatos(); }
         async function tVeto(dni) { const m = prompt("Motivo:"); if(m) { await _supabase.from(NOMBRE_TABLA).update({ vetado: true, motivo: m }).eq('dni', dni); refrescarDatos(); } }
-     async function registrar() {
-    const d = document.getElementById('dni').value.toUpperCase();
-    const n = document.getElementById('nom').value;
-    const e = document.getElementById('mail').value;
-    const c = document.getElementById('cumple').value;
-    const cat = document.getElementById('cat').value;
-    if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
-    
-    const { error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
-        dni: d, nombre: n, email: e, cumple: c, dentro: true, 
-        hora: new Date().toLocaleTimeString(), cat: cat 
-    });
-    
-    if (error) {
-        alert("Error al registrar: " + error.message);
-        return;
-    }
+        
+        async function registrar() {
+            const d = document.getElementById('dni').value.toUpperCase();
+            const n = document.getElementById('nom').value;
+            const e = document.getElementById('mail').value;
+            const c = document.getElementById('cumple').value;
+            const cat = document.getElementById('cat').value;
+            if(!d || !n || !document.getElementById('checkRGPD').checked) return alert("Faltan datos o RGPD");
+            
+            const { error } = await _supabase.from(NOMBRE_TABLA).upsert({ 
+                dni: d, nombre: n, email: e, cumple: c, dentro: true, 
+                hora: new Date().toLocaleTimeString(), cat: cat 
+            });
+            
+            if (error) {
+                alert("Error al registrar: " + error.message);
+                return;
+            }
 
-    if(e) {
-        emailjs.send("TU_SERVICE_ID", "TU_TEMPLATE_ID", {
-            to_name: n, to_email: e, dni: d, categoria: cat
-        }).then(() => console.log("Email enviado")).catch(err => console.log("Error email"));
-    }
+            abrirTarjeta({ 
+                dni: d, 
+                nombre: n, 
+                email: e, 
+                cumple: c, 
+                cat: cat, 
+                dentro: true, 
+                hora: new Date().toLocaleTimeString() 
+            });
 
-    // Abrimos la tarjeta al instante con los datos del formulario antes de limpiar
-    abrirTarjeta({ 
-        dni: d, 
-        nombre: n, 
-        email: e, 
-        cumple: c, 
-        cat: cat, 
-        dentro: true, 
-        hora: new Date().toLocaleTimeString() 
-    });
+            document.getElementById('dni').value = ""; 
+            document.getElementById('nom').value = "";
+            document.getElementById('mail').value = ""; 
+            document.getElementById('cumple').value = "";
+            document.getElementById('checkRGPD').checked = false;
 
-    // Limpiamos el formulario
-    document.getElementById('dni').value = ""; 
-    document.getElementById('nom').value = "";
-    document.getElementById('mail').value = ""; 
-    document.getElementById('cumple').value = "";
-    document.getElementById('checkRGPD').checked = false;
-
-    // Actualizamos la tabla en segundo plano
-    await refrescarDatos(); 
-}
+            await refrescarDatos(); 
+        }
 
         function toggleCamara() {
             const readerDiv = document.getElementById('reader');
             const btn = document.getElementById('btnCam');
             if(!camActiva) {
-                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = "🛑 APAGAR CÁMARA";
+                readerDiv.style.display = 'block'; camActiva = true; btn.innerText = " APAGAR CÁMARA";
                 html5QrCode = new Html5Qrcode("reader");
                 html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
                     async (text) => {
                         btn.click();
                         const socio = db.find(x => x.dni === text.trim().toUpperCase());
                         if(socio) {
-                            if(socio.vetado) { alert(`⛔ ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
+                            if(socio.vetado) { alert(` ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
                             await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
                             refrescarDatos(); abrirTarjeta(socio);
                         } else {
@@ -605,325 +681,321 @@ function inyectarInterceptosDePago() {
                     }, () => {}
                 );
             } else {
-                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = "📷 ENCENDER CÁMARA QR";
+                readerDiv.style.display = 'none'; camActiva = false; btn.innerText = " ENCENDER CÁMARA QR";
                 if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode.clear()); }
             }
         }
 
-        // Variable global para que la firma NUNCA se borre de la memoria al hacer pagos o refrescos
-let firmaCargadaCache = "";
+        let firmaCargadaCache = "";
 
-function abrirTarjeta(s) {
-    if (!s) return;
-    
-    // Limpiamos la caché de la tarjeta anterior si cambiamos de socio
-    if (!socioActual || socioActual.dni !== s.dni) {
-        firmaCargadaCache = "";
-    }
-
-    if (s.firma_b64) {
-        firmaCargadaCache = s.firma_b64;
-    }
-
-    socioActual = s;
-
-    const card = document.getElementById('cardMain');
-    const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
-    card.className = `card-vip cat-${catLimpia}`;
-
-    document.getElementById('card-id').innerText = "Nº " + s.id;
-    document.getElementById('card-nom').innerText = s.nombre; 
-    document.getElementById('card-dni').innerText = s.dni;
-    document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
-
-    let consumosSocio = {};
-    productosValidos.forEach(p => consumosSocio[p] = 0);
-
-    const stringOriginal = String(s.consumiciones || '').trim();
-
-    if (stringOriginal.includes(':')) {
-        stringOriginal.split(',').forEach(item => {
-            const [prod, cant] = item.split(':');
-            if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
-                consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
+        function abrirTarjeta(s) {
+            if (!s) return;
+            
+            if (!socioActual || socioActual.dni !== s.dni) {
+                firmaCargadaCache = "";
             }
-        });
-    }
 
-    let htmlConsumos = `
-        <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
-            <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                ⚡ GESTIONAR CONSUMICIONES ▾
-            </button>
-        </div>
-    `;
+            if (s.firma_b64) {
+                firmaCargadaCache = s.firma_b64;
+            }
 
-    document.getElementById('card-consumos').innerHTML = htmlConsumos;
+            socioActual = s;
 
-    let burbujaExterna = document.getElementById('ventanilla-consumos');
-    if (!burbujaExterna) {
-        burbujaExterna = document.createElement('div');
-        burbujaExterna.id = 'ventanilla-consumos';
-        burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
-        document.getElementById('modalTarjeta').appendChild(burbujaExterna);
-    }
+            const card = document.getElementById('cardMain');
+            const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
+            card.className = `card-vip cat-${catLimpia}`;
 
-    burbujaExterna.innerHTML = "";
+            document.getElementById('card-id').innerText = "Nº " + s.id;
+            document.getElementById('card-nom').innerText = s.nombre; 
+            document.getElementById('card-dni').innerText = s.dni;
+            document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
 
-    let htmlBurbuja = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
-            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
-            <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-    `;
+            let consumosSocio = {};
+            productosValidos.forEach(p => consumosSocio[p] = 0);
 
-    productosValidos.forEach(prod => {
-        const cantidad = consumosSocio[prod];
+            const stringOriginal = String(s.consumiciones || '').trim();
 
-        htmlBurbuja += `
-            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
-                <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
-                    
-                    <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
-                    
-                    <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+            if (stringOriginal.includes(':')) {
+                stringOriginal.split(',').forEach(item => {
+                    const [prod, cant] = item.split(':');
+                    if(prod && productosValidos.includes(prod.trim().toUpperCase())) {
+                        consumosSocio[prod.trim().toUpperCase()] = parseInt(cant) || 0;
+                    }
+                });
+            }
+
+            let htmlConsumos = `
+                <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
+                    <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                         GESTIONAR CONSUMICIONES 
+                    </button>
                 </div>
-            </div>
-        `;
-    });
+            `;
 
-    htmlBurbuja += `</div>`;
-    burbujaExterna.innerHTML = htmlBurbuja;
+            document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
-    const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
-    btnsTarjeta.forEach(btn => {
-        const texto = btn.innerText.toUpperCase();
-        if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
+            let burbujaExterna = document.getElementById('ventanilla-consumos');
+            if (!burbujaExterna) {
+                burbujaExterna = document.createElement('div');
+                burbujaExterna.id = 'ventanilla-consumos';
+                burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
+                document.getElementById('modalTarjeta').appendChild(burbujaExterna);
+            }
 
-        if (nivel === 'camarero') {
-            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                btn.style.display = 'none';
+            burbujaExterna.innerHTML = "";
+
+            let htmlBurbuja = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
+                    <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
+                    <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;">✕</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+            `;
+
+            productosValidos.forEach(prod => {
+                const cantidad = consumosSocio[prod];
+
+                htmlBurbuja += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
+                        <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                            
+                            <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
+                            
+                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            htmlBurbuja += `</div>`;
+            burbujaExterna.innerHTML = htmlBurbuja;
+
+            const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
+            btnsTarjeta.forEach(btn => {
+                const texto = btn.innerText.toUpperCase();
+                if (texto.includes('CERRAR') && !texto.includes('SESIÓN')) return;
+
+                if (nivel === 'camarero') {
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                        btn.style.display = 'none';
+                    } else {
+                        btn.style.display = '';
+                    }
+                } else {
+                    if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
+                        btn.style.display = ''; 
+                    }
+                }
+            });
+
+            actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
+
+            document.getElementById('qr-space').innerHTML = ""; 
+            const qr = new QRious({value: s.dni, size: 140}); 
+            document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
+
+            actualizarVisualPago();
+            document.getElementById('cardMain').style.display = 'block';
+            document.getElementById('box-firma').style.display = 'none';
+            document.getElementById('modalTarjeta').style.display = 'flex';
+        }
+
+        function actualizarVistaPreviaFirma(firmaBase64) {
+            const firmaPrev = document.getElementById('previewFirmaSocio');
+            if (!firmaPrev) return;
+
+            if (firmaBase64 && firmaBase64.length > 50) {
+                firmaPrev.src = firmaBase64;
+                firmaPrev.style.display = 'block';
             } else {
-                btn.style.display = '';
-            }
-        } else {
-            if (texto.includes('PAGAR') || texto.includes('DESCARGAR') || texto.includes('ESTATUTOS') || texto.includes('FIRMA') || texto.includes('ENVIAR')) {
-                btn.style.display = ''; 
+                firmaPrev.src = '';
+                firmaPrev.style.display = 'none';
             }
         }
-    });
 
-    // Pinta la firma pequeña asegurando que no desaparece
-    actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
-
-    document.getElementById('qr-space').innerHTML = ""; 
-    const qr = new QRious({value: s.dni, size: 140}); 
-    document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
-
-    actualizarVisualPago();
-    document.getElementById('cardMain').style.display = 'block';
-    document.getElementById('box-firma').style.display = 'none';
-    document.getElementById('modalTarjeta').style.display = 'flex';
-}
-
-function actualizarVistaPreviaFirma(firmaBase64) {
-    const firmaPrev = document.getElementById('previewFirmaSocio');
-    if (!firmaPrev) return;
-
-    if (firmaBase64 && firmaBase64.length > 50) {
-        firmaPrev.src = firmaBase64;
-        firmaPrev.style.display = 'block';
-    } else {
-        firmaPrev.src = '';
-        firmaPrev.style.display = 'none';
-    }
-}
-
-function abrirBurbujaFlotante() {
-    const ventanilla = document.getElementById('ventanilla-consumos');
-    if (ventanilla) {
-        ventanilla.style.display = 'block';
-    }
-}
-
-async function modificarCantidadDirecta(dni, producto, cambio) {
-    const prodKey = producto.toUpperCase();
-
-    let socioActivo = null;
-    if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
-    if (!socioActivo) socioActivo = socioActual;
-
-    let consumos = {};
-    productosValidos.forEach(p => consumos[p] = 0);
-
-    const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
-    if (stringOriginal.includes(':')) {
-        stringOriginal.split(',').forEach(item => {
-            const [p, c] = item.split(':');
-            if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
-        });
-    }
-
-    let cantActual = consumos[prodKey] || 0;
-    let nuevaCant = cantActual + cambio;
-    if (nuevaCant < 0) nuevaCant = 0;
-    consumos[prodKey] = nuevaCant;
-
-    const elementoContador = document.getElementById(`v-cant-${producto}`);
-    if (elementoContador) {
-        elementoContador.innerText = nuevaCant;
-        elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
-    }
-
-    let resultadoString = Object.keys(consumos)
-        .filter(p => consumos[p] > 0)
-        .map(p => `${p}:${consumos[p]}`)
-        .join(','); 
-
-    await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
-
-    if (typeof db !== 'undefined') {
-        let idx = db.findIndex(x => x.dni === dni);
-        if (idx !== -1) db[idx].consumiciones = resultadoString;
-    }
-    if (socioActual && socioActual.dni === dni) {
-        socioActual.consumiciones = resultadoString;
-    }
-}
-
-async function descargarTarjeta() { 
-    if (!socioActual || !socioActual.dni) {
-        alert("⚠️ No hay ningún socio seleccionado para enviar la tarjeta.");
-        return;
-    }
-
-    if (!socioActual.email) {
-        alert("⚠️ Este socio no tiene un correo electrónico registrado en la base de datos.");
-        return;
-    }
-
-    const confirmar = confirm(`¿Quieres enviar/reenviar la tarjeta digital al correo: ${socioActual.email}?`);
-    if (!confirmar) return;
-
-    try {
-        await _supabase
-            .from(NOMBRE_TABLA)
-            .update({ reenviar_tarjeta: true })
-            .eq('dni', socioActual.dni);
-
-        alert(`✉️ Petición enviada con éxito. La tarjeta va en camino a: ${socioActual.email}`);
-
-        setTimeout(async () => {
-            await _supabase
-                .from(NOMBRE_TABLA)
-                .update({ reenviar_tarjeta: false })
-                .eq('dni', socioActual.dni);
-        }, 3000);
-
-    } catch (error) {
-        console.error(error);
-        alert("❌ Hubo un error al intentar comunicar con Supabase.");
-    }
-}
-
-function reAbrir(dni) { 
-    const socio = db.find(x => x.dni === dni);
-    if (socio) abrirTarjeta(socio); 
-}
-
-function cerrar() { 
-    document.getElementById('modalTarjeta').style.display = 'none'; 
-    const ventanilla = document.getElementById('ventanilla-consumos');
-    if (ventanilla) ventanilla.style.display = 'none';
-    if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); 
-    }
-    if (typeof render === 'function') render();
-}
-
-function cerrarSesion() { location.reload(); }
-
-function gestionarEstatutos(origen) { 
-    origenFirma = origen;
-    document.getElementById('modalTarjeta').style.display = 'flex'; 
-    document.getElementById('box-firma').style.display = 'block'; 
-    document.getElementById('cardMain').style.display = 'none'; 
-
-    if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-
-        const btnAceptarFirma = document.querySelector('#box-firma button[onclick="guardarFirmaSocio()"]');
-
-        const firmaDisponible = (socioActual && socioActual.firma_b64) ? socioActual.firma_b64 : firmaCargadaCache;
-
-        if (firmaDisponible) {
-            const imgFirma = new Image();
-            imgFirma.onload = function() {
-                ctx.drawImage(imgFirma, 0, 0, canvas.width, canvas.height);
-            };
-            imgFirma.src = firmaDisponible;
-
-            if (btnAceptarFirma) btnAceptarFirma.style.display = 'none';
-        } else {
-            if (btnAceptarFirma) btnAceptarFirma.style.display = 'block';
-        }
-    }
-}
-
-function cerrarFirma() { 
-    document.getElementById('box-firma').style.display = 'none'; 
-    if(origenFirma === 'tarjeta') {
-        document.getElementById('cardMain').style.display = 'block'; 
-        if (socioActual) actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
-    } else {
-        document.getElementById('modalTarjeta').style.display = 'none';
-    }
-    if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); 
-        ctx.beginPath();
-    }
-}
-
-async function guardarFirmaSocio() { 
-    const firmaB64 = document.getElementById('canvasFirma').toDataURL();
-    firmaCargadaCache = firmaB64;
-
-    if(socioActual && socioActual.dni) {
-        await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
-        socioActual.firma_b64 = firmaB64;
-        
-        if (typeof db !== 'undefined') {
-            let idx = db.findIndex(x => x.dni === socioActual.dni);
-            if (idx !== -1) db[idx].firma_b64 = firmaB64;
+        function abrirBurbujaFlotante() {
+            const ventanilla = document.getElementById('ventanilla-consumos');
+            if (ventanilla) {
+                ventanilla.style.display = 'block';
+            }
         }
 
-        if(typeof refrescarDatos === 'function') await refrescarDatos();
-        
-        socioActual.firma_b64 = firmaB64;
-        
-        alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
-        cerrarFirma(); 
-        abrirTarjeta(socioActual);
-    } else {
-        socioActual = socioActual || {};
-        socioActual.firma_b64 = firmaB64;
-        const check = document.getElementById('checkRGPD');
-        if (check) check.checked = true; 
-        alert("Estatutos aceptados para el nuevo registro.");
-        cerrarFirma();
-    }
-}
-function actualizarClave() {
-    const t = document.getElementById('tipoClave').value; 
-    const n = document.getElementById('nuevaClaveInput').value;
-    if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
-}
+        async function modificarCantidadDirecta(dni, producto, cambio) {
+            const prodKey = producto.toUpperCase();
 
-        /* --- MOTOR NUEVO LÓGICA DEL LIBRO DE CAJAS --- */
+            let socioActivo = null;
+            if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
+            if (!socioActivo) socioActivo = socioActual;
+
+            let consumos = {};
+            productosValidos.forEach(p => consumos[p] = 0);
+
+            const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
+            if (stringOriginal.includes(':')) {
+                stringOriginal.split(',').forEach(item => {
+                    const [p, c] = item.split(':');
+                    if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                });
+            }
+
+            let cantActual = consumos[prodKey] || 0;
+            let nuevaCant = cantActual + cambio;
+            if (nuevaCant < 0) nuevaCant = 0;
+            consumos[prodKey] = nuevaCant;
+
+            const elementoContador = document.getElementById(`v-cant-${producto}`);
+            if (elementoContador) {
+                elementoContador.innerText = nuevaCant;
+                elementoContador.style.color = nuevaCant > 0 ? '#d4af37' : '#fff';
+            }
+
+            let resultadoString = Object.keys(consumos)
+                .filter(p => consumos[p] > 0)
+                .map(p => `${p}:${consumos[p]}`)
+                .join(','); 
+
+            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
+
+            if (typeof db !== 'undefined') {
+                let idx = db.findIndex(x => x.dni === dni);
+                if (idx !== -1) db[idx].consumiciones = resultadoString;
+            }
+            if (socioActual && socioActual.dni === dni) {
+                socioActual.consumiciones = resultadoString;
+            }
+        }
+
+        async function descargarTarjeta() { 
+            if (!socioActual || !socioActual.dni) {
+                alert(" No hay ningún socio seleccionado para enviar la tarjeta.");
+                return;
+            }
+
+            if (!socioActual.email) {
+                alert(" Este socio no tiene un correo electrónico registrado en la base de datos.");
+                return;
+            }
+
+            const confirmar = confirm(`¿Quieres enviar/reenviar la tarjeta digital al correo: ${socioActual.email}?`);
+            if (!confirmar) return;
+
+            try {
+                await _supabase
+                    .from(NOMBRE_TABLA)
+                    .update({ reenviar_tarjeta: true })
+                    .eq('dni', socioActual.dni);
+
+                alert(` Petición enviada con éxito. La tarjeta va en camino a: ${socioActual.email}`);
+
+                setTimeout(async () => {
+                    await _supabase
+                        .from(NOMBRE_TABLA)
+                        .update({ reenviar_tarjeta: false })
+                        .eq('dni', socioActual.dni);
+                }, 3000);
+
+            } catch (error) {
+                console.error(error);
+                alert(" Hubo un error al intentar comunicar con Supabase.");
+            }
+        }
+
+        function reAbrir(dni) { 
+            const socio = db.find(x => x.dni === dni);
+            if (socio) abrirTarjeta(socio); 
+        }
+
+        function cerrar() { 
+            document.getElementById('modalTarjeta').style.display = 'none'; 
+            const ventanilla = document.getElementById('ventanilla-consumos');
+            if (ventanilla) ventanilla.style.display = 'none';
+            if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            }
+            if (typeof render === 'function') render();
+        }
+
+        function cerrarSesion() { location.reload(); }
+
+        function gestionarEstatutos(origen) { 
+            origenFirma = origen;
+            document.getElementById('modalTarjeta').style.display = 'flex'; 
+            document.getElementById('box-firma').style.display = 'block'; 
+            document.getElementById('cardMain').style.display = 'none'; 
+
+            if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+
+                const btnAceptarFirma = document.querySelector('#box-firma button[onclick="guardarFirmaSocio()"]');
+                const firmaDisponible = (socioActual && socioActual.firma_b64) ? socioActual.firma_b64 : firmaCargadaCache;
+
+                if (firmaDisponible) {
+                    const imgFirma = new Image();
+                    imgFirma.onload = function() {
+                        ctx.drawImage(imgFirma, 0, 0, canvas.width, canvas.height);
+                    };
+                    imgFirma.src = firmaDisponible;
+
+                    if (btnAceptarFirma) btnAceptarFirma.style.display = 'none';
+                } else {
+                    if (btnAceptarFirma) btnAceptarFirma.style.display = 'block';
+                }
+            }
+        }
+
+        function cerrarFirma() { 
+            document.getElementById('box-firma').style.display = 'none'; 
+            if(origenFirma === 'tarjeta') {
+                document.getElementById('cardMain').style.display = 'block'; 
+                if (socioActual) actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
+            } else {
+                document.getElementById('modalTarjeta').style.display = 'none';
+            }
+            if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                ctx.beginPath();
+            }
+        }
+
+        async function guardarFirmaSocio() { 
+            const firmaB64 = document.getElementById('canvasFirma').toDataURL();
+            firmaCargadaCache = firmaB64;
+
+            if(socioActual && socioActual.dni) {
+                await _supabase.from(NOMBRE_TABLA).update({ firma_b64: firmaB64 }).eq('dni', socioActual.dni);
+                socioActual.firma_b64 = firmaB64;
+                
+                if (typeof db !== 'undefined') {
+                    let idx = db.findIndex(x => x.dni === socioActual.dni);
+                    if (idx !== -1) db[idx].firma_b64 = firmaB64;
+                }
+
+                if(typeof refrescarDatos === 'function') await refrescarDatos();
+                
+                socioActual.firma_b64 = firmaB64;
+                
+                alert("Firmado y aceptado: Estatutos, Privacidad y RGPD"); 
+                cerrarFirma(); 
+                abrirTarjeta(socioActual);
+            } else {
+                socioActual = socioActual || {};
+                socioActual.firma_b64 = firmaB64;
+                const check = document.getElementById('checkRGPD');
+                if (check) check.checked = true; 
+                alert("Estatutos aceptados para el nuevo registro.");
+                cerrarFirma();
+            }
+        }
+
+        function actualizarClave() {
+            const t = document.getElementById('tipoClave').value; 
+            const n = document.getElementById('nuevaClaveInput').value;
+            if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
+        }
+
         function prepararCierreCaja() { 
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
@@ -988,14 +1060,14 @@ function actualizarClave() {
 
             let htmlHTML = `
                 <div class="item-desglose" style="font-weight:bold; border-bottom:1px solid var(--gold); padding-bottom:4px;"><span>CONCEPTO</span><span>CANT x PRECIO = TOTAL</span></div>
-                <div class="item-desglose"><span>🎫 ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
-                <div class="item-desglose"><span>🍹 COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
-                <div class="item-desglose"><span>🍺 CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
-                <div class="item-desglose"><span>🥤 REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
-                <div class="item-desglose"><span>💧 AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
-                <div class="item-desglose"><span>⚡ ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
-                <div class="item-desglose"><span>🥃 CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
-                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span>💰 RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
+                <div class="item-desglose"><span> ENTRADAS</span><span>${totalAsistentes} x 20€ = <strong>${datosCajaGlobal.dineroEntradas}€</strong></span></div>
+                <div class="item-desglose"><span> COPAS</span><span>${totalCopas} x 10€ = <strong>${datosCajaGlobal.dineroCopas}€</strong></span></div>
+                <div class="item-desglose"><span> CERVEZAS</span><span>${totalCervezas} x 5€ = <strong>${datosCajaGlobal.dineroCervezas}€</strong></span></div>
+                <div class="item-desglose"><span> REFRESCOS</span><span>${totalRefrescos} x 5€ = <strong>${datosCajaGlobal.dineroRefrescos}€</strong></span></div>
+                <div class="item-desglose"><span> AGUAS</span><span>${totalAguas} x 5€ = <strong>${datosCajaGlobal.dineroAguas}€</strong></span></div>
+                <div class="item-desglose"><span> ENERGÉTICOS</span><span>${totalEnergeticos} x 5€ = <strong>${datosCajaGlobal.dineroEnergeticos}€</strong></span></div>
+                <div class="item-desglose"><span> CHUPITOS</span><span>${totalChupitos} x 5€ = <strong>${datosCajaGlobal.dineroChupitos}€</strong></span></div>
+                <div class="item-desglose" style="border-top:1px dashed var(--gold); margin-top:8px; font-size:15px; color:var(--gold); font-weight:900;"><span> RECAUDACIÓN TOTAL ESPERADA</span><span>${recaudacionEsperada}€</span></div>
             `;
 
             document.getElementById('cajaDesgloseContenido').innerHTML = htmlHTML;
@@ -1015,15 +1087,15 @@ function actualizarClave() {
             const indicador = document.getElementById('cajaResultadoCéntimo');
             if (indicador) {
                 if (descuadre === 0) {
-                    indicador.innerText = "✅ ¡Caja cuadrada al céntimo! (0.00€)";
+                    indicador.innerText = " ¡Caja cuadrada al céntimo! (0.00€)";
                     indicador.style.background = "rgba(34,197,94,0.2)";
                     indicador.style.color = "#22c55e";
                 } else if (descuadre > 0) {
-                    indicador.innerText = `🟢 ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
+                    indicador.innerText = ` ¡Sobra dinero! Beneficio extra: +${descuadre.toFixed(2)}€`;
                     indicador.style.background = "rgba(34,197,94,0.2)";
                     indicador.style.color = "#22c55e";
                 } else {
-                    indicador.innerText = `🔴 ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`;
+                    indicador.innerText = ` ¡FALTA DINERO! Descuadre de: ${descuadre.toFixed(2)}€`;
                     indicador.style.background = "rgba(239,68,68,0.2)";
                     indicador.style.color = "#ef4444";
                 }
@@ -1038,7 +1110,6 @@ function actualizarClave() {
             const totalCajaReal = totalTPV + totalEfectivo;
             const descuadre = totalCajaReal - datosCajaGlobal.recaudacionEsperada;
 
-            // Guardamos en Supabase
             const { error: errorCaja } = await _supabase
                 .from('cajas_diarias')
                 .insert([{ 
@@ -1057,15 +1128,14 @@ function actualizarClave() {
                 }]);
 
             if (errorCaja) {
-                console.error("Error al guardar arqueo en Supabase:", errorCaja.message);
-                alert("⚠️ Error crítico: No se pudo guardar el arqueo en 'cajas_diarias'. Revisa la consola.");
+                alert(" Error crítico: No se pudo guardar el arqueo en 'cajas_diarias'.");
                 return;
             }
 
             const listaIds = db.map(socio => socio.id).filter(id => id != null);
             
             if (listaIds.length > 0) {
-                const { error: errorSocios } = await _supabase
+                await _supabase
                     .from(NOMBRE_TABLA)
                     .update({ 
                         dentro: false, 
@@ -1075,12 +1145,6 @@ function actualizarClave() {
                         hora_pago: null
                     })
                     .in('id', listaIds);
-
-                if (errorSocios) {
-                    console.error("Error al resetear socios:", errorSocios.message);
-                    alert("⚠️ Error parcial: Se guardó el arqueo pero falló la limpieza de socios: " + errorSocios.message);
-                    return;
-                }
             }
 
             productosValidos.forEach(prod => {
@@ -1088,7 +1152,6 @@ function actualizarClave() {
                 if (el) el.innerText = "0";
             });
 
-            // CORRECCIÓN CLAVE: Reseteamos socioActual y cerramos modales para evitar que salte la tarjeta
             socioActual = null;
             if (document.getElementById('modalTarjeta')) {
                 document.getElementById('modalTarjeta').style.display = 'none';
@@ -1096,350 +1159,309 @@ function actualizarClave() {
             document.getElementById('modalLibroCajas').style.display = 'none';
 
             await refrescarDatos(); 
-            alert("💾 ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
+            alert(" ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
         }
-/* --- INYECTOR DEFINITIVO: BORRA CUALQUIER DUPLICADO Y DEJA UNO SOLO --- */
-    function inyectorBotonHistorialEnArqueo() {
-        const modalArqueo = document.getElementById('modalLibroCajas');
-        if (!modalArqueo) return;
 
-        // 1. Buscamos TODOS los botones dentro del modal para limpiar los duplicados o estáticos
-        const todosLosBotones = modalArqueo.querySelectorAll('button');
-        let botonValidoExistente = null;
+        function inyectorBotonHistorialEnArqueo() {
+            const modalArqueo = document.getElementById('modalLibroCajas');
+            if (!modalArqueo) return;
 
-        todosLosBotones.forEach(btn => {
-            // Si el botón contiene el texto del histórico
-            if (btn.innerText.includes("Ver Historial Libro de Cajas") || btn.id === 'btnVerHistoricoSupabase') {
-                if (!botonValidoExistente) {
-                    // Guardamos el primero que encontremos para no duplicar
-                    botonValidoExistente = btn;
-                    btn.id = 'btnVerHistoricoSupabase'; // Nos aseguramos que tenga su ID correcto
-                } else {
-                    // ¡Borrachera de botones! Si hay un segundo o tercer botón repetido, lo ELIMINAMOS
-                    btn.remove();
+            const todosLosBotones = modalArqueo.querySelectorAll('button');
+            let botonValidoExistente = null;
+
+            todosLosBotones.forEach(btn => {
+                if (btn.innerText.includes("Ver Historial Libro de Cajas") || btn.id === 'btnVerHistoricoSupabase') {
+                    if (!botonValidoExistente) {
+                        botonValidoExistente = btn;
+                        btn.id = 'btnVerHistoricoSupabase';
+                    } else {
+                        btn.remove();
+                    }
                 }
-            }
-        });
+            });
 
-        // Si ya encontramos uno válido y está bien colocado, no hacemos nada más
-        if (botonValidoExistente) return;
+            if (botonValidoExistente) return;
 
-        // 2. Si no existe ninguno, lo creamos justo debajo del botón de confirmar
-        const botonConfirmar = modalArqueo.querySelector('button[onclick*="ejecutarCierreResetFinal"]') || modalArqueo.querySelector('.panel-caja button') || modalArqueo.querySelector('button[type="button"]');
-        
-        if (botonConfirmar && botonConfirmar.parentNode) {
-            const btnHistorial = document.createElement('button');
-            btnHistorial.id = 'btnVerHistoricoSupabase';
-            btnHistorial.type = 'button';
-            btnHistorial.innerText = "📖 Ver Historial Libro de Cajas";
-            btnHistorial.style.cssText = "width: 100%; padding: 10px; background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 11px;";
+            const botonConfirmar = modalArqueo.querySelector('button[onclick*="ejecutarCierreResetFinal"]') || modalArqueo.querySelector('.panel-caja button');
             
-            // Asignamos la función que abre el histórico correctamente
-            btnHistorial.onclick = mostrarHistoricoCajas;
-
-            // Lo insertamos limpio
-            botonConfirmar.parentNode.insertBefore(btnHistorial, botonConfirmar.nextSibling);
-        }
-    }
-    /* --- PANTALLA VISUAL: LIBRO HISTÓRICO CON COLUMNA ACCIONES --- */
-    async function mostrarHistoricoCajas() {
-        const viejo = document.getElementById('modalHistoricoCajas');
-        if(viejo) viejo.remove();
-
-        const { data: registros, error } = await _supabase
-            .from('cajas_diarias')
-            .select('*')
-            .order('fecha', { ascending: false });
-
-        if(error) {
-            alert("Error al cargar el histórico: " + error.message);
-            return;
+            if (botonConfirmar && botonConfirmar.parentNode) {
+                const btnHistorial = document.createElement('button');
+                btnHistorial.id = 'btnVerHistoricoSupabase';
+                btnHistorial.type = 'button';
+                btnHistorial.innerText = " Ver Historial Libro de Cajas";
+                btnHistorial.style.cssText = "width: 100%; padding: 10px; background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 11px;";
+                btnHistorial.onclick = mostrarHistoricoCajas;
+                botonConfirmar.parentNode.insertBefore(btnHistorial, botonConfirmar.nextSibling);
+            }
         }
 
-        const modalHist = document.createElement('div');
-        modalHist.id = 'modalHistoricoCajas';
-        modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
+        async function mostrarHistoricoCajas() {
+            const viejo = document.getElementById('modalHistoricoCajas');
+            if(viejo) viejo.remove();
 
-        let tablaHTML = `
-            <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
-                    <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;">📊 LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
-                    <div style="display: flex; gap: 12px; align-items: center;">
-                        <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">📥 DESCARGAR LIBRO EXCEL (.CSV)</button>
-                        <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: none; border: none; color: #ff4a4a; font-size: 22px; font-weight: bold; cursor: pointer;">✕</button>
+            const { data: registros, error } = await _supabase
+                .from('cajas_diarias')
+                .select('*')
+                .order('fecha', { ascending: false });
+
+            if(error) {
+                alert("Error al cargar el histórico: " + error.message);
+                return;
+            }
+
+            const modalHist = document.createElement('div');
+            modalHist.id = 'modalHistoricoCajas';
+            modalHist.style.cssText = "display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200000; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: #fff; box-sizing: border-box; padding: 20px;";
+
+            let tablaHTML = `
+                <div style="background: #111; border: 2px solid #d4af37; border-radius: 16px; width: 100%; max-width: 1150px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); position: relative; max-height: 85vh; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                        <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;"> LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;"> DESCARGAR LIBRO EXCEL (.CSV)</button>
+                            <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: none; border: none; color: #ff4a4a; font-size: 22px; font-weight: bold; cursor: pointer;">✕</button>
+                        </div>
                     </div>
-                </div>
+                    
+                    <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1000px;">
+                            <thead>
+                                <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
+                                    <th style="padding: 12px 10px;">FECHA</th>
+                                    <th style="padding: 12px 10px; text-align:center;">ENTRADAS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">COPAS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">CERVEZAS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">CHUPITOS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">REFRESCOS</th>
+                                    <th style="padding: 12px 10px; text-align:center;">ENERGÉTICOS</th>
+                                    <th style="padding: 12px 10px; text-align:right; background: rgba(255,255,255,0.03);">TOTAL CAJA</th>
+                                    <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
+                                    <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
+                                    <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
+                                    <th style="padding: 12px 10px; text-align:center; color: #ff4a4a; background: rgba(239,68,68,0.05);">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            registros.forEach(r => {
+                const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const desc = parseFloat(r.descuadre) || 0;
+                let estadoBadge = "";
                 
-                <div style="overflow-x: auto; flex: 1; border-radius: 8px; background: rgba(255,255,255,0.02);">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; min-width: 1000px;">
-                        <thead>
-                            <tr style="background: rgba(212, 175, 55, 0.1); border-bottom: 2px solid #d4af37; color: #d4af37; font-weight: 700;">
-                                <th style="padding: 12px 10px;">FECHA</th>
-                                <th style="padding: 12px 10px; text-align:center;">ENTRADAS</th>
-                                <th style="padding: 12px 10px; text-align:center;">COPAS</th>
-                                <th style="padding: 12px 10px; text-align:center;">CERVEZAS</th>
-                                <th style="padding: 12px 10px; text-align:center;">CHUPITOS</th>
-                                <th style="padding: 12px 10px; text-align:center;">REFRESCOS</th>
-                                <th style="padding: 12px 10px; text-align:center;">ENERGÉTICOS</th>
-                                <th style="padding: 12px 10px; text-align:right; background: rgba(255,255,255,0.03);">TOTAL CAJA</th>
-                                <th style="padding: 12px 10px; text-align:right;">COBRADO TPV</th>
-                                <th style="padding: 12px 10px; text-align:right;">EFECTIVO</th>
-                                <th style="padding: 12px 10px; text-align:center; color: #fff;">ESTADO CAJA</th>
-                                <th style="padding: 12px 10px; text-align:center; color: #ff4a4a; background: rgba(239,68,68,0.05);">ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-        `;
+                if(desc === 0) {
+                    estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Cuadrada</span>`;
+                } else if(desc > 0) {
+                    estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Sobran +${desc.toFixed(2)}€</span>`;
+                } else {
+                    estadoBadge = `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-weight:700;">Faltan ${desc.toFixed(2)}€</span>`;
+                }
 
-        registros.forEach(r => {
-            const totalCajaCalculado = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
-            const desc = parseFloat(r.descuadre) || 0;
-            let estadoBadge = "";
-            
-            if(desc === 0) {
-                estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Cuadrada</span>`;
-            } else if(desc > 0) {
-                estadoBadge = `<span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 3px 8px; border-radius: 4px; font-weight:700;">Sobran +${desc.toFixed(2)}€</span>`;
-            } else {
-                estadoBadge = `<span style="background: rgba(239,68,68,0.15); color: #ef4444; padding: 3px 8px; border-radius: 4px; font-weight:700;">Faltan ${desc.toFixed(2)}€</span>`;
-            }
+                let fInvertida = r.fecha;
+                if(r.fecha && r.fecha.includes('-')) {
+                    fInvertida = r.fecha.split('-').reverse().join('/');
+                }
 
-            let fInvertida = r.fecha;
-            if(r.fecha && r.fecha.includes('-')) {
-                fInvertida = r.fecha.split('-').reverse().join('/');
-            }
+                tablaHTML += `
+                    <tr id="fila-caja-${r.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 10px;">${fInvertida}</td>
+                        <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.cervezas_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.chupitos_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.refrescos_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:center;">${r.energeticos_vendidas || 0}</td>
+                        <td style="padding: 10px; text-align:right; font-weight:bold; color:#d4af37;">${totalCajaCalculado.toFixed(2)}€</td>
+                        <td style="padding: 10px; text-align:right;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
+                        <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
+                        <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
+                        <td style="padding: 10px; text-align:center;">
+                            <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;"> Borrar</button>
+                        </td>
+                    </tr>
+                `;
+            });
 
             tablaHTML += `
-                <tr id="fila-caja-${r.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 10px;">${fInvertida}</td>
-                    <td style="padding: 10px; text-align:center;">${r.total_asistentes || 0}</td>
-                    <td style="padding: 10px; text-align:center;">${r.copas_vendidas || 0}</td>
-                    <td style="padding: 10px; text-align:center;">${r.cervezas_vendidas || 0}</td>
-                    <td style="padding: 10px; text-align:center;">${r.chupitos_vendidas || 0}</td>
-                    <td style="padding: 10px; text-align:center;">${r.refrescos_vendidas || 0}</td>
-                    <td style="padding: 10px; text-align:center;">${r.energeticos_vendidas || 0}</td>
-                    <td style="padding: 10px; text-align:right; font-weight:bold; color:#d4af37;">${totalCajaCalculado.toFixed(2)}€</td>
-                    <td style="padding: 10px; text-align:right;">${(r.pagado_tpv || 0).toFixed(2)}€</td>
-                    <td style="padding: 10px; text-align:right;">${(r.pagado_efectivo || 0).toFixed(2)}€</td>
-                    <td style="padding: 10px; text-align:center;">${estadoBadge}</td>
-                    <td style="padding: 10px; text-align:center;">
-                        <button onclick="borrarRegistroCajaIndividual('${r.id}', '${fInvertida}')" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">🗑️ Borrar</button>
-                    </td>
-                </tr>
-            `;
-        });
-
-        tablaHTML += `
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-
-        modalHist.innerHTML = tablaHTML;
-        document.body.appendChild(modalHist);
-    }
-
-    /* --- ACCIÓN: BORRAR REGISTRO INDIVIDUAL DE SUPABASE --- */
-    async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
-        if (!confirm(`⚠️ ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
-
-        const { error } = await _supabase
-            .from('cajas_diarias')
-            .delete()
-            .eq('id', idCaja);
-
-        if (error) {
-            alert("No se pudo eliminar el registro de Supabase: " + error.message);
-            return;
-        }
-
-        const fila = document.getElementById(`fila-caja-${idCaja}`);
-        if (fila) fila.remove();
-        
-        alert(`🗑️ Registro del ${fechaVisual} eliminado correctamente.`);
-    }
-
-    /* --- ACCIÓN: DESCARGAR LIBRO EN FORMATO EXCEL/CSV --- */
-    async function descargarExcelUnificado() {
-        const { data: registros, error } = await _supabase
-            .from('cajas_diarias')
-            .select('*')
-            .order('fecha', { ascending: true });
-
-        if(error || !registros) return;
-
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-        csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
-
-        registros.forEach(r => {
-            const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
-            const chups = r.chupitos_vendidas || r.chupitos || 0;
-            csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "LIBRO_DE_CAJAS_UNIFICADO.csv");
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-    }
-
-    /* --- PANTALLA / MODAL DE CIERRE CIEGO PARA PUERTA --- */
-    function abrirModalCierrePuertaCiego() {
-        let modal = document.getElementById('modalCierrePuertaCiego');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'modalCierrePuertaCiego';
-            modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200000; display: flex; justify-content: center; align-items: center; font-family: 'Inter', sans-serif; color: #fff;";
-            modal.innerHTML = `
-                <div style="background: #111827; border: 1px solid #374151; border-radius: 12px; width: 90%; max-width: 400px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
-                    <h3 style="margin-top: 0; color: #ef4444; font-size: 18px; text-align: center;">🔴 Cierre Ciego - Puerta</h3>
-                    <p style="font-size: 13px; color: #9ca3af; text-align: center; margin-bottom: 20px;">Introduce el recuento real de caja:</p>
-                    
-                    <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">Efectivo contado (€):</label>
-                    <input type="number" id="puertaCiegoEfectivo" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box;">
-                    
-                    <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">TPV / Tarjeta (€):</label>
-                    <input type="number" id="puertaCiegoTpv" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box;">
-                    
-                    <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">Ropero (€) [Opcional]:</label>
-                    <input type="number" id="puertaCiegoRopero" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 20px; box-sizing: border-box;">
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" onclick="ejecutarCierrePuertaCiegoReal()" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Confirmar Cierre</button>
-                        <button type="button" onclick="document.getElementById('modalCierrePuertaCiego').remove()" style="flex: 1; background: #374151; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             `;
-            document.body.appendChild(modal);
-        } else {
-            document.getElementById('puertaCiegoEfectivo').value = 0;
-            document.getElementById('puertaCiegoTpv').value = 0;
-            document.getElementById('puertaCiegoRopero').value = 0;
-            modal.style.display = 'flex';
-        }
-    }
 
-    async function ejecutarCierrePuertaCiegoReal() {
-        if (!confirm("¿Estás seguro de efectuar el cierre de noche? Se registrarán los datos y se limpiarán los aforos activos.")) return;
-
-        const efectivo = parseFloat(document.getElementById('puertaCiegoEfectivo').value) || 0;
-        const tpv = parseFloat(document.getElementById('puertaCiegoTpv').value) || 0;
-        const ropero = parseFloat(document.getElementById('puertaCiegoRopero').value) || 0;
-        const totalEfectivoConRopero = efectivo + ropero;
-        const totalRecaudado = totalEfectivoConRopero + tpv;
-
-        const { error: errorCaja } = await _supabase
-            .from('cajas_diarias')
-            .insert([{ 
-                fecha: new Date().toISOString().split('T')[0],
-                pagado_efectivo: totalEfectivoConRopero, 
-                pagado_tpv: tpv,
-                recaudacion_esperada: totalRecaudado,
-                total_asistentes: db.filter(s => s.dentro || s.hora).length
-            }]);
-
-        if (errorCaja) {
-            alert("⚠️ Error al guardar en la nube: " + errorCaja.message);
-            return;
+            modalHist.innerHTML = tablaHTML;
+            document.body.appendChild(modalHist);
         }
 
-        const listaIds = db.map(socio => socio.id).filter(id => id != null);
-        if (listaIds.length > 0) {
-            await _supabase
-                .from(NOMBRE_TABLA)
-                .update({ dentro: false, hora: null, consumiciones: null, pago_realizado: false, hora_pago: null })
-                .in('id', listaIds);
+        async function borrarRegistroCajaIndividual(idCaja, fechaVisual) {
+            if (!confirm(` ¿Seguro que deseas eliminar la caja del día ${fechaVisual}?\nSe borrará permanentemente de la nube.`)) return;
+
+            const { error } = await _supabase
+                .from('cajas_diarias')
+                .delete()
+                .eq('id', idCaja);
+
+            if (error) {
+                alert("No se pudo eliminar el registro de Supabase: " + error.message);
+                return;
+            }
+
+            const fila = document.getElementById(`fila-caja-${idCaja}`);
+            if (fila) fila.remove();
+            
+            alert(` Registro del ${fechaVisual} eliminado correctamente.`);
         }
 
-        const modal = document.getElementById('modalCierrePuertaCiego');
-        if (modal) modal.remove();
+        async function descargarExcelUnificado() {
+            const { data: registros, error } = await _supabase
+                .from('cajas_diarias')
+                .select('*')
+                .order('fecha', { ascending: true });
 
-        if (typeof refrescarDatos === 'function') await refrescarDatos();
-        alert("✅ Noche reiniciada y cerrada correctamente desde puerta.");
-    }
+            if(error || !registros) return;
 
-    // [CONTROLADOR DEFINITIVO DE LOS BOTONES - LIMPIO]
-    function gestionarBotonCierreSegunRol() {
-        let btnPuertaIzq = document.getElementById('btnCierrePuertaIzquierda');
-        
-        if (btnPuertaIzq) {
-            btnPuertaIzq.style.display = 'block';
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "FECHA;ENTRADAS;COPAS;CERVEZAS;CHUPITOS;REFRESCOS;ENERGETICOS;TOTAL CAJA REAL;COBRADO TPV;EFECTIVO;DESCUADRE\n";
+
+            registros.forEach(r => {
+                const totalCaja = (parseFloat(r.pagado_efectivo) || 0) + (parseFloat(r.pagado_tpv) || 0);
+                const chups = r.chupitos_vendidas || r.chupitos || 0;
+                csvContent += `${r.fecha};${r.total_asistentes || 0};${r.copas_vendidas || 0};${r.cervezas_vendidas || 0};${chups};${r.refrescos_vendidas || 0};${r.energeticos_vendidas || 0};${totalCaja.toFixed(2)};${(r.pagado_tpv || 0).toFixed(2)};${(r.pagado_efectivo || 0).toFixed(2)};${(r.descuadre || 0).toFixed(2)}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "LIBRO_DE_CAJAS_UNIFICADO.csv");
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
         }
 
-        let btnPuertaCiego = document.getElementById('btnResetPuerta');
-        if (!btnPuertaCiego) {
-            const btnCerrarSesion = document.getElementById('btnLogout');
-            if (btnCerrarSesion && btnCerrarSesion.parentNode) {
-                btnPuertaCiego = document.createElement('button');
-                btnPuertaCiego.id = 'btnResetPuerta';
-                btnPuertaCiego.type = 'button';
-                btnPuertaCiego.innerText = "🔴 REINICIAR NOCHE";
-                btnPuertaCiego.style.cssText = "background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; margin-right: 12px;";
-                btnPuertaCiego.onclick = abrirModalCierrePuertaCiego;
-                btnCerrarSesion.parentNode.insertBefore(btnPuertaCiego, btnCerrarSesion);
+        function abrirModalCierrePuertaCiego() {
+            let modal = document.getElementById('modalCierrePuertaCiego');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'modalCierrePuertaCiego';
+                modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200000; display: flex; justify-content: center; align-items: center; font-family: 'Inter', sans-serif; color: #fff;";
+                modal.innerHTML = `
+                    <div style="background: #111827; border: 1px solid #374151; border-radius: 12px; width: 90%; max-width: 400px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+                        <h3 style="margin-top: 0; color: #ef4444; font-size: 18px; text-align: center;"> Cierre Ciego - Puerta</h3>
+                        <p style="font-size: 13px; color: #9ca3af; text-align: center; margin-bottom: 20px;">Introduce el recuento real de caja:</p>
+                        
+                        <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">Efectivo contado (€):</label>
+                        <input type="number" id="puertaCiegoEfectivo" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box;">
+                        
+                        <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">TPV / Tarjeta (€):</label>
+                        <input type="number" id="puertaCiegoTpv" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box;">
+                        
+                        <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">Ropero (€) [Opcional]:</label>
+                        <input type="number" id="puertaCiegoRopero" value="0" step="0.01" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 6px; margin-bottom: 20px; box-sizing: border-box;">
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" onclick="ejecutarCierrePuertaCiegoReal()" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Confirmar Cierre</button>
+                            <button type="button" onclick="document.getElementById('modalCierrePuertaCiego').remove()" style="flex: 1; background: #374151; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                document.getElementById('puertaCiegoEfectivo').value = 0;
+                document.getElementById('puertaCiegoTpv').value = 0;
+                document.getElementById('puertaCiegoRopero').value = 0;
+                modal.style.display = 'flex';
             }
         }
-    }
 
-    // Eventos del Lienzo Signature Canvas
-    function obtenerPosicion(e) {
-        const r = canvas.getBoundingClientRect();
-        const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: clienteX - r.left, y: clienteY - r.top };
-    }
+        async function ejecutarCierrePuertaCiegoReal() {
+            if (!confirm("¿Estás seguro de efectuar el cierre de noche? Se registrarán los datos y se limpiarán los aforos activos.")) return;
 
-    function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
-    function terminarDibujo() { dibujando = false; ctx.beginPath(); }
-    function pautarDibujo(e) {
-        if (!dibujando) return;
-        e.preventDefault();
-        const pos = obtenerPosicion(e);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-    }
+            const efectivo = parseFloat(document.getElementById('puertaCiegoEfectivo').value) || 0;
+            const tpv = parseFloat(document.getElementById('puertaCiegoTpv').value) || 0;
+            const ropero = parseFloat(document.getElementById('puertaCiegoRopero').value) || 0;
+            const totalEfectivoConRopero = efectivo + ropero;
+            const totalRecaudado = totalEfectivoConRopero + tpv;
 
-    if (typeof canvas !== 'undefined' && canvas) {
-        canvas.addEventListener('mousedown', iniciarDibujo);
-        window.addEventListener('mouseup', terminarDibujo);
-        canvas.addEventListener('mousemove', pautarDibujo);
+            const { error: errorCaja } = await _supabase
+                .from('cajas_diarias')
+                .insert([{ 
+                    fecha: new Date().toISOString().split('T')[0],
+                    pagado_efectivo: totalEfectivoConRopero, 
+                    pagado_tpv: tpv,
+                    recaudacion_esperada: totalRecaudado,
+                    total_asistentes: db.filter(s => s.dentro || s.hora).length
+                }]);
 
-        canvas.addEventListener('touchstart', iniciarDibujo);
-        window.addEventListener('touchend', terminarDibujo);
-        canvas.addEventListener('touchmove', pautarDibujo);
-    }
+            if (errorCaja) {
+                alert(" Error al guardar en la nube: " + errorCaja.message);
+                return;
+            }
 
-    // Arranque inicial y bucles en segundo plano
-    if (typeof refrescarDatos === 'function') {
-        refrescarDatos();
-    }
-    
-    gestionarBotonCierreSegunRol();
+            const listaIds = db.map(socio => socio.id).filter(id => id != null);
+            if (listaIds.length > 0) {
+                await _supabase
+                    .from(NOMBRE_TABLA)
+                    .update({ dentro: false, hora: null, consumiciones: null, pago_realizado: false, hora_pago: null })
+                    .in('id', listaIds);
+            }
 
-    // ⚡ MODIFICACIÓN AQUÍ: Se añade ejecución inmediata de la inyección al abrir el modal para eliminar el retardo de 1.5s
-    const observerModalCajas = new MutationObserver(() => {
-        const modalLibro = document.getElementById('modalLibroCajas');
-        if (modalLibro && modalLibro.style.display === 'flex') {
-            inyectorBotonHistorialEnArqueo();
+            const modal = document.getElementById('modalCierrePuertaCiego');
+            if (modal) modal.remove();
+
+            if (typeof refrescarDatos === 'function') await refrescarDatos();
+            alert(" Noche reiniciada y cerrada correctamente desde puerta.");
         }
-    });
-    const modalLibroElement = document.getElementById('modalLibroCajas');
-    if (modalLibroElement) {
-        observerModalCajas.observe(modalLibroElement, { attributes: true, attributeFilter: ['style'] });
-    }
 
-    setInterval(() => {
-        if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta')?.style.display !== 'flex' && document.getElementById('modalLibroCajas')?.style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
+        function obtenerPosicion(e) {
+            const r = canvas.getBoundingClientRect();
+            const clienteX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clienteY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clienteX - r.left, y: clienteY - r.top };
+        }
+
+        function iniciarDibujo(e) { dibujando = true; pautarDibujo(e); }
+        function terminarDibujo() { dibujando = false; ctx.beginPath(); }
+        function pautarDibujo(e) {
+            if (!dibujando) return;
+            e.preventDefault();
+            const pos = obtenerPosicion(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        if (typeof canvas !== 'undefined' && canvas) {
+            canvas.addEventListener('mousedown', iniciarDibujo);
+            window.addEventListener('mouseup', terminarDibujo);
+            canvas.addEventListener('mousemove', pautarDibujo);
+
+            canvas.addEventListener('touchstart', iniciarDibujo);
+            window.addEventListener('touchend', terminarDibujo);
+            canvas.addEventListener('touchmove', pautarDibujo);
+        }
+
+        if (typeof refrescarDatos === 'function') {
             refrescarDatos();
         }
-        if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
-            inyectorBotonHistorialEnArqueo();
+
+        const observerModalCajas = new MutationObserver(() => {
+            const modalLibro = document.getElementById('modalLibroCajas');
+            if (modalLibro && modalLibro.style.display === 'flex') {
+                inyectorBotonHistorialEnArqueo();
+            }
+        });
+        const modalLibroElement = document.getElementById('modalLibroCajas');
+        if (modalLibroElement) {
+            observerModalCajas.observe(modalLibroElement, { attributes: true, attributeFilter: ['style'] });
         }
-        gestionarBotonCierreSegunRol();
-    }, 1500);
-</script>
+
+        setInterval(() => {
+            if (typeof refrescarDatos === 'function' && document.getElementById('modalTarjeta')?.style.display !== 'flex' && document.getElementById('modalLibroCajas')?.style.display !== 'flex' && !document.getElementById('modalHistoricoCajas')) {
+                refrescarDatos();
+            }
+            if (document.getElementById('modalLibroCajas') && document.getElementById('modalLibroCajas').style.display === 'flex') {
+                inyectorBotonHistorialEnArqueo();
+            }
+        }, 1500);
+    </script>
 </body>
+</html>
