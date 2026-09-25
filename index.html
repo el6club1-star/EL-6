@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v5.8 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v5.9 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -80,68 +80,79 @@
         .caja-inputs input:focus { border-color: var(--gold); outline: none; }
         .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
 
-        /* Estilos del Menú Burbuja Flotante en la esquina superior izquierda */
+        /* Estilos Finos y Elegantes para la Burbuja Flotante Minimalista */
         #btnMenuHamburguesa {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            background: #000;
+            top: 18px;
+            left: 18px;
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             color: var(--gold);
-            border: 2px solid var(--gold);
-            padding: 8px 12px;
-            border-radius: 8px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 18px;
             z-index: 100002;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+        }
+
+        #btnMenuHamburguesa:hover {
+            border-color: var(--gold);
+            transform: scale(1.05);
         }
 
         #panelMenuDesplegable {
             display: none;
             position: fixed;
-            top: 65px;
-            left: 20px;
-            width: 260px;
-            background: #111;
-            border: 2px solid var(--gold);
-            border-radius: 12px;
+            top: 70px;
+            left: 18px;
+            width: 240px;
+            background: rgba(12, 12, 12, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 14px;
             z-index: 100003;
-            padding: 15px;
+            padding: 12px;
             box-sizing: border-box;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.7);
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
         }
 
         .contenido-menu-lateral {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
         }
 
         .contenido-menu-lateral h3 {
             color: var(--gold);
             text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 1px;
-            margin: 0 0 5px 0;
-            border-bottom: 1px solid rgba(212,175,55,0.3);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            margin: 0 0 4px 0;
+            border-bottom: 1px solid rgba(212,175,55,0.15);
             padding-bottom: 6px;
             text-align: center;
+            font-weight: 700;
         }
 
         .btn-menu-opcion {
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 10px 12px;
+            background: transparent;
+            color: #e2e8f0;
+            border: 1px solid transparent;
+            padding: 8px 10px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 500;
             font-size: 11px;
             text-align: left;
             text-transform: uppercase;
@@ -154,19 +165,19 @@
         }
 
         .btn-menu-opcion:hover {
-            background: var(--gold);
-            color: #000;
-            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.12);
+            color: var(--gold);
+            border-color: rgba(212, 175, 55, 0.3);
         }
 
         .btn-menu-peligro {
-            border-color: #ef4444;
             color: #ef4444;
         }
 
         .btn-menu-peligro:hover {
-            background: #ef4444;
-            color: #fff;
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
         }
     </style>
 </head>
@@ -178,20 +189,20 @@
         </button>
     </div>
 
-    <!-- BOTÓN HAMBURGUESA / BURBUJA FLOTANTE EN ESQUINA SUPERIOR IZQUIERDA -->
-    <button id="btnMenuHamburguesa" onclick="toggleMenuHamburguesa()">☰ MENÚ</button>
+    <!-- BOTÓN BURBUJA FLOTANTE (SOLO SÍMBOLO HAMBURGUESA FINA) -->
+    <button id="btnMenuHamburguesa" onclick="toggleMenuHamburguesa()">☰</button>
 
-    <!-- PANEL TIPO BURBUJA DESPLEGABLE EN LA ESQUINA (SIN OSCURECER LA INTERFAZ) -->
+    <!-- PANEL BURBUJA ELEGANTE CON DIFUMINADO INTERNO -->
     <div id="panelMenuDesplegable">
         <div class="contenido-menu-lateral">
-            <h3>Menú de Control</h3>
+            <h3>Control</h3>
             
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); prepararCierreCaja();"> Reiniciar / Cierre de Noche</button>
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarExcel();"> Descargar Informe Excel</button>
-            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarBaseDatos();"> Copia de Seguridad (.json)</button>
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); prepararCierreCaja();"> Cierre / Reinicio</button>
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarExcel();"> Informe Excel</button>
+            <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); exportarBaseDatos();"> Copia Seguridad</button>
             <button class="btn-menu-opcion" onclick="toggleMenuHamburguesa(); document.getElementById('importFile').click();"> Restaurar Copia</button>
             
-            <div style="margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+            <div style="margin-top: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
                 <button class="btn-menu-opcion btn-menu-peligro" onclick="toggleMenuHamburguesa(); cerrarSesion();"> Cerrar Sesión</button>
             </div>
         </div>
