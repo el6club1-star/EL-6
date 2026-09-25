@@ -28,8 +28,7 @@
         .container { max-width: 1350px; margin: auto; background: var(--card); padding: 30px; border-radius: 24px; border: 1px solid #e2e8f0; display:none; }
         header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 30px; padding-bottom: 15px; position: relative; }
         header h1 { letter-spacing: 8px; text-transform: uppercase; margin: 0; font-size: 32px; font-weight: 800; }
-        .btn-excel { position: absolute; right: 0; top: 10px; background: #15803d; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; display:none; }
-        .btn-reset-noche { position: absolute; left: 0; top: 10px; background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; display:none; }
+        
         .stats-container { display: none; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .stat-card { background: #000; color: white; padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
         .stat-card p { margin: 10px 0 0; font-size: 32px; font-weight: 900; }
@@ -225,16 +224,7 @@
     
     <div class="container" id="principal">
         <header>
-            <div id="configClaves" class="panel-claves-vip" style="display: none; background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <span style="font-weight:bold; color:var(--gold)"> GESTIÓN DE CLAVES:</span>
-                <select id="tipoClave" style="width:120px;"><option value="jefe">JEFE</option><option value="puerta">PUERTA</option><option value="camarero">CAMARERO</option></select>
-                <input type="text" id="nuevaClaveInput" placeholder="NUEVA CLAVE" style="width:150px;">
-                <button onclick="actualizarClave()" style="background:black; color:var(--gold); border:1px solid var(--gold); padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">GUARDAR</button>
-            </div>
-            
-            <button class="btn-reset-noche" id="btnReset" onclick="prepararCierreCaja()"> REINICIAR NOCHE</button>
             <input type="file" id="importFile" style="display:none" onchange="importarBaseDatos(event)">
-            <button class="btn-excel" id="btnExport" onclick="exportarExcel()"> DESCARGAR EXCEL</button>
             <h1> CLUB PRIVADO EL 6 </h1>
         </header>
 
@@ -461,17 +451,11 @@
             }
 
             if(nivel === 'jefe') { 
-                document.getElementById('btnExport').style.display='block'; 
-                document.getElementById('btnReset').style.display='block'; 
                 document.getElementById('panelAdmin').style.display='grid'; 
-                document.getElementById('configClaves').style.display = 'block';
             }
             if(nivel === 'camarero') {
                 document.getElementById('cajaRegistro').style.display = 'none';
-                document.getElementById('btnReset').style.display = 'none';
                 document.getElementById('panelAdmin').style.display = 'none';
-                if(document.getElementById('configClaves')) document.getElementById('configClaves').style.display = 'none';
-                if(document.getElementById('btnExport')) document.getElementById('btnExport').style.display = 'none';
             }
 
             const botonCamaraPrincipal = document.getElementById('btnCam');
@@ -995,12 +979,6 @@
                 alert("Estatutos aceptados para el nuevo registro.");
                 cerrarFirma();
             }
-        }
-
-        function actualizarClave() {
-            const t = document.getElementById('tipoClave').value; 
-            const n = document.getElementById('nuevaClaveInput').value;
-            if(n) { CLAVES[t] = n; localStorage.setItem('claves_el6', JSON.stringify(CLAVES)); alert("Actualizado"); }
         }
 
         function abrirModalGestionClaves() {
