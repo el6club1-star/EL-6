@@ -79,14 +79,14 @@
         .caja-inputs input:focus { border-color: var(--gold); outline: none; }
         .resultado-descuadre { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; }
 
-        /* Estilos Finos y Elegantes para la Burbuja Flotante Minimalista */
+        /* Estilos Finos y Uniformes para la Burbuja Flotante Minimalista */
         #contenedorMenuFlotante {
             position: fixed;
             top: 18px;
             left: 18px;
             z-index: 100002;
-            display: none; /* Oculto por defecto en la pantalla de login */
-            padding-bottom: 30px; /* Área de seguridad invisible para que no se cierre al mover el ratón hacia abajo */
+            display: none;
+            padding-bottom: 30px;
             padding-right: 30px;
         }
 
@@ -104,17 +104,23 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 5px; /* Espaciado simétrico y limpio entre barras */
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             transition: all 0.2s ease;
         }
 
-        /* Las tres rayitas doradas del menú hamburguesa unificadas con idéntico grosor y tamaño */
+        /* LÍNEAS DE LA HAMBURGUESA: Forzadas estrictamente con idéntico ancho, altura y propiedades */
         .raya-hamb {
-            width: 16px;
-            height: 2px;
-            background-color: var(--gold);
-            border-radius: 2px;
+            display: block !important;
+            width: 18px !important;
+            min-width: 18px !important;
+            max-width: 18px !important;
+            height: 2.5px !important;
+            min-height: 2.5px !important;
+            max-height: 2.5px !important;
+            background-color: var(--gold) !important;
+            border-radius: 2px !important;
+            box-sizing: border-box !important;
         }
 
         #btnMenuHamburguesa:hover {
@@ -201,19 +207,18 @@
     </style>
 </head>
 <body>
-    <!-- CONTENEDOR FLOTANTE PARA HOVER (ENTRAR/SALIR CON EL RATÓN) -->
+    <!-- CONTENEDOR FLOTANTE PARA HOVER -->
     <div id="contenedorMenuFlotante">
         <button id="btnMenuHamburguesa">
-            <div class="raya-hamb"></div>
-            <div class="raya-hamb"></div>
-            <div class="raya-hamb"></div>
+            <span class="raya-hamb"></span>
+            <span class="raya-hamb"></span>
+            <span class="raya-hamb"></span>
         </button>
 
         <div id="panelMenuDesplegable">
             <div class="contenido-menu-lateral">
                 <h3>Control</h3>
                 
-                <!-- Opciones exclusivas para JEFE -->
                 <div id="menuOpcionesJefe" style="display:contents;">
                     <button class="btn-menu-opcion" onclick="prepararCierreCaja();"> Cierre / Reinicio</button>
                     <button class="btn-menu-opcion" onclick="exportarExcel();"> Informe Excel</button>
@@ -222,7 +227,6 @@
                     <button class="btn-menu-opcion" onclick="document.getElementById('importFile').click();"> Restaurar Copia</button>
                 </div>
 
-                <!-- OPCIÓN LIMPIA Y ELEGANTE PARA PUERTA -->
                 <div id="menuOpcionesPuertaExtra" style="display:none;">
                     <button class="btn-menu-opcion btn-menu-peligro" onclick="abrirModalCierrePuertaCiego();"> Cierre de Caja</button>
                 </div>
@@ -459,10 +463,8 @@
             document.getElementById('pantallaLogin').style.display='none'; 
             document.getElementById('principal').style.display='block'; 
 
-            // Mostrar el menú flotante al iniciar sesión correctamente
             document.getElementById('contenedorMenuFlotante').style.display = 'block';
 
-            // Configurar visibilidad de las opciones del menú según el rol activo
             const menuOpcionesJefe = document.getElementById('menuOpcionesJefe');
             const menuOpcionesPuertaExtra = document.getElementById('menuOpcionesPuertaExtra');
 
@@ -1280,7 +1282,6 @@
                         <h2 style="margin: 0; font-size: 18px; color: #d4af37; font-weight: 800; letter-spacing: 0.5px;"> LIBRO HISTÓRICO DE CAJAS UNIFICADO</h2>
                         <div style="display: flex; gap: 12px; align-items: center;">
                             <button onclick="descargarExcelUnificado()" style="background: #d4af37; color: #000; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;"> DESCARGAR LIBRO EXCEL (.CSV)</button>
-                            <!-- BOTÓN DE CIERRE CLARO EN LA CABECERA DEL HISTÓRICO -->
                             <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-size: 11px; cursor: pointer;"> VOLVER / SALIR</button>
                         </div>
                     </div>
@@ -1349,7 +1350,6 @@
                         </table>
                     </div>
                     
-                    <!-- BOTÓN INFERIOR DE CIERRE / VOLVER ADICIONAL -->
                     <div style="margin-top: 15px; text-align: right;">
                         <button onclick="document.getElementById('modalHistoricoCajas').remove()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer;">CERRAR Y VOLVER AL MENÚ PRINCIPAL</button>
                     </div>
