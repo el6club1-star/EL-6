@@ -86,6 +86,8 @@
             left: 18px;
             z-index: 100002;
             display: none; /* Oculto por defecto en la pantalla de login */
+            padding-bottom: 30px; /* Área de seguridad invisible para que no se cierre al mover el ratón hacia abajo */
+            padding-right: 30px;
         }
 
         #btnMenuHamburguesa {
@@ -98,12 +100,21 @@
             height: 42px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 18px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 4px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             transition: all 0.2s ease;
+        }
+
+        /* Las tres rayitas doradas del menú hamburguesa */
+        .raya-hamb {
+            width: 16px;
+            height: 2px;
+            background-color: var(--gold);
+            border-radius: 2px;
         }
 
         #btnMenuHamburguesa:hover {
@@ -117,7 +128,7 @@
             top: 50px;
             left: 0;
             width: 240px;
-            background: rgba(12, 12, 12, 0.82);
+            background: rgba(12, 12, 12, 0.90);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(212, 175, 55, 0.3);
@@ -128,6 +139,8 @@
             box-shadow: 0 12px 35px rgba(0,0,0,0.7);
             flex-direction: column;
             gap: 6px;
+            /* Retardo suave y persistencia al salir con el ratón */
+            transition: opacity 0.3s ease;
         }
 
         #contenedorMenuFlotante:hover #panelMenuDesplegable {
@@ -198,7 +211,11 @@
 
     <!-- CONTENEDOR FLOTANTE PARA HOVER (ENTRAR/SALIR CON EL RATÓN) -->
     <div id="contenedorMenuFlotante">
-        <button id="btnMenuHamburguesa"></button>
+        <button id="btnMenuHamburguesa">
+            <div class="raya-hamb"></div>
+            <div class="raya-hamb"></div>
+            <div class="raya-hamb"></div>
+        </button>
 
         <div id="panelMenuDesplegable">
             <div class="contenido-menu-lateral">
@@ -213,9 +230,9 @@
                     <button class="btn-menu-opcion" onclick="document.getElementById('importFile').click();"> Restaurar Copia</button>
                 </div>
 
-                <!-- OPCIÓN EXTRA VISIBLE TAMBIÉN DESDE EL MENÚ LATERAL PARA PUERTA -->
+                <!-- OPCIÓN LIMPIA Y ELEGANTE PARA PUERTA -->
                 <div id="menuOpcionesPuertaExtra" style="display:none;">
-                    <button class="btn-menu-opcion btn-menu-peligro" onclick="abrirModalCierrePuertaCiego();"> Cierre Noche (Puerta)</button>
+                    <button class="btn-menu-opcion btn-menu-peligro" onclick="abrirModalCierrePuertaCiego();"> Cierre de Caja</button>
                 </div>
                 
                 <div style="margin-top: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
@@ -1407,7 +1424,7 @@
                 modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200000; display: flex; justify-content: center; align-items: center; font-family: 'Inter', sans-serif; color: #fff;";
                 modal.innerHTML = `
                     <div style="background: #111827; border: 1px solid #374151; border-radius: 12px; width: 90%; max-width: 400px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
-                        <h3 style="margin-top: 0; color: #ef4444; font-size: 18px; text-align: center;"> Cierre Ciego - Puerta</h3>
+                        <h3 style="margin-top: 0; color: #ef4444; font-size: 18px; text-align: center;"> Cierre de Caja</h3>
                         <p style="font-size: 13px; color: #9ca3af; text-align: center; margin-bottom: 20px;">Introduce el recuento real de caja:</p>
                         
                         <label style="font-size: 12px; color: #d4af37; font-weight: bold; display: block; margin-bottom: 5px;">Efectivo contado (€):</label>
@@ -1435,7 +1452,7 @@
         }
 
         async function ejecutarCierrePuertaCiegoReal() {
-            if (!confirm("¿Estás seguro de efectuar el cierre de noche? Se registrarán los datos y se limpiarán los aforos activos.")) return;
+            if (!confirm("¿Estás seguro de efectuar el cierre de caja? Se registrarán los datos y se limpiarán los aforos activos.")) return;
 
             const efectivo = parseFloat(document.getElementById('puertaCiegoEfectivo').value) || 0;
             const tpv = parseFloat(document.getElementById('puertaCiegoTpv').value) || 0;
