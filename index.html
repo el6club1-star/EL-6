@@ -85,6 +85,7 @@
             top: 18px;
             left: 18px;
             z-index: 100002;
+            display: none; /* Oculto por defecto en la pantalla de login */
         }
 
         #btnMenuHamburguesa {
@@ -203,11 +204,14 @@
             <div class="contenido-menu-lateral">
                 <h3>Control</h3>
                 
-                <button class="btn-menu-opcion" onclick="prepararCierreCaja();"> Cierre / Reinicio</button>
-                <button class="btn-menu-opcion" onclick="exportarExcel();"> Informe Excel</button>
-                <button class="btn-menu-opcion" onclick="abrirModalGestionClaves();"> Gestión Claves</button>
-                <button class="btn-menu-opcion" onclick="exportarBaseDatos();"> Copia Seguridad</button>
-                <button class="btn-menu-opcion" onclick="document.getElementById('importFile').click();"> Restaurar Copia</button>
+                <!-- Opciones exclusivas para JEFE -->
+                <div id="menuOpcionesJefe" style="display:contents;">
+                    <button class="btn-menu-opcion" onclick="prepararCierreCaja();"> Cierre / Reinicio</button>
+                    <button class="btn-menu-opcion" onclick="exportarExcel();"> Informe Excel</button>
+                    <button class="btn-menu-opcion" onclick="abrirModalGestionClaves();"> Gestión Claves</button>
+                    <button class="btn-menu-opcion" onclick="exportarBaseDatos();"> Copia Seguridad</button>
+                    <button class="btn-menu-opcion" onclick="document.getElementById('importFile').click();"> Restaurar Copia</button>
+                </div>
                 
                 <div style="margin-top: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
                     <button class="btn-menu-opcion btn-menu-peligro" onclick="cerrarSesion();"> Cerrar Sesión</button>
@@ -441,6 +445,24 @@
             document.getElementById('pantallaLogin').style.display='none'; 
             document.getElementById('principal').style.display='block'; 
 
+            // Mostrar el menú flotante al iniciar sesión correctamente
+            document.getElementById('contenedorMenuFlotante').style.display = 'block';
+
+            // Configurar visibilidad de las opciones del menú según el rol activo
+            const menuOpcionesJefe = document.getElementById('menuOpcionesJefe');
+
+            if(nivel === 'jefe') { 
+                document.getElementById('panelAdmin').style.display='grid'; 
+                if(menuOpcionesJefe) menuOpcionesJefe.style.display = 'contents';
+            } else {
+                if(menuOpcionesJefe) menuOpcionesJefe.style.display = 'none';
+            }
+
+            if(nivel === 'camarero') {
+                document.getElementById('cajaRegistro').style.display = 'none';
+                document.getElementById('panelAdmin').style.display = 'none';
+            }
+
             const btnCierre = document.getElementById('miBotonCierrePerfecto');
             if (btnCierre) {
                 if (nivel === 'personal') {
@@ -448,14 +470,6 @@
                 } else {
                     btnCierre.style.setProperty('display', 'none', 'important');
                 }
-            }
-
-            if(nivel === 'jefe') { 
-                document.getElementById('panelAdmin').style.display='grid'; 
-            }
-            if(nivel === 'camarero') {
-                document.getElementById('cajaRegistro').style.display = 'none';
-                document.getElementById('panelAdmin').style.display = 'none';
             }
 
             const botonCamaraPrincipal = document.getElementById('btnCam');
