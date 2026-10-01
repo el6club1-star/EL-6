@@ -243,6 +243,9 @@
                 </div>
 
                 <div id="menuOpcionesPuertaExtra" style="display:none;">
+                    <button class="btn-menu-opcion" onclick="exportarExcel();"> Informe Excel</button>
+                    <button class="btn-menu-opcion" onclick="exportarBaseDatos();"> Copia Seguridad</button>
+                    <button class="btn-menu-opcion" onclick="document.getElementById('importFile').click();"> Restaurar Copia</button>
                     <button class="btn-menu-opcion btn-menu-peligro" onclick="abrirModalCierrePuertaCiego();"> Cierre de Caja</button>
                 </div>
                 
@@ -618,7 +621,7 @@
                         <button class="btn-acc" style="color: ${colorBotonEntradaSalir}; border-color: ${colorBotonEntradaSalir}; ${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${textoEntradaSalir}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc-borrar" style="${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')" title="Borrar Socio">🗑️</button>
+                        <button class="btn-acc-borrar" style="${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')" title="Borrar Socio"></button>
                     </td>
                 </tr>`;
             }).join('');
