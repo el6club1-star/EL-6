@@ -55,7 +55,7 @@
             transition: 0.2s;
         }
         .btn-acc-borrar::before {
-            content: "🗑️";
+            content: "";
         }
         .btn-acc-borrar:hover {
             background: #e2e8f0 !important;
@@ -222,6 +222,37 @@
             background: rgba(239, 68, 68, 0.12) !important;
             color: #ef4444 !important;
             border-color: rgba(239, 68, 68, 0.3) !important;
+        }
+
+        /* Estilo para la burbuja de consumiciones y su flechita dorada */
+        #ventanilla-consumos {
+            display: none;
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 240px;
+            background: #141414;
+            border: 2px solid #d4af37;
+            border-radius: 14px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.95);
+            z-index: 100001;
+            padding: 14px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            text-align: left;
+        }
+        #ventanilla-consumos::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 12px;
+            height: 12px;
+            background: #141414;
+            border-right: 2px solid #d4af37;
+            border-bottom: 2px solid #d4af37;
         }
     </style>
 </head>
@@ -772,52 +803,47 @@
             }
 
             let htmlConsumos = `
-                <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif;">
-                    <button type="button" onclick="abrirBurbujaFlotante()" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                         GESTIONAR CONSUMICIONES 
+                <div style="margin: 5px auto; width: 100%; max-width: 240px; font-family: 'Inter', sans-serif; position: relative;"
+                     onmouseenter="abrirBurbujaFlotante()" 
+                     onmouseleave="cerrarBurbujaFlotante()">
+                    <button type="button" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                         GESTIONAR CONSUMICIONES <span style="font-size: 10px; color: #d4af37;">▼</span>
                     </button>
+                    <div id="ventanilla-consumos" onmouseenter="abrirBurbujaFlotante()" onmouseleave="cerrarBurbujaFlotante()"></div>
                 </div>
             `;
 
             document.getElementById('card-consumos').innerHTML = htmlConsumos;
 
             let burbujaExterna = document.getElementById('ventanilla-consumos');
-            if (!burbujaExterna) {
-                burbujaExterna = document.createElement('div');
-                burbujaExterna.id = 'ventanilla-consumos';
-                burbujaExterna.style.cssText = "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; background: #141414; border: 2px solid #d4af37; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.95); z-index: 100001; padding: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;";
-                document.getElementById('modalTarjeta').appendChild(burbujaExterna);
-            }
-
-            burbujaExterna.innerHTML = "";
-
-            let htmlBurbuja = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
-                    <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
-                    <button type="button" onclick="document.getElementById('ventanilla-consumos').style.display='none'" style="background: none; border: none; color: #ff4a4a; font-size: 15px; font-weight: bold; cursor: pointer; padding: 0 4px;"></button>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-            `;
-
-            productosValidos.forEach(prod => {
-                const cantidad = consumosSocio[prod];
-
-                htmlBurbuja += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
-                        <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
-                            
-                            <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
-                            
-                            <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
-                        </div>
+            if (burbujaExterna) {
+                let htmlBurbuja = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
+                        <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px;">MODIFICAR PRODUCTOS</span>
                     </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
                 `;
-            });
 
-            htmlBurbuja += `</div>`;
-            burbujaExterna.innerHTML = htmlBurbuja;
+                productosValidos.forEach(prod => {
+                    const cantidad = consumosSocio[prod];
+
+                    htmlBurbuja += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
+                            <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                                
+                                <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
+                                
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                htmlBurbuja += `</div>`;
+                burbujaExterna.innerHTML = htmlBurbuja;
+            }
 
             const btnsTarjeta = document.querySelectorAll("#modalTarjeta button, #cardMain button");
             btnsTarjeta.forEach(btn => {
@@ -866,6 +892,13 @@
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) {
                 ventanilla.style.display = 'block';
+            }
+        }
+
+        function cerrarBurbujaFlotante() {
+            const ventanilla = document.getElementById('ventanilla-consumos');
+            if (ventanilla) {
+                ventanilla.style.display = 'none';
             }
         }
 
