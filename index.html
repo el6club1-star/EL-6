@@ -54,6 +54,9 @@
             margin-right: 8px;
             transition: 0.2s;
         }
+        .btn-acc-borrar::before {
+            content: "🗑️";
+        }
         .btn-acc-borrar:hover {
             background: #e2e8f0 !important;
             color: #1e293b !important;
@@ -246,7 +249,7 @@
                     <button class="btn-menu-opcion" onclick="exportarExcel();"> Informe Excel</button>
                     <button class="btn-menu-opcion" onclick="exportarBaseDatos();"> Copia Seguridad</button>
                     <button class="btn-menu-opcion" onclick="document.getElementById('importFile').click();"> Restaurar Copia</button>
-                    <button class="btn-menu-opcion" onclick="abrirModalCierrePuertaCiego();"> Cierre de Caja</button>
+                    <button class="btn-menu-opcion btn-menu-peligro" onclick="abrirModalCierrePuertaCiego();"> Cierre de Caja</button>
                 </div>
                 
                 <div style="margin-top: 3px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
@@ -609,16 +612,15 @@
             document.getElementById('st-vetados').innerText = db.filter(x => x.vetado).length;
             
             document.getElementById('lista').innerHTML = f.map(s => {
-                // Color dinámico para entrar/salir: Verde si está FUERA (para entrar), Rojo si está DENTRO (para salir)
-                const colorBotonEntradaSalir = s.dentro ? '#ef4444' : '#22c55e';
+                const puntoColor = s.dentro ? '#22c55e' : '#ef4444';
                 const textoEntradaSalir = s.dentro ? 'SALIR' : 'ENTRAR';
 
                 return `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td>${s.dentro ? 'DENTRO' : 'FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${puntoColor}; margin-right:6px;"></span>${s.dentro ? 'DENTRO' : 'FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
-                        <button class="btn-acc" style="color: ${colorBotonEntradaSalir}; border-color: ${colorBotonEntradaSalir}; ${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${textoEntradaSalir}</button>
+                        <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${textoEntradaSalir}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
                         <button class="btn-acc-borrar" style="${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')" title="Borrar Socio"></button>
