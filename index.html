@@ -618,7 +618,7 @@
                 return `
                 <tr class="${s.vetado ? 'fila-vetada' : ''}">
                     <td>${s.id}</td><td>${formatearDNI(s.dni)}</td><td>${s.nombre}</td><td>${s.cat}</td>
-                    <td><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:${puntoColor}; margin-right:6px; box-shadow: 0 0 6px ${puntoColor};"></span>${s.dentro ? 'DENTRO' : 'FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
+                    <td><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:${puntoColor}; margin-right:6px;"></span>${s.dentro ? 'DENTRO' : 'FUERA'}</td><td>${s.motivo || '-'}</td><td>${s.hora || '-'}</td>
                     <td>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${textoEntradaSalir}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
