@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v5.10 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v5.11 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -455,7 +455,13 @@
                     render(); 
                     if (socioActual) {
                         const actualizado = db.find(x => x.dni === socioActual.dni);
-                        if (actualizado) socioActual = actualizado;
+                        if (actualizado) {
+                            // Preservamos las consumiciones locales si el servidor todavía va rezagado
+                            if (!actualizado.consumiciones && socioActual.consumiciones) {
+                                actualizado.consumiciones = socioActual.consumiciones;
+                            }
+                            socioActual = actualizado;
+                        }
                     }
                 }
             } catch (err) {}
@@ -563,6 +569,10 @@
                     render();
                     
                     if (socioActual && socioActual.dni === payload.new.dni) {
+                        // Si nosotros tenemos consumiciones locales más avanzadas, no pisamos con el viejo del servidor
+                        if (socioActual.consumiciones && payload.new.consumiciones && socioActual.consumiciones.length > payload.new.consumiciones.length) {
+                            return;
+                        }
                         socioActual = payload.new;
 
                         const stringNuevas = String(payload.new.consumiciones || '').trim();
@@ -777,7 +787,6 @@
         function abrirTarjeta(s) {
             if (!s) return;
             
-            // Asegurar que usamos la versión más fresca de la base de datos local si existe
             const socioReal = db.find(x => x.dni === s.dni) || s;
             socioActual = socioReal;
 
@@ -916,7 +925,8 @@
             }
         }
 
-        async function modificarCantidadDirecta(dni, producto, cambio) {
+        // FUNCIÓN MEJORADA: Modificación instantánea y bloqueo persistente contra cierres rápidos
+        function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
 
             let socioActivo = null;
@@ -978,7 +988,7 @@
                 .map(p => `${p}:${historicoMax[p]}`)
                 .join(',');
 
-            // Actualización inmediata local en memoria antes de la red
+            // 1. Guardado inmediato en memoria global y local para que el cierre de caja lo lea al instante
             socioActivo.consumiciones = resultadoString;
             socioActivo.historico_max_consumiciones = historicoString;
 
@@ -995,19 +1005,13 @@
                 socioActual.historico_max_consumiciones = historicoString;
             }
 
-            // Guardado garantizado en Supabase (Usamos include/await con control de errores para asegurar persistencia)
-            try {
-                const { error } = await _supabase.from(NOMBRE_TABLA).update({ 
-                    consumiciones: resultadoString,
-                    historico_max_consumiciones: historicoString 
-                }).eq('dni', dni);
-
-                if (error) {
-                    console.error("Error al sincronizar con Supabase:", error.message);
-                }
-            } catch (err) {
-                console.error("Fallo de red al guardar consumiciones:", err);
-            }
+            // 2. Persistencia en Supabase de forma segura (sin bloquear la interfaz)
+            _supabase.from(NOMBRE_TABLA).update({ 
+                consumiciones: resultadoString,
+                historico_max_consumiciones: historicoString 
+            }).eq('dni', dni).then(({ error }) => {
+                if (error) console.error("Error sincronizando consumo:", error.message);
+            });
         }
 
         async function descargarTarjeta() { 
@@ -1051,7 +1055,7 @@
         }
 
         async function cerrar() { 
-            // Antes de cerrar del todo, aseguramos una última sincronización de datos con el servidor en segundo plano
+            // Forzar guardado inmediato en red antes de ocultar el modal de tarjeta
             if (socioActual && socioActual.dni) {
                 await _supabase.from(NOMBRE_TABLA).update({ 
                     consumiciones: socioActual.consumiciones || "",
@@ -1195,7 +1199,7 @@
         }
 
         async function prepararCierreCaja() { 
-            // Asegurar que refrescamos datos antes de calcular el cierre para coger los últimos cambios de consumiciones en la nube
+            // Forzar actualización de datos frescos antes de calcular
             if (typeof refrescarDatos === 'function') {
                 await refrescarDatos();
             }
