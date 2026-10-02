@@ -54,7 +54,7 @@
             transition: 0.2s;
         }
         .btn-acc-borrar::before {
-            content: "🗑️";
+            content: "";
         }
         .btn-acc-borrar:hover {
             background: #e2e8f0 !important;
@@ -227,11 +227,11 @@
             border-color: rgba(239, 68, 68, 0.3) !important;
         }
 
-        /* Burbuja de consumiciones centrada encima exacta del botón de gestión */
+        /* Burbuja de consumiciones centrada encima exacta del botón de gestión (bajada y ralentizada suavemente) */
         #ventanilla-consumos {
             display: none;
             position: absolute;
-            bottom: 0px;
+            bottom: -15px;
             left: 50%;
             transform: translateX(-50%);
             width: 240px;
@@ -244,6 +244,8 @@
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
             text-align: left;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
         #ventanilla-consumos::after {
             content: "";
@@ -810,7 +812,7 @@
                      onmouseenter="abrirBurbujaFlotante()" 
                      onmouseleave="cerrarBurbujaFlotante()">
                     <button type="button" style="width: 100%; background: rgba(0,0,0,0.6); color: #d4af37; border: 1px solid #d4af37; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 6px;">
-                         GESTIONAR CONSUMICIONES <span style="font-size: 10px; color: #d4af37;">▼</span>
+                         GESTIONAR CONSUMICIONES <span style="font-size: 10px; color: #d4af37;"></span>
                     </button>
                     <div id="ventanilla-consumos" onmouseenter="abrirBurbujaFlotante()" onmouseleave="cerrarBurbujaFlotante()"></div>
                 </div>
@@ -895,13 +897,21 @@
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) {
                 ventanilla.style.display = 'block';
+                setTimeout(() => {
+                    ventanilla.style.opacity = '1';
+                }, 20);
             }
         }
 
         function cerrarBurbujaFlotante() {
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) {
-                ventanilla.style.display = 'none';
+                ventanilla.style.opacity = '0';
+                setTimeout(() => {
+                    if (ventanilla.style.opacity === '0') {
+                        ventanilla.style.display = 'none';
+                    }
+                }, 400);
             }
         }
 
@@ -993,7 +1003,10 @@
         function cerrar() { 
             document.getElementById('modalTarjeta').style.display = 'none'; 
             const ventanilla = document.getElementById('ventanilla-consumos');
-            if (ventanilla) ventanilla.style.display = 'none';
+            if (ventanilla) {
+                ventanilla.style.opacity = '0';
+                ventanilla.style.display = 'none';
+            }
             if (typeof canvas !== 'undefined' && canvas && typeof ctx !== 'undefined' && ctx) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height); 
             }
