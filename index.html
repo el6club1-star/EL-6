@@ -227,11 +227,11 @@
             border-color: rgba(239, 68, 68, 0.3) !important;
         }
 
-        /* Burbuja de consumiciones centrada encima exacta del botón de gestión */
+       /* Burbuja de consumiciones centrada encima exacta del botón de gestión */
         #ventanilla-consumos {
             display: none;
             position: absolute;
-            bottom: 0px;
+            bottom: -15px;
             left: 50%;
             transform: translateX(-50%);
             width: 240px;
@@ -244,6 +244,8 @@
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
             text-align: left;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
         #ventanilla-consumos::after {
             content: "";
