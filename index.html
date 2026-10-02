@@ -53,9 +53,6 @@
             margin-right: 8px;
             transition: 0.2s;
         }
-        .btn-acc-borrar::before {
-            content: "";
-        }
         .btn-acc-borrar:hover {
             background: #e2e8f0 !important;
             color: #1e293b !important;
@@ -225,7 +222,7 @@
             border-color: rgba(239, 68, 68, 0.3) !important;
         }
 
-        /* Burbuja de consumiciones bajada 2-3 mm más para que respire por completo */
+        /* Burbuja de consumiciones */
         #ventanilla-consumos {
             display: none;
             position: absolute;
@@ -1200,7 +1197,6 @@
                     recaudacionEsperada += PRECIO_ENTRADA;
 
                     let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
-                    // CORRECCIÓN ROBUSTA: Lee el histórico máximo de la noche (o consumiciones de respaldo)
                     const stringConsumos = String(s.historico_max_consumiciones || s.consumiciones || '').trim();
                     if (stringConsumos.includes(':')) {
                         stringConsumos.split(',').forEach(item => {
