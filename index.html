@@ -919,15 +919,18 @@
             let socioActivo = null;
             if (typeof db !== 'undefined') socioActivo = db.find(x => x.dni === dni);
             if (!socioActivo) socioActivo = socioActual;
+            if (!socioActivo) return;
 
             let consumos = {};
             productosValidos.forEach(p => consumos[p] = 0);
 
-            const stringOriginal = String(socioActivo ? socioActivo.consumiciones : '').trim();
+            const stringOriginal = String(socioActivo.consumiciones || '').trim();
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
                     const [p, c] = item.split(':');
-                    if(p && productosValidos.includes(p.trim().toUpperCase())) consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    if(p && productosValidos.includes(p.trim().toUpperCase())) {
+                        consumos[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    }
                 });
             }
 
@@ -936,18 +939,18 @@
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[prodKey] = nuevaCant;
 
-            // LEER HISTÓRICO MÁXIMO ACUMULADO (Para que la caja nunca baje si se resta)
             let historicoMax = {};
             productosValidos.forEach(p => historicoMax[p] = 0);
-            const stringHistorico = String(socioActivo ? socioActivo.historico_max_consumiciones || '' : '').trim();
+            const stringHistorico = String(socioActivo.historico_max_consumiciones || '').trim();
             if (stringHistorico.includes(':')) {
                 stringHistorico.split(',').forEach(item => {
                     const [p, c] = item.split(':');
-                    if(p && productosValidos.includes(p.trim().toUpperCase())) historicoMax[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    if(p && productosValidos.includes(p.trim().toUpperCase())) {
+                        historicoMax[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    }
                 });
             }
 
-            // Si la nueva cantidad supera el récord de la noche, actualizamos el récord hacia arriba
             if (nuevaCant > (historicoMax[prodKey] || 0)) {
                 historicoMax[prodKey] = nuevaCant;
             }
@@ -968,11 +971,18 @@
                 .map(p => `${p}:${historicoMax[p]}`)
                 .join(',');
 
-            // Guardamos ambos en Supabase (la tarjeta actualiza su consumo normal, y la caja leerá el histórico máximo)
-            await _supabase.from(NOMBRE_TABLA).update({ 
+            const { error } = await _supabase.from(NOMBRE_TABLA).update({ 
                 consumiciones: resultadoString,
                 historico_max_consumiciones: historicoString 
             }).eq('dni', dni);
+
+            if (error) {
+                console.error("Error al guardar consumiciones en Supabase:", error.message);
+                return;
+            }
+
+            socioActivo.consumiciones = resultadoString;
+            socioActivo.historico_max_consumiciones = historicoString;
 
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
@@ -981,6 +991,7 @@
                     db[idx].historico_max_consumiciones = historicoString;
                 }
             }
+            
             if (socioActual && socioActual.dni === dni) {
                 socioActual.consumiciones = resultadoString;
                 socioActual.historico_max_consumiciones = historicoString;
