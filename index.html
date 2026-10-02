@@ -936,22 +936,6 @@
             if (nuevaCant < 0) nuevaCant = 0;
             consumos[prodKey] = nuevaCant;
 
-            // Leer histórico máximo acumulado de la noche
-            let historicoMax = {};
-            productosValidos.forEach(p => historicoMax[p] = 0);
-            const stringHistorico = String(socioActivo ? socioActivo.historico_max_consumiciones || '' : '').trim();
-            if (stringHistorico.includes(':')) {
-                stringHistorico.split(',').forEach(item => {
-                    const [p, c] = item.split(':');
-                    if(p && productosValidos.includes(p.trim().toUpperCase())) historicoMax[p.trim().toUpperCase()] = parseInt(c) || 0;
-                });
-            }
-
-            // Si la nueva cantidad supera el récord de la noche, lo actualizamos hacia arriba
-            if (nuevaCant > (historicoMax[prodKey] || 0)) {
-                historicoMax[prodKey] = nuevaCant;
-            }
-
             const elementoContador = document.getElementById(`v-cant-${producto}`);
             if (elementoContador) {
                 elementoContador.innerText = nuevaCant;
@@ -963,26 +947,14 @@
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
-            let historicoString = Object.keys(historicoMax)
-                .filter(p => historicoMax[p] > 0)
-                .map(p => `${p}:${historicoMax[p]}`)
-                .join(',');
-
-            await _supabase.from(NOMBRE_TABLA).update({ 
-                consumiciones: resultadoString,
-                historico_max_consumiciones: historicoString 
-            }).eq('dni', dni);
+            await _supabase.from(NOMBRE_TABLA).update({ consumiciones: resultadoString }).eq('dni', dni);
 
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
-                if (idx !== -1) {
-                    db[idx].consumiciones = resultadoString;
-                    db[idx].historico_max_consumiciones = historicoString;
-                }
+                if (idx !== -1) db[idx].consumiciones = resultadoString;
             }
             if (socioActual && socioActual.dni === dni) {
                 socioActual.consumiciones = resultadoString;
-                socioActual.historico_max_consumiciones = historicoString;
             }
         }
 
