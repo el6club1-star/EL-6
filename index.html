@@ -657,7 +657,7 @@
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="toggleEntrada('${s.dni}')">${textoEntradaSalir}</button>
                         <button class="btn-acc" style="${nivel==='camarero'?'display:none':''}" onclick="tVeto('${s.dni}')">VETO</button>
                         <button class="btn-acc" onclick="reAbrir('${s.dni}')">TARJETA</button>
-                        <button class="btn-acc-borrar" style="${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')" title="Borrar Socio"></button>
+                        <button class="btn-acc-borrar" style="${nivel!=='jefe'?'display:none':''}" onclick="borrarSocio('${s.dni}')" title="Borrar Socio">🗑️</button>
                     </td>
                 </tr>`;
             }).join('');
