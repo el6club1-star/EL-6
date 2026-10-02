@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v5.11 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v5.9 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -52,6 +52,9 @@
             font-size: 13px;
             margin-right: 8px;
             transition: 0.2s;
+        }
+        .btn-acc-borrar::before {
+            content: "";
         }
         .btn-acc-borrar:hover {
             background: #e2e8f0 !important;
@@ -222,7 +225,7 @@
             border-color: rgba(239, 68, 68, 0.3) !important;
         }
 
-        /* Burbuja de consumiciones */
+        /* Burbuja de consumiciones bajada 2-3 mm más para que respire por completo */
         #ventanilla-consumos {
             display: none;
             position: absolute;
@@ -382,12 +385,12 @@
                 <p><strong>5. EJERCICIO RIGUROSO DEL DERECHO DE ADMISIÓN:</strong> El Club ejerce de forma permanente el Derecho de Admisión amparado por la legislación vigente aplicable a establecimientos privados y de espectáculos públicos. La Dirección y sus personal de control se reservan el derecho unilateral de denegar el acceso o suspender la entrada a cualquier socio, aun estando registrado, por razones de aforo, seguridad, alteración del orden o por no superar los filtros de verificación de la puerta de acceso.</p>
                 <p><strong>6. CÓDIGO DE VESTIMENTA Y DECORO EXIGIBLE (DRESS CODE):</strong> Para acceder y permanecer en el Club se exige el cumplimiento estricto del código de indumentaria elegante y sofisticado determinado por la empresa. Queda terminantemente prohibido el acceso portando ropa o calzado deportivo, prendas de baño, ropa de trabajo, prendas con mensajes de carácter ofensivo o cualquier vestuario que, a criterio exclusivo del personal de admisión, no cumpla con los estándares estéticos del local.</p>
                 <p><strong>7. REGLAS ESENCIALES DE CONDUCTA Y EXPULSIÓN INMEDIATA:</strong> El Club es un espacio de convivencia privado. Queda estrictamente prohibida cualquier conducta que implique violencia física o verbal, actitudes de acoso, lenguaje despectivo, manifestaciones racistas, xenófobas, homófobas o discriminatorias, así como cualquier comportamiento molesto, intimidatorio o peligroso para los asistentes o el personal. El incumplimiento de este punto conllevará la expulsión fulminante del recinto.</p>
-                <p><strong>8. POLÍTICA DE TOLERANCIA CERO CON SUSTANCIAS ILEGALES:</strong> El Club mantiene una política de tolerancia cero absoluta respecto al consumo, tenencia, introducción, facilitación o tráfico de cualquier tipo de sustancia estupefaciente, droga ilegal o psicotrópica dentro de todo el perímetro de las instalaciones (incluyendo zonas comunes y aseos). La mera detección o sospecha fundada por parte del personal facultará al Club para la retirada permanente de la condición de socio, expulsión inmediata y, en su caso, la correspondiente notificación a las autoridades policiales españolas.</p>
+                <p><strong>8. POLÍTICA DE TOLERANCIA CERO CON SUSTANCIAS ILEGALES:</strong> El Club mantiene una política de tolerancia cero absoluta respecto ao consumo, tenencia, introducción, facilitación o tráfico de cualquier tipo de sustancia estupefaciente, droga ilegal o psicotrópica dentro de todo el perímetro de las instalaciones (incluyendo zonas comunes y aseos). La mera detección o sospecha fundada por parte del personal facultará al Club para la retirada permanente de la condición de socio, expulsión inmediata y, en su caso, la correspondiente notificación a las autoridades policiales españolas.</p>
                 <p><strong>9. CONSUMO RESPONSABLE DE ALCOHOL Y SEGURIDAD:</strong> El socio se compromete a mantener un comportamiento cívico y controlado. De acuerdo con la normativa vigente de protección al menor y seguridad pública, el personal del local se reserva el derecho legítimo de negar el servicio de bebidas alcohólicas a cualquier persona que muestre síntomas evidentes de embriaguez o alteración psicológica, procediendo a su desalojo si compromete la tranquilidad del establecimiento.</p>
                 <p><strong>10. PROTECCIÓN RADICAL DE LA PRIVACIDAD (PROHIBICIÓN DE IMÁGENES Y VÍDEOS):</strong> Con el fin de blindar el derecho a la intimidad, al honor y a la propia imagen de todos los socios y asistentes, queda estrictamente prohibida la captura de fotografías, grabaciones de vídeo o transmisiones en directo (streaming) mediante el uso de teléfonos móviles o cualquier dispositivo electrónico en el interior del recinto sin autorización expresa y por escrito de la Dirección. La vulneración de esta norma supondrá la revocación automática de la condición de socio y la reserva de acciones legales por parte del Club.</p>
                 <p><strong>11. EXENCIÓN DE RESPONSABILIDAD POR EFECTOS PERSONALES:</strong> El Club dispone de las medidas de seguridad genéricas exigidas por la ley, pero no se hace responsable en ningún caso de la pérdida, hurto, robo, sustracción o daño material que puedan sufrir los objetos personales, dinero, prendas o dispositivos electrónicos de los socios dentro del establecimiento, siendo responsabilidad exclusiva de cada asistente la custodia diligente de sus pertenencias.</p>
                 <p><strong>12. RESPONSABILIDAD POR DAÑOS MATERIALES, VETO Y JURISDICCIÓN COMPETENTE:</strong> Cualquier daño, rotura o desperfecto causado de forma intencionada o por negligencia en el mobiliario, equipos, decoración o estructura del local generará la obligación de indemnizar económicamente al Club por el coste total de su reparación o sustitución. El incumplimiento de cualquiera de las cláusulas de este documento otorgará a la Dirección la facultad de aplicar el régimen sancionador de veto definitivo. Asimismo, para la resolución de cualquier controversia, litigio, discrepancia o reclamación judicial derivada de la interpretación o ejecución de este contrato y reglamento, <strong>tanto el Club como el socio se someten expresamente, con renuncia formal a cualquier otro fuero o jurisdicción que pudiera corresponderles, a la competencia exclusiva de los Juzgados y Tribunales de Madrid capital.</strong></p>
-                <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN Y COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
+                <p style="margin-top: 20px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px;">DECLARACIÓN AND COMPROMISO FORMAL: Al estampar mi firma digital/biométrica en el recuadro inferior, declaro bajo mi exclusiva responsabilidad que soy mayor de 18 años, que los datos introducidos son reales y exactos, y que he leído, comprendido y aceptado en su totalidad las 12 cláusulas de este reglamento interno, la política de privacidad (RGPD), el uso del correo el6club1@gmail.com para notificaciones, y la sumisión jurisdiccional a los Tribunales de Madrid.</p>
             </div>
             
             <canvas id="canvasFirma" width="440" height="120"></canvas>
@@ -449,21 +452,7 @@
         async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
-                if(!error && data) { 
-                    db = data; 
-                    aforo = db.filter(x => x.dentro).length; 
-                    render(); 
-                    if (socioActual) {
-                        const actualizado = db.find(x => x.dni === socioActual.dni);
-                        if (actualizado) {
-                            // Preservamos las consumiciones locales si el servidor todavía va rezagado
-                            if (!actualizado.consumiciones && socioActual.consumiciones) {
-                                actualizado.consumiciones = socioActual.consumiciones;
-                            }
-                            socioActual = actualizado;
-                        }
-                    }
-                }
+                if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
             } catch (err) {}
         }
 
@@ -569,10 +558,6 @@
                     render();
                     
                     if (socioActual && socioActual.dni === payload.new.dni) {
-                        // Si nosotros tenemos consumiciones locales más avanzadas, no pisamos con el viejo del servidor
-                        if (socioActual.consumiciones && payload.new.consumiciones && socioActual.consumiciones.length > payload.new.consumiciones.length) {
-                            return;
-                        }
                         socioActual = payload.new;
 
                         const stringNuevas = String(payload.new.consumiciones || '').trim();
@@ -787,26 +772,29 @@
         function abrirTarjeta(s) {
             if (!s) return;
             
-            const socioReal = db.find(x => x.dni === s.dni) || s;
-            socioActual = socioReal;
-
-            if (!firmaCargadaCache || firmaCargadaCache === "") {
-                firmaCargadaCache = socioReal.firma_b64 || "";
+            if (!socioActual || socioActual.dni !== s.dni) {
+                firmaCargadaCache = "";
             }
 
+            if (s.firma_b64) {
+                firmaCargadaCache = s.firma_b64;
+            }
+
+            socioActual = s;
+
             const card = document.getElementById('cardMain');
-            const catLimpia = (socioReal.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
+            const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
             card.className = `card-vip cat-${catLimpia}`;
 
-            document.getElementById('card-id').innerText = "Nº " + socioReal.id;
-            document.getElementById('card-nom').innerText = socioReal.nombre; 
-            document.getElementById('card-dni').innerText = socioReal.dni;
-            document.getElementById('card-cat-abajo').innerText = (socioReal.cat || "ESTÁNDAR").toUpperCase();
+            document.getElementById('card-id').innerText = "Nº " + s.id;
+            document.getElementById('card-nom').innerText = s.nombre; 
+            document.getElementById('card-dni').innerText = s.dni;
+            document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
 
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
 
-            const stringOriginal = String(socioReal.consumiciones || '').trim();
+            const stringOriginal = String(s.consumiciones || '').trim();
 
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
@@ -846,11 +834,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
                             <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <button type="button" onclick="modificarCantidadDirecta('${socioReal.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
                                 
                                 <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
                                 
-                                <button type="button" onclick="modificarCantidadDirecta('${socioReal.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
                             </div>
                         </div>
                     `;
@@ -878,10 +866,10 @@
                 }
             });
 
-            actualizarVistaPreviaFirma(socioReal.firma_b64 || firmaCargadaCache);
+            actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
 
             document.getElementById('qr-space').innerHTML = ""; 
-            const qr = new QRious({value: socioReal.dni, size: 140}); 
+            const qr = new QRious({value: s.dni, size: 140}); 
             document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
 
             actualizarVisualPago();
@@ -925,8 +913,7 @@
             }
         }
 
-        // FUNCIÓN MEJORADA: Modificación instantánea y bloqueo persistente contra cierres rápidos
-        function modificarCantidadDirecta(dni, producto, cambio) {
+        async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
 
             let socioActivo = null;
@@ -988,7 +975,6 @@
                 .map(p => `${p}:${historicoMax[p]}`)
                 .join(',');
 
-            // 1. Guardado inmediato en memoria global y local para que el cierre de caja lo lea al instante
             socioActivo.consumiciones = resultadoString;
             socioActivo.historico_max_consumiciones = historicoString;
 
@@ -1005,13 +991,14 @@
                 socioActual.historico_max_consumiciones = historicoString;
             }
 
-            // 2. Persistencia en Supabase de forma segura (sin bloquear la interfaz)
-            _supabase.from(NOMBRE_TABLA).update({ 
+            const { error } = await _supabase.from(NOMBRE_TABLA).update({ 
                 consumiciones: resultadoString,
                 historico_max_consumiciones: historicoString 
-            }).eq('dni', dni).then(({ error }) => {
-                if (error) console.error("Error sincronizando consumo:", error.message);
-            });
+            }).eq('dni', dni);
+
+            if (error) {
+                console.error("Error al guardar consumiciones en Supabase:", error.message);
+            }
         }
 
         async function descargarTarjeta() { 
@@ -1054,15 +1041,7 @@
             if (socio) abrirTarjeta(socio); 
         }
 
-        async function cerrar() { 
-            // Forzar guardado inmediato en red antes de ocultar el modal de tarjeta
-            if (socioActual && socioActual.dni) {
-                await _supabase.from(NOMBRE_TABLA).update({ 
-                    consumiciones: socioActual.consumiciones || "",
-                    historico_max_consumiciones: socioActual.historico_max_consumiciones || ""
-                }).eq('dni', socioActual.dni);
-            }
-
+        function cerrar() { 
             document.getElementById('modalTarjeta').style.display = 'none'; 
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) {
@@ -1073,7 +1052,6 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height); 
             }
             if (typeof render === 'function') render();
-            if (typeof refrescarDatos === 'function') refrescarDatos();
         }
 
         function cerrarSesion() { location.reload(); }
@@ -1198,12 +1176,7 @@
             }
         }
 
-        async function prepararCierreCaja() { 
-            // Forzar actualización de datos frescos antes de calcular
-            if (typeof refrescarDatos === 'function') {
-                await refrescarDatos();
-            }
-
+        function prepararCierreCaja() { 
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
             const PRECIO_CERVEZA = 5;
@@ -1222,7 +1195,7 @@
             let recaudacionEsperada = 0;
 
             db.forEach(s => {
-                if (s.dentro || s.hora || s.consumiciones || s.historico_max_consumiciones) {
+                if (s.dentro || s.hora) {
                     totalAsistentes++;
                     recaudacionEsperada += PRECIO_ENTRADA;
 
