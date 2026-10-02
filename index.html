@@ -452,7 +452,17 @@
         async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
-                if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
+                if(!error) { 
+                    db = data; 
+                    aforo = db.filter(x => x.dentro).length; 
+                    render(); 
+                    if (socioActual) {
+                        const actualizado = db.find(x => x.dni === socioActual.dni);
+                        if (actualizado) {
+                            socioActual = actualizado;
+                        }
+                    }
+                }
             } catch (err) {}
         }
 
@@ -720,23 +730,19 @@
                 return;
             }
 
-            abrirTarjeta({ 
-                dni: d, 
-                nombre: n, 
-                email: e, 
-                cumple: c, 
-                cat: cat, 
-                dentro: true, 
+            await refrescarDatos();
+            const socioCreado = db.find(x => x.dni === d) || { 
+                dni: d, nombre: n, email: e, cumple: c, cat: cat, dentro: true, 
                 hora: new Date().toLocaleTimeString() 
-            });
+            };
+
+            abrirTarjeta(socioCreado);
 
             document.getElementById('dni').value = ""; 
             document.getElementById('nom').value = "";
             document.getElementById('mail').value = ""; 
             document.getElementById('cumple').value = "";
             document.getElementById('checkRGPD').checked = false;
-
-            await refrescarDatos(); 
         }
 
         function toggleCamara() {
@@ -752,7 +758,9 @@
                         if(socio) {
                             if(socio.vetado) { alert(` ACCESO DENEGADO: Socio Vetado por: ${socio.motivo}`); return; }
                             await _supabase.from(NOMBRE_TABLA).update({ dentro: !socio.dentro, hora: new Date().toLocaleTimeString() }).eq('dni', socio.dni);
-                            refrescarDatos(); abrirTarjeta(socio);
+                            await refrescarDatos();
+                            const socioActualizado = db.find(x => x.dni === socio.dni) || socio;
+                            abrirTarjeta(socioActualizado);
                         } else {
                             if(confirm("Código leído no pertenece a ningún socio registrado. ¿Deseas darlo de alta ahora?")) {
                                 document.getElementById('dni').value = text.trim().toUpperCase();
@@ -772,29 +780,28 @@
         function abrirTarjeta(s) {
             if (!s) return;
             
-            if (!socioActual || socioActual.dni !== s.dni) {
+            const socioEnMemoria = db.find(x => x.dni === s.dni) || s;
+            socioActual = socioEnMemoria;
+
+            if (socioActual.firma_b64) {
+                firmaCargadaCache = socioActual.firma_b64;
+            } else {
                 firmaCargadaCache = "";
             }
 
-            if (s.firma_b64) {
-                firmaCargadaCache = s.firma_b64;
-            }
-
-            socioActual = s;
-
             const card = document.getElementById('cardMain');
-            const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
+            const catLimpia = (socioActual.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
             card.className = `card-vip cat-${catLimpia}`;
 
-            document.getElementById('card-id').innerText = "Nº " + s.id;
-            document.getElementById('card-nom').innerText = s.nombre; 
-            document.getElementById('card-dni').innerText = s.dni;
-            document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
+            document.getElementById('card-id').innerText = "Nº " + socioActual.id;
+            document.getElementById('card-nom').innerText = socioActual.nombre; 
+            document.getElementById('card-dni').innerText = socioActual.dni;
+            document.getElementById('card-cat-abajo').innerText = (socioActual.cat || "ESTÁNDAR").toUpperCase();
 
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
 
-            const stringOriginal = String(s.consumiciones || '').trim();
+            const stringOriginal = String(socioActual.consumiciones || '').trim();
 
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
@@ -834,11 +841,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
                             <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                                <button type="button" onclick="modificarCantidadDirecta('${socioActual.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
                                 
                                 <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
                                 
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+                                <button type="button" onclick="modificarCantidadDirecta('${socioActual.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
                             </div>
                         </div>
                     `;
@@ -869,7 +876,7 @@
             actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
 
             document.getElementById('qr-space').innerHTML = ""; 
-            const qr = new QRious({value: s.dni, size: 140}); 
+            const qr = new QRious({value: socioActual.dni, size: 140}); 
             document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
 
             actualizarVisualPago();
@@ -1041,7 +1048,10 @@
             if (socio) abrirTarjeta(socio); 
         }
 
-        function cerrar() { 
+        async function cerrar() { 
+            if (socioActual) {
+                await refrescarDatos();
+            }
             document.getElementById('modalTarjeta').style.display = 'none'; 
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) {
