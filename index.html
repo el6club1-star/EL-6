@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SISTEMA ELITE v5.9 - CLUB PRIVADO EL 6</title>
+    <title>SISTEMA ELITE v5.10 - CLUB PRIVADO EL 6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -449,7 +449,15 @@
         async function refrescarDatos() {
             try {
                 const { data, error } = await _supabase.from(NOMBRE_TABLA).select('*').order('created_at', { ascending: false });
-                if(!error) { db = data; aforo = db.filter(x => x.dentro).length; render(); }
+                if(!error && data) { 
+                    db = data; 
+                    aforo = db.filter(x => x.dentro).length; 
+                    render(); 
+                    if (socioActual) {
+                        const actualizado = db.find(x => x.dni === socioActual.dni);
+                        if (actualizado) socioActual = actualizado;
+                    }
+                }
             } catch (err) {}
         }
 
@@ -769,29 +777,27 @@
         function abrirTarjeta(s) {
             if (!s) return;
             
-            if (!socioActual || socioActual.dni !== s.dni) {
-                firmaCargadaCache = "";
-            }
+            // Asegurar que usamos la versión más fresca de la base de datos local si existe
+            const socioReal = db.find(x => x.dni === s.dni) || s;
+            socioActual = socioReal;
 
-            if (s.firma_b64) {
-                firmaCargadaCache = s.firma_b64;
+            if (!firmaCargadaCache || firmaCargadaCache === "") {
+                firmaCargadaCache = socioReal.firma_b64 || "";
             }
-
-            socioActual = s;
 
             const card = document.getElementById('cardMain');
-            const catLimpia = (s.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
+            const catLimpia = (socioReal.cat || "estándar").toLowerCase().replace(/\s+/g, '-');
             card.className = `card-vip cat-${catLimpia}`;
 
-            document.getElementById('card-id').innerText = "Nº " + s.id;
-            document.getElementById('card-nom').innerText = s.nombre; 
-            document.getElementById('card-dni').innerText = s.dni;
-            document.getElementById('card-cat-abajo').innerText = (s.cat || "ESTÁNDAR").toUpperCase();
+            document.getElementById('card-id').innerText = "Nº " + socioReal.id;
+            document.getElementById('card-nom').innerText = socioReal.nombre; 
+            document.getElementById('card-dni').innerText = socioReal.dni;
+            document.getElementById('card-cat-abajo').innerText = (socioReal.cat || "ESTÁNDAR").toUpperCase();
 
             let consumosSocio = {};
             productosValidos.forEach(p => consumosSocio[p] = 0);
 
-            const stringOriginal = String(s.consumiciones || '').trim();
+            const stringOriginal = String(socioReal.consumiciones || '').trim();
 
             if (stringOriginal.includes(':')) {
                 stringOriginal.split(',').forEach(item => {
@@ -831,11 +837,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01);">
                             <span style="font-size: 11px; font-weight: 600; color: #ffffff; text-transform: uppercase;">${prod}</span>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+                                <button type="button" onclick="modificarCantidadDirecta('${socioReal.dni}', '${prod}', -1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
                                 
                                 <span id="v-cant-${prod}" style="font-size: 12px; font-weight: 700; min-width: 18px; text-align: center; color: ${cantidad > 0 ? '#d4af37' : '#fff'}">${cantidad}</span>
                                 
-                                <button type="button" onclick="modificarCantidadDirecta('${s.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+                                <button type="button" onclick="modificarCantidadDirecta('${socioReal.dni}', '${prod}', 1)" style="width: 26px; height: 26px; border-radius: 6px; border: none; background: #d4af37; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
                             </div>
                         </div>
                     `;
@@ -863,10 +869,10 @@
                 }
             });
 
-            actualizarVistaPreviaFirma(socioActual.firma_b64 || firmaCargadaCache);
+            actualizarVistaPreviaFirma(socioReal.firma_b64 || firmaCargadaCache);
 
             document.getElementById('qr-space').innerHTML = ""; 
-            const qr = new QRious({value: s.dni, size: 140}); 
+            const qr = new QRious({value: socioReal.dni, size: 140}); 
             document.getElementById('qr-space').innerHTML = `<img src="${qr.toDataURL()}">`;
 
             actualizarVisualPago();
@@ -972,6 +978,7 @@
                 .map(p => `${p}:${historicoMax[p]}`)
                 .join(',');
 
+            // Actualización inmediata local en memoria antes de la red
             socioActivo.consumiciones = resultadoString;
             socioActivo.historico_max_consumiciones = historicoString;
 
@@ -988,13 +995,18 @@
                 socioActual.historico_max_consumiciones = historicoString;
             }
 
-            const { error } = await _supabase.from(NOMBRE_TABLA).update({ 
-                consumiciones: resultadoString,
-                historico_max_consumiciones: historicoString 
-            }).eq('dni', dni);
+            // Guardado garantizado en Supabase (Usamos include/await con control de errores para asegurar persistencia)
+            try {
+                const { error } = await _supabase.from(NOMBRE_TABLA).update({ 
+                    consumiciones: resultadoString,
+                    historico_max_consumiciones: historicoString 
+                }).eq('dni', dni);
 
-            if (error) {
-                console.error("Error al guardar consumiciones en Supabase:", error.message);
+                if (error) {
+                    console.error("Error al sincronizar con Supabase:", error.message);
+                }
+            } catch (err) {
+                console.error("Fallo de red al guardar consumiciones:", err);
             }
         }
 
@@ -1038,7 +1050,15 @@
             if (socio) abrirTarjeta(socio); 
         }
 
-        function cerrar() { 
+        async function cerrar() { 
+            // Antes de cerrar del todo, aseguramos una última sincronización de datos con el servidor en segundo plano
+            if (socioActual && socioActual.dni) {
+                await _supabase.from(NOMBRE_TABLA).update({ 
+                    consumiciones: socioActual.consumiciones || "",
+                    historico_max_consumiciones: socioActual.historico_max_consumiciones || ""
+                }).eq('dni', socioActual.dni);
+            }
+
             document.getElementById('modalTarjeta').style.display = 'none'; 
             const ventanilla = document.getElementById('ventanilla-consumos');
             if (ventanilla) {
@@ -1049,6 +1069,7 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height); 
             }
             if (typeof render === 'function') render();
+            if (typeof refrescarDatos === 'function') refrescarDatos();
         }
 
         function cerrarSesion() { location.reload(); }
@@ -1173,7 +1194,12 @@
             }
         }
 
-        function prepararCierreCaja() { 
+        async function prepararCierreCaja() { 
+            // Asegurar que refrescamos datos antes de calcular el cierre para coger los últimos cambios de consumiciones en la nube
+            if (typeof refrescarDatos === 'function') {
+                await refrescarDatos();
+            }
+
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
             const PRECIO_CERVEZA = 5;
