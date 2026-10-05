@@ -1159,7 +1159,7 @@
             }
         }
 
-        function prepararCierreCaja() { 
+       function prepararCierreCaja() { 
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
             const PRECIO_CERVEZA = 5;
@@ -1183,7 +1183,10 @@
                     recaudacionEsperada += PRECIO_ENTRADA;
 
                     let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
-                    const stringConsumos = String(s.historico_max_consumiciones || s.consumiciones || '').trim();
+                    
+                    // MODIFICADO: Lee únicamente las consumiciones reales actuales de la tarjeta
+                    const stringConsumos = String(s.consumiciones || '').trim();
+                    
                     if (stringConsumos.includes(':')) {
                         stringConsumos.split(',').forEach(item => {
                             const partes = item.split(':');
