@@ -920,7 +920,7 @@
             }
         }
 
-     async function modificarCantidadDirecta(dni, producto, cambio) {
+        async function modificarCantidadDirecta(dni, producto, cambio) {
             const prodKey = producto.toUpperCase();
 
             let socioActivo = null;
@@ -928,6 +928,7 @@
             if (!socioActivo) socioActivo = socioActual;
             if (!socioActivo) return;
 
+            // 1. Actualizar saldo actual de la tarjeta (consumiciones)
             let consumos = {};
             productosValidos.forEach(p => consumos[p] = 0);
 
@@ -959,21 +960,49 @@
                 .map(p => `${p}:${consumos[p]}`)
                 .join(','); 
 
+            // 2. Gestionar ventas acumuladas de la noche (ventas_noche) - NUNCA baja al restar
+            let ventasNoche = {};
+            productosValidos.forEach(p => ventasNoche[p] = 0);
+            const stringVentasNoche = String(socioActivo.ventas_noche || '').trim();
+            if (stringVentasNoche.includes(':')) {
+                stringVentasNoche.split(',').forEach(item => {
+                    const partes = item.split(':');
+                    const p = partes[0];
+                    const c = partes[1];
+                    if(p && productosValidos.includes(p.trim().toUpperCase())) {
+                        ventasNoche[p.trim().toUpperCase()] = parseInt(c) || 0;
+                    }
+                });
+            }
+
+            if (cambio > 0) {
+                ventasNoche[prodKey] = (ventasNoche[prodKey] || 0) + cambio;
+            }
+
+            let ventasNocheString = Object.keys(ventasNoche)
+                .filter(p => ventasNoche[p] > 0)
+                .map(p => `${p}:${ventasNoche[p]}`)
+                .join(',');
+
             socioActivo.consumiciones = resultadoString;
+            socioActivo.ventas_noche = ventasNocheString;
 
             if (typeof db !== 'undefined') {
                 let idx = db.findIndex(x => x.dni === dni);
                 if (idx !== -1) {
                     db[idx].consumiciones = resultadoString;
+                    db[idx].ventas_noche = ventasNocheString;
                 }
             }
             
             if (socioActual && socioActual.dni === dni) {
                 socioActual.consumiciones = resultadoString;
+                socioActual.ventas_noche = ventasNocheString;
             }
 
             const { error } = await _supabase.from(NOMBRE_TABLA).update({ 
-                consumiciones: resultadoString 
+                consumiciones: resultadoString,
+                ventas_noche: ventasNocheString
             }).eq('dni', dni);
 
             if (error) {
@@ -1159,7 +1188,7 @@
             }
         }
 
-       function prepararCierreCaja() { 
+        function prepararCierreCaja() { 
             const PRECIO_ENTRADA = 20;
             const PRECIO_COPA = 10;
             const PRECIO_CERVEZA = 5;
@@ -1184,8 +1213,8 @@
 
                     let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
                     
-                    // MODIFICADO: Lee únicamente las consumiciones reales actuales de la tarjeta
-                    const stringConsumos = String(s.consumiciones || '').trim();
+                    // MODIFICADO: Lee de ventas_noche para que las correcciones (restas) en la tarjeta no reduzcan el arqueo
+                    const stringConsumos = String(s.ventas_noche || '').trim();
                     
                     if (stringConsumos.includes(':')) {
                         stringConsumos.split(',').forEach(item => {
@@ -1245,6 +1274,7 @@
             calcularDescuadreEnTiempoReal();
             document.getElementById('modalLibroCajas').style.display = 'flex';
         }
+
         function calcularDescuadreEnTiempoReal() {
             const tpv = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
             const efectivo = parseFloat(document.getElementById('cajaEfectivoInput').value) || 0;
@@ -1308,6 +1338,7 @@
                         dentro: false, 
                         hora: null, 
                         consumiciones: null,
+                        ventas_noche: null, // Limpiamos también el acumulador de ventas nocturnas
                         historico_max_consumiciones: null,
                         pago_realizado: false,
                         hora_pago: null
@@ -1573,7 +1604,7 @@
             if (listaIds.length > 0) {
                 await _supabase
                     .from(NOMBRE_TABLA)
-                    .update({ dentro: false, hora: null, consumiciones: null, historico_max_consumiciones: null, pago_realizado: false, hora_pago: null })
+                    .update({ dentro: false, hora: null, consumiciones: null, ventas_noche: null, historico_max_consumiciones: null, pago_realizado: false, hora_pago: null })
                     .in('id', listaIds);
             }
 
