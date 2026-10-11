@@ -1299,7 +1299,7 @@
             }
         }
 
-       async function ejecutarCierreResetFinal() {
+      async function ejecutarCierreResetFinal() {
             if(!confirm("¿Estás completamente seguro de que deseas cerrar la noche? Se guardará en el histórico y se limpiarán los aforos y consumiciones.")) return;
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
@@ -1329,22 +1329,30 @@
                 return;
             }
 
-            // RESETEO GLOBAL EN SUPABASE: Limpia a todos los registros de la tabla de forma segura
-            const { error: errorReset } = await _supabase
-                .from(NOMBRE_TABLA)
-                .update({ 
-                    dentro: false, 
-                    hora: null, 
-                    consumiciones: null,
-                    ventas_noche: null, // Limpiamos también el acumulador de ventas nocturnas
-                    historico_max_consumiciones: null,
-                    pago_realizado: false,
-                    hora_pago: null
-                })
-                .neq('dni', 'FORZAR_NINGUNO');
+            // OBTENEMOS TODOS LOS IDS DE LA BASE DE DATOS LOCAL O DIRECTAMENTE DE SUPABASE
+            // Esto asegura que cubrimos absolutamente a todos los socios registrados
+            const { data: todosLosSocios, error: errFetch } = await _supabase.from(NOMBRE_TABLA).select('id');
+            
+            if (!errFetch && todosLosSocios && todosLosSocios.length > 0) {
+                const todosLosIds = todosLosSocios.map(s => s.id);
 
-            if (errorReset) {
-                console.error("Error al resetear los socios:", errorReset.message);
+                // Ejecutamos la actualización por lotes o masiva utilizando los IDs reales obtenidos
+                const { error: errorReset } = await _supabase
+                    .from(NOMBRE_TABLA)
+                    .update({ 
+                        dentro: false, 
+                        hora: null, 
+                        consumiciones: null,
+                        ventas_noche: null, 
+                        historico_max_consumiciones: null,
+                        pago_realizado: false,
+                        hora_pago: null
+                    })
+                    .in('id', todosLosIds);
+
+                if (errorReset) {
+                    console.error("Error al resetear los socios:", errorReset.message);
+                }
             }
 
             productosValidos.forEach(prod => {
