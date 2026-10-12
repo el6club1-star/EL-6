@@ -1328,7 +1328,6 @@
                 return;
             }
 
-            // RESETEO TOTAL Y SEGURO DE TODOS LOS SOCIOS EN SUPABASE
             const { data: todosLosSocios, error: errFetch } = await _supabase.from(NOMBRE_TABLA).select('dni');
             
             if (!errFetch && todosLosSocios && todosLosSocios.length > 0) {
