@@ -1328,23 +1328,22 @@
                 return;
             }
 
-            const { data: todosLosSocios, error: errFetch } = await _supabase.from(NOMBRE_TABLA).select('dni');
-            
-            if (!errFetch && todosLosSocios && todosLosSocios.length > 0) {
-                for (let socio of todosLosSocios) {
-                    await _supabase
-                        .from(NOMBRE_TABLA)
-                        .update({ 
-                            dentro: false, 
-                            hora: null, 
-                            consumiciones: null,
-                            ventas_noche: null, 
-                            historico_max_consumiciones: null,
-                            pago_realizado: false,
-                            hora_pago: null
-                        })
-                        .eq('dni', socio.dni);
-                }
+            // RESETEO GLOBAL MASIVO DIRECTO EN SUPABASE
+            const { error: errorReseteo } = await _supabase
+                .from(NOMBRE_TABLA)
+                .update({ 
+                    dentro: false, 
+                    hora: null, 
+                    consumiciones: null,
+                    ventas_noche: null, 
+                    historico_max_consumiciones: null,
+                    pago_realizado: false,
+                    hora_pago: null
+                })
+                .neq('dni', ''); // Aplica a absolutamente todos los registros de la tabla
+
+            if (errorReseteo) {
+                alert(" Aviso: El arqueo se guardó, pero hubo un problema al resetear los socios: " + errorReseteo.message);
             }
 
             productosValidos.forEach(prod => {
@@ -1359,7 +1358,7 @@
             document.getElementById('modalLibroCajas').style.display = 'none';
 
             await refrescarDatos(); 
-            alert(" ¡Noche cerrada con éxito! Registrada en el histórico en la nube.");
+            alert(" ¡Noche cerrada con éxito! Registrada en el histórico y aforos reseteados.");
         }
 
         function inyectorBotonHistorialEnArqueo() {
@@ -1601,23 +1600,22 @@
                 return;
             }
 
-            const { data: todosLosSocios, error: errFetch } = await _supabase.from(NOMBRE_TABLA).select('dni');
-            
-            if (!errFetch && todosLosSocios && todosLosSocios.length > 0) {
-                for (let socio of todosLosSocios) {
-                    await _supabase
-                        .from(NOMBRE_TABLA)
-                        .update({ 
-                            dentro: false, 
-                            hora: null, 
-                            consumiciones: null, 
-                            ventas_noche: null, 
-                            historico_max_consumiciones: null, 
-                            pago_realizado: false, 
-                            hora_pago: null 
-                        })
-                        .eq('dni', socio.dni);
-                }
+            // RESETEO GLOBAL MASIVO DIRECTO EN SUPABASE
+            const { error: errorReseteo } = await _supabase
+                .from(NOMBRE_TABLA)
+                .update({ 
+                    dentro: false, 
+                    hora: null, 
+                    consumiciones: null, 
+                    ventas_noche: null, 
+                    historico_max_consumiciones: null, 
+                    pago_realizado: false, 
+                    hora_pago: null 
+                })
+                .neq('dni', '');
+
+            if (errorReseteo) {
+                alert(" Aviso: El arqueo se guardó, pero hubo un problema al resetear los socios: " + errorReseteo.message);
             }
 
             const modal = document.getElementById('modalCierrePuertaCiego');
