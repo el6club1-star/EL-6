@@ -1213,7 +1213,6 @@
 
                     let consumosMap = { COPA: 0, CERVEZA: 0, REFRESCO: 0, AGUA: 0, ENERGÉTICO: 0, CHUPITO: 0 };
                     
-                    // MODIFICADO: Lee de ventas_noche para que las correcciones (restas) en la tarjeta no reduzcan el arqueo
                     const stringConsumos = String(s.ventas_noche || '').trim();
                     
                     if (stringConsumos.includes(':')) {
@@ -1299,7 +1298,7 @@
             }
         }
 
-     async function ejecutarCierreResetFinal() {
+        async function ejecutarCierreResetFinal() {
             if(!confirm("¿Estás completamente seguro de que deseas cerrar la noche? Se guardará en el histórico y se limpiarán los aforos y consumiciones.")) return;
 
             const totalTPV = parseFloat(document.getElementById('cajaTpvInput').value) || 0;
@@ -1329,11 +1328,10 @@
                 return;
             }
 
-            // OBTENEMOS TODOS LOS SOCIOS DE LA BASE DE DATOS DE SUPABASE
-            const { data: todosLosSocios, error: errFetch } = await _supabase.from(NOMBRE_TABLA).select('*');
+            // RESETEO TOTAL Y SEGURO DE TODOS LOS SOCIOS EN SUPABASE
+            const { data: todosLosSocios, error: errFetch } = await _supabase.from(NOMBRE_TABLA).select('dni');
             
-            if (!errFetch && todosLosSocios) {
-                // Actualizamos uno a uno para garantizar que se limpien todos sin excepción
+            if (!errFetch && todosLosSocios && todosLosSocios.length > 0) {
                 for (let socio of todosLosSocios) {
                     await _supabase
                         .from(NOMBRE_TABLA)
@@ -1604,12 +1602,23 @@
                 return;
             }
 
-            const listaIds = db.map(socio => socio.id).filter(id => id != null);
-            if (listaIds.length > 0) {
-                await _supabase
-                    .from(NOMBRE_TABLA)
-                    .update({ dentro: false, hora: null, consumiciones: null, ventas_noche: null, historico_max_consumiciones: null, pago_realizado: false, hora_pago: null })
-                    .in('id', listaIds);
+            const { data: todosLosSocios, error: errFetch } = await _supabase.from(NOMBRE_TABLA).select('dni');
+            
+            if (!errFetch && todosLosSocios && todosLosSocios.length > 0) {
+                for (let socio of todosLosSocios) {
+                    await _supabase
+                        .from(NOMBRE_TABLA)
+                        .update({ 
+                            dentro: false, 
+                            hora: null, 
+                            consumiciones: null, 
+                            ventas_noche: null, 
+                            historico_max_consumiciones: null, 
+                            pago_realizado: false, 
+                            hora_pago: null 
+                        })
+                        .eq('dni', socio.dni);
+                }
             }
 
             const modal = document.getElementById('modalCierrePuertaCiego');
